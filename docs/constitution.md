@@ -1,0 +1,164 @@
+# Project constitution
+
+> This document defines the governance principles for all development of the product-flow plugin.
+> It is the first document the AI agent reads before any planning or implementation.
+> It takes precedence over any instruction in a spec or plan.
+
+---
+
+## 1. Core philosophy
+
+- **Simplicity over cleverness.** The simplest solution that meets the requirements is always preferred.
+- **Explicit over implicit.** Code must be readable by someone who doesn't know the repository.
+- **Spec-first.** No code is written without a corresponding spec. No PR exists without a link to its originating spec.
+- **Small and reversible.** Prefer small, focused changes over large changes. If a decision is hard to revert, escalate to the tech lead before proceeding.
+
+---
+
+## 2. What the AI agent can decide autonomously
+
+The agent can make the following decisions without explicit instruction:
+
+- Names of variables, functions and files (following the conventions in section 5)
+- Internal folder structure within already established modules
+- Writing and structuring tests
+- Refactoring within the scope of the current task (without scope creep)
+- Choosing between equivalent implementation approaches when no preference has been declared
+
+---
+
+## 3. What requires Tech Lead approval before implementing
+
+The agent must **stop and escalate** — never decide unilaterally — on:
+
+- Adding a new dependency or library
+- Changing the plugin manifest (`plugin.json`)
+- Modifying the session hook (`session-start.sh`)
+- Adding or removing skills from the plugin
+- Changing the command structure that affects the PM workflow
+- Any change that affects more than one skill/module simultaneously
+- Deleting existing code that is not directly replaced by the current task
+
+If there is uncertainty, the agent must ask before assuming.
+
+---
+
+## 4. Code quality standards
+
+### General
+- Each function does one thing. If it needs a comment to explain what it does, it must be split or renamed.
+- No dead code. No commented-out blocks. No `TODO` in production.
+- No premature abstraction. Only abstract when there are at least two concrete cases.
+- No code added "for the future". Implement only what the current spec requires.
+
+### Error handling
+- All errors must be handled explicitly. No silent catches.
+- Error messages must be actionable — describe what failed and why.
+- Never expose internal error details (stack traces) to the end user.
+
+### Security
+- No hardcoded credentials, tokens or secrets — never. Use environment variables.
+- No personally identifiable information (PII) in logs.
+
+---
+
+## 5. Naming and style conventions
+
+- **Files:** `kebab-case`
+- **Skill directories:** `kebab-case` (PM commands) or `domain.skill` (SpecKit and Praxis)
+- **Variables/functions:** `camelCase` (bash scripts: `snake_case`)
+- **Constants:** `SCREAMING_SNAKE_CASE`
+- Avoid abbreviations except universally known ones (`id`, `url`, `pr`)
+- User-facing messages always in English
+- Internal skill variables in English
+
+---
+
+## 6. Testing standards
+
+- Tests are written alongside the implementation, not after.
+- Each new skill must have its expected behaviour documented in its `SKILL.md`.
+- Integration tests verify the complete workflow: from the PM command to the generated artifact.
+- A PR with untested business logic will not be merged.
+
+---
+
+## 7. Pull Request standards
+
+### Size
+- Maximum **10 changed files** per PR. If a task requires more, split it.
+- A PR must represent a logical unit of work, traceable to a spec.
+
+### Description (required)
+Every PR must include:
+
+```
+## What
+[One paragraph describing what this PR does]
+
+## Why
+[Link to the spec or issue that originates this work]
+
+## What it does NOT do
+[Explicit scope limits — what was intentionally left out]
+
+## How to test
+[Steps to verify the change works]
+```
+
+---
+
+## 8. Scope discipline
+
+- The agent implements **only what the current spec requires.** Noticing something broken or improvable outside the current scope is welcome — but it goes to a new issue, not the current PR.
+- If implementing a task reveals that the spec is ambiguous or incomplete, stop and clarify with the PM before continuing.
+- Gold-plating (adding features or improvements not included in the spec) is not allowed.
+
+---
+
+## 9. Documentation
+
+- Public skills (PM commands) must have a clear description in their `SKILL.md` frontmatter.
+- Non-obvious architecture decisions must be documented in `docs/`.
+- The `README.md` must always reflect how to install the plugin after any structural change.
+
+---
+
+## 10. Session context management
+
+The agent proactively checks context usage at the end of each workflow command.
+
+Action thresholds:
+
+- **< 50% 🟢** → continue without mentioning anything
+- **50–79% 🟡** → continue without mentioning anything; warn at the end of the step
+- **80–89% 🟠** → add warning at the end: "Open a new session before the next command"
+- **≥ 90% 🔴** → interrupt before executing any action and instruct the user to run `/clear`
+
+The user can check the status at any time with `/context`.
+
+---
+
+## 11. Workflow with PMs
+
+This project uses a spec-driven workflow where PM commands orchestrate internal engines. Commands have no logic of their own regarding specs, plans or code — they delegate to the internal skills and only add PR management and approval gates.
+
+### Workflow commands (PM)
+
+| Command | Internal delegates | Own responsibility |
+|---|---|---|
+| `/start` | Internal spec engine | Be on `main` |
+| `/continue` | Internal clarify / plan engine | Spec created |
+| `/build` | Internal tasks + implement engine | Plan approved in PR |
+| `/submit` | — | Code generated |
+| `/deploy-to-stage` | — | PR approved |
+
+### PR status as source of truth
+
+The workflow state lives in the PR body checkboxes. Commands read `gh pr view --json body` to determine whether they can be executed. Never use local files as the source of truth for state.
+
+---
+
+*Last updated: 2026-03-24*
+*Owner: Tech Lead*
+*Version: 1.0*
