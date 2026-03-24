@@ -159,6 +159,38 @@ The workflow state lives in the PR body checkboxes. Commands read `gh pr view --
 
 ---
 
+## 12. Domain design principles
+
+When modeling a domain, use business language throughout — no infrastructure or technical terms in names or events.
+
+**Three slice types for domain behavior:**
+
+- **STATE_CHANGE** — user initiates a write: Screen → Command → Event (including error paths). One command per slice.
+- **STATE_VIEW** — system displays data: Events → Read Model → Screen. Never omit STATE_VIEW slices for queries.
+- **AUTOMATION** — system reacts: Event → Processor → Command → Event (no user involvement).
+
+**Design order:** understand aggregates → sketch high-level model → define slice details with fields and business rules → convert to executable fixtures.
+
+Anti-patterns: circular dependencies between elements, combining multiple commands in one STATE_CHANGE, writing validation specs instead of capturing business rules.
+
+---
+
+## 13. API evolution
+
+When making breaking changes, use the **expand-contract** pattern to maintain zero downtime.
+
+**Three phases:**
+
+1. **Expand** — add new implementation alongside the old; write to both paths simultaneously (dual-write).
+2. **Migrate** — gradually move readers/consumers to the new path (feature flags, canary); keep dual-write active as safety.
+3. **Contract** — stop writing to the old path only after confirming ZERO usage (verified via logs/monitoring over an extended period); then remove legacy code.
+
+**Applies to:** database column renames, data type conversions, API field changes, service replacements, library migrations.
+
+**Never:** big bang migrations, premature removal of legacy paths, skipping dual-write, moving to contract phase without monitoring evidence.
+
+---
+
 *Last updated: 2026-03-24*
 *Owner: Tech Lead*
 *Version: 1.0*

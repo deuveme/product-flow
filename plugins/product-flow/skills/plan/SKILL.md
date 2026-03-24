@@ -103,7 +103,24 @@ Invoke `/praxis.complexity-review` passing the contents of `research.md` and `da
 - If it surfaces **critical issues** (e.g., unnecessary microservices, premature event sourcing, unwarranted infrastructure): add one PR comment per issue and surface them to the PM before proceeding.
 - If there are no critical issues: continue silently.
 
-### 6. Record technical decisions in the PR
+### 6. Validate architecture
+
+Read `research.md` and `data-model.md` to determine whether the plan involves backend work, frontend work, or both.
+
+**If backend work is involved:**
+
+Invoke `/praxis.backend-architecture` with the plan as input. It validates that the design follows hexagonal architecture (domain ↔ ports ↔ adapters), dependencies flow inward, and no anti-patterns are present (anemic domain, domain scope pollution, use-case interdependencies).
+
+**If frontend work is involved:**
+
+Invoke `/praxis.frontend-architecture` with the plan as input. It validates that the design follows feature-based architecture (colocation, separation of concerns, no cross-feature imports).
+
+**Wait for each invoked skill to finish before continuing.**
+
+- If either surfaces structural issues: add one PR comment per issue before proceeding.
+- If no issues: continue silently.
+
+### 7. Record technical decisions in the PR
 
 If during step 3 there were technical decisions, add **one individual comment per decision** to the PR.
 
@@ -133,7 +150,7 @@ gh pr comment --body "**Technical question detected:** \"[identified question]\"
 
 If there were no relevant technical decisions, skip this step entirely.
 
-### 7. Commit the plan
+### 8. Commit the plan
 
 ```bash
 git add specs/
@@ -141,7 +158,7 @@ git commit -m "docs: add technical plan"
 git push origin HEAD
 ```
 
-### 8. Update PR status
+### 9. Update PR status
 
 Mark: `- [x] Plan generated`
 
@@ -154,14 +171,14 @@ Add row:
 gh pr edit --body "<updated-body>"
 ```
 
-### 9. Phase retro
+### 10. Phase retro
 
 Invoke `/speckit.retro` with context: "after plan phase".
 
 **Wait for `speckit.retro` to finish before continuing.**
 If it returns a **Blocked** status: do not show the final report until the user resolves the blockers.
 
-### 10. Final report
+### 11. Final report
 
 ```
 ✅ Technical plan generated

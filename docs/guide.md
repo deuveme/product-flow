@@ -37,9 +37,11 @@ plugins/product-flow/
         │   ├── speckit.taskstoissues, speckit.retro, speckit.checklist
         │
         └── [Praxis engineering skills]
-            ├── praxis.complexity-review (called in plan)
-            ├── praxis.bdd-with-approvals (called in implement)
-            └── praxis.test-desiderata (called in implement)
+            ├── praxis.complexity-review      (called in plan: challenge design)
+            ├── praxis.backend-architecture   (called in plan: validate hexagonal structure)
+            ├── praxis.frontend-architecture  (called in plan: validate feature-based structure)
+            ├── praxis.bdd-with-approvals     (called in implement: write approval specs first)
+            └── praxis.test-desiderata        (called in implement: validate test quality)
 ```
 
 ### Design principle
@@ -57,7 +59,7 @@ PM commands have no logic. They delegate completely to internal engines and only
 |---|---|
 | `/start` | `speckit.specify` → `speckit.retro` |
 | `/continue` | `consolidate-spec` / `plan` / `consolidate-plan` (dispatched by state machine) |
-| `/build` | `tasks` → `checklist` → `implement` (which calls `praxis.bdd-with-approvals` → `speckit.implement.withTDD` → `praxis.test-desiderata`) |
+| `/build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` → `speckit.implement.withTDD` → `praxis.test-desiderata`) |
 | `/submit` | git add/commit/push |
 | `/deploy-to-stage` | git merge --squash |
 
@@ -142,8 +144,10 @@ SPEC_CREATED → SPEC_REVIEW ──→ SPEC_CREATED
 **`plan` skill:**
 1. Calls `speckit.plan` → generates `research.md`, `data-model.md`, `contracts/`
 2. Calls `praxis.complexity-review` → challenges design against 30 dimensions
-3. Posts technical decisions as PR comments
-4. Calls `speckit.retro` for quality validation
+3. Calls `praxis.backend-architecture` (if backend) → validates hexagonal structure
+4. Calls `praxis.frontend-architecture` (if frontend) → validates feature-based structure
+5. Posts technical decisions as PR comments
+6. Calls `speckit.retro` for quality validation
 
 **`implement` skill:**
 1. Calls `praxis.bdd-with-approvals` → writes approval fixtures (executable specs)
