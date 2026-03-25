@@ -2,19 +2,48 @@
   "name": "product-flow",
   "version": "1.0.0",
   "description": "Product Flow - PM commands for spec-driven development workflow.",
+  "author": { "name": "David Valero" },
+  "license": "MIT",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"
+          }
+        ]
+      }
+    ]
+  },
   "skills": [
-    "start",
-    "continue",
-    "build",
-    "submit",
-    "deploy-to-stage",
-    "status",
-    "context"
-  ],
-  "hooks": [
-    {
-      "event": "SessionStart",
-      "command": "bash plugins/product-flow/hooks/session-start.sh"
-    }
+    "./skills/start",
+    "./skills/continue",
+    "./skills/build",
+    "./skills/submit",
+    "./skills/deploy-to-stage",
+    "./skills/status",
+    "./skills/context",
+    "./skills/plan",
+    "./skills/tasks",
+    "./skills/implement",
+    "./skills/checklist",
+    "./skills/check-and-clear",
+    "./skills/consolidate-spec",
+    "./skills/consolidate-plan",
+    "./skills/pr-comments",
+    "./skills/speckit.specify",
+    "./skills/speckit.clarify",
+    "./skills/speckit.plan",
+    "./skills/speckit.tasks",
+    "./skills/speckit.taskstoissues",
+    "./skills/speckit.checklist",
+    "./skills/speckit.retro",
+    "./skills/speckit.implement.withTDD",
+    "./skills/praxis.complexity-review",
+    "./skills/praxis.test-desiderata",
+    "./skills/praxis.bdd-with-approvals",
+    "./skills/praxis.backend-architecture",
+    "./skills/praxis.frontend-architecture"
   ]
 }
