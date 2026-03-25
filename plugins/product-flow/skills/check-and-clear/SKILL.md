@@ -22,14 +22,26 @@ Show only:
 
 Done. Do nothing more.
 
-#### If 50–89% (🟡 / 🟠)
+#### If 50–79% (🟡)
 
-Show status and warning:
+Show status only:
 
 ```
 [████████████░░░░░░░░]  65% used
 
 🟡  Moderate context. Finish the current step before continuing.
+```
+
+Done. Do not execute anything.
+
+#### If 80–89% (🟠)
+
+Show status and warning:
+
+```
+[████████████████░░░░]  83% used
+
+🟠  Context is high. Open a new session before the next command.
 ```
 
 Done. Do not execute anything.

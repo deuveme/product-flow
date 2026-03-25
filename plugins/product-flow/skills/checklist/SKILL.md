@@ -1,10 +1,10 @@
 ---
-description: "OPTIONAL — Validates the quality of requirements before implementing. Can be run at any time."
+description: "Internal — Called by /build. Validates requirements quality before implementation starts."
 ---
 
 ## Purpose
 
-Generates a checklist that validates that the spec, plan and tasks are well written, complete and free of ambiguities. Does not block the workflow — it is an optional quality tool.
+Generates a checklist that validates that the spec, plan and tasks are well written, complete and free of ambiguities. If critical issues are found (gaps, conflicts, or ambiguities that would break implementation), `/build` will stop and ask the PM to resolve them before continuing.
 
 Remember: the checklist validates the **requirements**, not the code. It is a "unit test of the spec written in English".
 
@@ -60,14 +60,7 @@ git push origin HEAD
 📋 <path-to-checklist>
 
 Review items marked as [Gap], [Ambiguity]
-or [Conflict] before continuing with /implement.
-
-─────────────────────────────────────────
-➡️  NEXT STEP
-─────────────────────────────────────────
-When you are ready to implement:
-  /implement
-─────────────────────────────────────────
+or [Conflict] before continuing.
 ```
 
 ### Session close

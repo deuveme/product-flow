@@ -1,5 +1,5 @@
 ---
-description: "STEP 3 — Generates the technical plan. Run when the team has approved the spec."
+description: "Internal — Called by /continue. Generates the technical plan from the approved spec."
 ---
 
 ## Execution
@@ -67,7 +67,7 @@ Invoke `/speckit.plan`, applying the following technical decision management rul
 
 **Autonomous resolution of unknowns** — during Phase 0 (research) and Phase 1 (design), if questions or decisions arise that the research agents cannot resolve completely:
 
-- **Do NOT ask the PM.** Make the most reasonable decision based on: existing code, project stack (Python/FastAPI + TypeScript/Node 22), `.agents/rules/base.md`, industry standards.
+- **Do NOT ask the PM.** Make the most reasonable decision based on: existing code, detected project stack, `.agents/rules/base.md`, industry standards.
 - Record each AI-made decision internally as **AI-proposed decision**.
 - If an unknown cannot be resolved by research or best practices: record it internally as **Unresolved question** and document it in `research.md` as a pending decision rather than blocking.
 
@@ -89,7 +89,7 @@ If it produces an ERROR: propagate and stop.
 ls specs/<branch-directory>/
 ```
 
-Confirm that these exist: `research.md`, `data-model.md`.
+Confirm that these exist: `plan.md`, `research.md`, `data-model.md`.
 If missing: ERROR "speckit.plan did not generate all artifacts. Check the previous errors."
 
 ### 5. Challenge plan complexity
@@ -184,19 +184,10 @@ If it returns a **Blocked** status: do not show the final report until the user 
 ✅ Technical plan generated
 
 📁 Artifacts:
+   specs/<directory>/plan.md
    specs/<directory>/research.md
    specs/<directory>/data-model.md
    specs/<directory>/contracts/  (if applicable)
-
-─────────────────────────────────────────
-➡️  NEXT STEP
-─────────────────────────────────────────
-Share the PR with the team so they can
-review the technical plan.
-
-When the team approves the plan, run:
-/tasks
-─────────────────────────────────────────
 ```
 
 ### Session close

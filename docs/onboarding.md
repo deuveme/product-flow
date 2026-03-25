@@ -142,6 +142,7 @@ Each review room has a checklist that indicates which phase it's in:
 - [x] Spec approved by the development team
 - [x] Plan generated
 - [ ] Plan approved by the development team     ← waiting here
+- [ ] Tasks generated
 - [ ] Code generated
 - [ ] In code review
 - [ ] Published

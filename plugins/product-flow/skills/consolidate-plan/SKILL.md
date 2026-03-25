@@ -14,28 +14,21 @@ gh pr view --json number,state,url,body,comments -q '{body: .body, comments: [.c
 - If branch is `main` or `master`: ERROR "Not on a feature branch."
 - Verify `- [x] Plan generated` is marked. If not: ERROR "Plan has not been generated yet. Run /continue first."
 
-### 2. Read pending feedback
+### 2. Collect pending comments
 
-```bash
-gh pr view --json comments -q '.comments[].body'
-```
+Invoke `/pr-comments pending`.
 
-Identify comments that:
-- Are corrections or questions from the team about the plan (`Correction:`, `Answer:`, or general feedback on plan.md / data-model.md / contracts/)
-- Have not yet been incorporated into the plan artifacts
-
-Group feedback by affected artifact:
-- `plan.md` — architecture decisions, approach changes
-- `research.md` — technology choices, constraint updates
-- `data-model.md` — entity or relationship corrections
-- `contracts/` — API or interface modifications
-
-If there is no actionable feedback on the plan: show a warning and stop:
+If it returns `NO_PENDING_COMMENTS`: show a warning and stop:
 
 ```
 ⚠️  No pending plan feedback found in the PR comments.
     Nothing to consolidate.
 ```
+
+From the returned comments, identify those related to the plan (`Correction:`, `Answer:`, or general feedback on plan.md / data-model.md / contracts/). Group them by affected artifact:
+- `research.md` — architecture decisions, approach changes, technology choices, constraint updates
+- `data-model.md` — entity or relationship corrections
+- `contracts/` — API or interface modifications
 
 ### 3. Apply corrections
 
@@ -56,34 +49,46 @@ After applying corrections, verify:
 
 If inconsistencies are found: resolve them before committing.
 
-### 5. Commit
+### 5. Commit and push
 
 ```bash
 git add specs/<feature-dir>/plan.md specs/<feature-dir>/research.md specs/<feature-dir>/data-model.md specs/<feature-dir>/contracts/
 git commit -m "plan: integrate team feedback"
+git push origin HEAD
 ```
 
-### 6. Record in PR
+### 6. Acknowledge processed comments
 
-Add a PR comment summarizing what changed:
+Invoke `/pr-comments ack` passing for each comment what was done (change applied, artifact updated, or reason it was not applied).
 
-```bash
-gh pr comment --body "Plan updated based on team feedback:
-- [list of changes made, one per line]"
-```
+**Wait for `/pr-comments ack` to finish before continuing.**
 
-### 7. Final report
+### 7. Phase retro
+
+Invoke `/speckit.retro` with context: "after consolidate-plan phase".
+
+**Wait for `speckit.retro` to finish before continuing.**
+If it returns a **Blocked** status: do not show the final report until the user resolves the blockers.
+
+### 8. Final report
 
 ```
 ✅ Plan feedback consolidated
 
 Changes applied:
   <summary of what changed>
-
-─────────────────────────────────────────
-➡️  NEXT STEP
-─────────────────────────────────────────
-Share the updated plan with the team for approval.
-When they approve, run: /continue
-─────────────────────────────────────────
 ```
+
+### Session close
+
+Run the `/check-and-clear` logic to check the context and guide the user if they need to clear the session.
+
+- **🟢 / 🟡**: Show nothing.
+- **🟠**: Show at the end of the report:
+  ```
+  🟠 Context is high. Open a new session before the next command.
+  ```
+- **🔴**: Show before the final report and interrupt if the user tries to continue:
+  ```
+  🔴 Critical context. Open a new session NOW before continuing.
+  ```

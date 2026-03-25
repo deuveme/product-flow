@@ -35,7 +35,7 @@ Invoke `/speckit.specify` passing `$ARGUMENTS` as the feature description, apply
 - **Technical** (resolve autonomously): authentication, authorisation, security, compliance, data retention, integration patterns, infrastructure constraints.
 
 **For technical questions**, do NOT ask the PM. Instead:
-1. Answer them using project context: existing code, `.agents/rules/base.md`, project stack (Python/FastAPI + TypeScript/Node 22), industry standards.
+1. Answer them using project context: existing code, `.agents/rules/base.md`, detected project stack, industry standards.
 2. If there is sufficient information: make the decision and record it internally as **AI-proposed decision**.
 3. If there is not sufficient information: record it internally as **Unresolved question** and continue.
 
@@ -154,7 +154,7 @@ If it returns a **Blocked** status: do not show the final report until the user 
 Share the PR with the development team
 so they can review the spec.
 
-When they have commented, run:
+When they approve or comment, run:
 /continue
 ─────────────────────────────────────────
 ```

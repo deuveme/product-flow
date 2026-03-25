@@ -1,5 +1,5 @@
 ---
-description: "STEP 4 — Breaks the plan down into tasks and creates the issues on GitHub. Run when the team has approved the plan."
+description: "Internal — Called by /build. Breaks the plan down into tasks and creates GitHub issues."
 ---
 
 ## Execution
@@ -28,7 +28,7 @@ Also, read the PR comments looking for corrections or team responses to previous
 gh pr view --json comments -q '.comments[].body'
 ```
 
-If there are corrections: apply them in `research.md` or `plan.md` before delegating to `speckit.tasks`. If there are responses to unresolved questions: incorporate them as additional context in the delegation.
+If there are corrections: apply them in `research.md` or `data-model.md` before delegating to `speckit.tasks`. If there are responses to unresolved questions: incorporate them as additional context in the delegation.
 
 If the plan approval is not marked:
 
@@ -66,7 +66,7 @@ Invoke `/speckit.tasks`, applying the following technical decision management ru
 
 **Autonomous resolution of ambiguities** — if during task generation questions arise about technical prioritisation, phase structure, task dependencies, or gaps in the available artifacts:
 
-- **Do NOT ask the PM.** Make the most reasonable decision based on existing artifacts, the project stack (Python/FastAPI + TypeScript/Node 22) and task organisation best practices.
+- **Do NOT ask the PM.** Make the most reasonable decision based on existing artifacts, the detected project stack and task organisation best practices.
 - Record each AI-made decision internally as **AI-proposed decision**.
 - If an ambiguity cannot be resolved: document it in `tasks.md` as a note and record it internally as **Unresolved question**.
 
@@ -156,15 +156,6 @@ If it returns a **Blocked** status: do not show the final report until the user 
 
 📋 tasks.md created
 🎫 Issues created on GitHub
-
-─────────────────────────────────────────
-➡️  NEXT STEP
-─────────────────────────────────────────
-Run: /build
-
-It will validate requirements quality and
-generate the feature code.
-─────────────────────────────────────────
 ```
 
 ### Session close

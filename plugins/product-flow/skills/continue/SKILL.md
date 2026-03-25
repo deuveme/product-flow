@@ -33,10 +33,15 @@ If a transition requires work that has no dedicated sub-skill, stop and surface 
                ┌──────────────┐
                │ PLAN_PENDING │◄─── auto: /plan runs here
                └──────┬───────┘
+                       │ /plan finishes
+                       ▼
+               ┌──────────────┐
+               │ PLAN_WAITING │◄─── waiting for team approval
+               └──────┬───────┘
                        │ team adds comments on plan
                        ▼
                ┌──────────────┐
-               │ PLAN_REVIEW  │──── consolidate plan feedback ──►  PLAN_PENDING
+               │ PLAN_REVIEW  │──── consolidate plan feedback ──►  PLAN_WAITING
                └──────────────┘
                        │ team approves plan
                        ▼
@@ -47,7 +52,7 @@ If a transition requires work that has no dedicated sub-skill, stop and surface 
 
 **Waiting states** (no action possible — team must act first):
 - `SPEC_CREATED` with no comments and no approval → waiting for team review
-- `PLAN_PENDING` with no comments and no approval → waiting for team review
+- `PLAN_WAITING` with no comments and no approval → waiting for team review
 
 **Blocked states** (invalid transitions):
 - Any state where required preconditions are not met → ERROR with explanation
@@ -82,11 +87,11 @@ Map to state:
 | ✓ | ✗ | ✗ | ✗ | ✗ | `SPEC_CREATED` (waiting) |
 | ✓ | ✗ | ✗ | ✗ | ✓ | `SPEC_REVIEW` |
 | ✓ | ✓ | ✗ | ✗ | any | `PLAN_PENDING` → auto-generate plan |
-| ✓ | ✓ | ✓ | ✗ | ✗ | `PLAN_PENDING` (waiting) |
+| ✓ | ✓ | ✓ | ✗ | ✗ | `PLAN_WAITING` |
 | ✓ | ✓ | ✓ | ✗ | ✓ | `PLAN_REVIEW` |
 | ✓ | ✓ | ✓ | ✓ | any | `BUILD_READY` |
 
-For `has_comments`: look for PR comments that are not from the bot (i.e., are not technical decision records) and that have not yet been consolidated into the spec or plan.
+For `has_comments`: invoke `/pr-comments pending`. If it returns `NO_PENDING_COMMENTS`, `has_comments = false`. Otherwise `has_comments = true`.
 
 ### 3. Display current state
 
@@ -150,7 +155,7 @@ After consolidating, check if spec is now approved:
 #### `PLAN_PENDING` (auto-generate)
 
 ```
-🔜 Transition: PLAN_PENDING → PLAN_PENDING (waiting)
+🔜 Transition: PLAN_PENDING → PLAN_WAITING
    Generating technical plan from the approved spec.
 
 Starting...
@@ -172,7 +177,7 @@ When they approve it, run: /continue
 ─────────────────────────────────────────
 ```
 
-#### `PLAN_PENDING` (waiting — plan generated, no comments, no approval)
+#### `PLAN_WAITING`
 
 ```
 ⏳ Nothing to do yet.
@@ -187,7 +192,7 @@ When they approve it, run: /continue
 #### `PLAN_REVIEW`
 
 ```
-🔜 Transition: PLAN_REVIEW → PLAN_PENDING
+🔜 Transition: PLAN_REVIEW → PLAN_WAITING
    Integrating team feedback into the plan and related artifacts.
 
 Starting...

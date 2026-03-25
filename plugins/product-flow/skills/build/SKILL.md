@@ -1,5 +1,5 @@
 ---
-description: "Generates the feature code. Run when the team has approved the plan."
+description: "STEP 5 — Generates the feature code. Run when the team has approved the plan."
 ---
 
 ## Execution
@@ -53,24 +53,36 @@ To answer, the team must comment on the PR with:
 
 **STOP.**
 
-### 3. Inform the PM
+### 3. Detect progress and inform the PM
+
+Check the PR body for completed steps:
+- Tasks done? → `- [x] Tasks generated` is marked
+- Checklist done? → `specs/<feature-dir>/checklists/` directory exists and is non-empty
+- Code done? → `- [x] Code generated` is marked
+
+Build the pending steps list based on what is NOT yet done and show:
 
 ```
 📍 Current status: Plan approved · Ready to build
 
 🔜 I'm going to:
-   1. Break down the plan into development tasks
-   2. Validate requirements quality
-   3. Generate the feature code
+   [only list pending steps, e.g.:]
+   1. Break down the plan into development tasks   ← skip if already done
+   2. Validate requirements quality                ← skip if already done
+   3. Generate the feature code                    ← skip if already done
 
 This may take several minutes.
 
 Starting...
 ```
 
+If all three steps are already done, skip to the final report.
+
 ### 4. Generate tasks
 
-Invoke `/tasks`.
+Skip this step if `- [x] Tasks generated` is already marked in the PR body.
+
+Otherwise, invoke `/tasks`.
 
 `/tasks` takes care of:
 - Generating `tasks.md` with tasks ordered by dependencies
@@ -82,7 +94,9 @@ If it produces an ERROR: propagate and stop.
 
 ### 5. Validate requirements quality
 
-Invoke `/checklist`.
+Skip this step if `specs/<feature-dir>/checklists/` already exists and contains at least one file.
+
+Otherwise, invoke `/checklist`.
 
 `/checklist` takes care of:
 - Validating that spec, plan and tasks are complete, unambiguous and consistent
@@ -105,7 +119,9 @@ Fix the issues and run /build again.
 
 ### 6. Implement
 
-Invoke `/implement`.
+Skip this step if `- [x] Code generated` is already marked in the PR body.
+
+Otherwise, invoke `/implement`.
 
 `/implement` takes care of:
 - Reading spec, plan, data-model, contracts and tasks

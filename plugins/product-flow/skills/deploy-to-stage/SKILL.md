@@ -1,10 +1,12 @@
 ---
-description: "STEP 7 — Publishes to main with squash merge. Requires the PR to be approved."
+description: "STEP 7 — Merges to main with squash merge and triggers the deployment pipeline. Requires the PR to be approved."
 ---
 
 ## Purpose
 
-Merges the feature to `main` with squash merge — all iteration commits are flattened into one. GitHub Actions deploys automatically upon detecting the merge.
+Merges the feature to `main` with squash merge — all iteration commits are flattened into one. This is the final step of the feature lifecycle: the branch is deleted and any CI/CD pipeline configured in the repository will trigger automatically upon detecting the merge (e.g. deploying to staging or production).
+
+> **Note:** This skill performs the merge to `main`. It does not deploy directly — deployment is handled by whatever CI/CD pipeline the repository has configured.
 
 ---
 
@@ -45,7 +47,19 @@ before publishing to main.
 
 **STOP.**
 
-### 4. Squash merge to main
+### 4. Mark as published
+
+Mark `- [x] Published` in the PR body and add a history row:
+
+```
+| Published | YYYY-MM-DD | Merged to main |
+```
+
+```bash
+gh pr edit --body "<updated-body>"
+```
+
+### 5. Squash merge to main
 
 ```bash
 gh pr merge --squash --delete-branch
@@ -62,22 +76,22 @@ Resolve the conflicts manually before continuing.
 
 **STOP.**
 
-### 5. Verify GitHub Actions has triggered
+### 6. Check CI/CD status
 
 ```bash
 gh run list --limit 3
 ```
 
-Show the active workflows to confirm the deploy started.
+If any runs appear, show them so the user can confirm that the pipeline triggered. If no runs appear, skip silently — the project may use a different CI/CD system.
 
-### 6. Final report
+### 7. Final report
 
 ```
 ✅ Published to main
 
 🌿 Merged: <BRANCH> → main (squash)
 🗑️  Branch deleted
-🚀 Deploy in progress — GitHub Actions deploying
+🚀 Published — check your deployment pipeline for progress
 
 ─────────────────────────────────────────
 This feature is complete.

@@ -1,5 +1,5 @@
 ---
-description: "STEP 2 — Integrates team feedback into the spec. Run after they have commented on the PR. Repeatable."
+description: "Internal — Called by /continue. Integrates team feedback into the spec. Repeatable."
 ---
 
 ## Execution
@@ -20,15 +20,13 @@ Verify in the PR body: `- [x] Spec created`
 
 If not marked: ERROR "The spec does not exist yet. Run /start first."
 
-### 3. Verify comments and collect team corrections
+### 3. Collect pending comments
 
-```bash
-gh pr view --json comments -q '.comments[].body'
-```
+Invoke `/pr-comments pending`.
 
-If there are no comments: ERROR "There are no comments on the PR yet. Share the PR with the team and wait for their feedback."
+If it returns `NO_PENDING_COMMENTS`: ERROR "There are no pending comments on the PR. Share the PR with the team and wait for their feedback."
 
-Also look for team comments that are corrections or responses to previous technical decisions (comments starting with `Correction:` or `Answer:`). If there are any, record them internally — they will be incorporated as additional context in step 4 when invoking `speckit.clarify`.
+Record the returned comments internally — they will be used as context in step 4. Pay special attention to comments starting with `Correction:` or `Answer:`, which are responses to previous technical decisions.
 
 ### 4. Delegate to speckit.clarify
 
@@ -40,7 +38,7 @@ Invoke `/speckit.clarify` with the context of the PR comments, applying the foll
 - **Technical** (resolve autonomously): architecture, performance, security, integrations, data model, infrastructure constraints, implementation patterns.
 
 **For technical questions**, do NOT ask the PM. Instead:
-1. Try to answer them using project context: existing code, `.agents/rules/base.md`, project stack (Python/FastAPI + TypeScript/Node 22), detected architecture patterns.
+1. Try to answer them using project context: existing code, `.agents/rules/base.md`, detected project stack, detected architecture patterns.
 2. If there is sufficient information to answer with confidence: make the decision and record it internally as **AI-proposed decision**.
 3. If there is not sufficient information: record it internally as **Unresolved question** and continue.
 
@@ -92,7 +90,13 @@ git commit -m "docs: update spec with team feedback"
 git push origin HEAD
 ```
 
-### 7. Update PR history
+### 7. Acknowledge processed comments
+
+Invoke `/pr-comments ack` passing for each comment what was done (change applied, decision taken, or reason it was not applied).
+
+**Wait for `/pr-comments ack` to finish before continuing.**
+
+### 8. Update PR history
 
 Add row to the table:
 ```
@@ -103,28 +107,17 @@ Add row to the table:
 gh pr edit --body "<updated-body>"
 ```
 
-### 8. Phase retro
+### 9. Phase retro
 
 Invoke `/speckit.retro` with context: "after clarify phase".
 
 **Wait for `speckit.retro` to finish before continuing.**
 If it returns a **Blocked** status: do not show the final report until the user resolves the blockers.
 
-### 9. Final report
+### 10. Final report
 
 ```
 ✅ Spec updated
-
-─────────────────────────────────────────
-➡️  NEXT STEP
-─────────────────────────────────────────
-If there are more feedback rounds:
-  Run /consolidate-spec again
-
-If the spec is ready for approval:
-  Ask the team to approve the spec in the PR.
-  When they do, run: /plan
-─────────────────────────────────────────
 ```
 
 ### Session close

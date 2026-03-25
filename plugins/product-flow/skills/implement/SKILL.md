@@ -1,5 +1,5 @@
 ---
-description: "STEP 5 — Generates the code. Run when the tasks have been generated and the team is ready to implement."
+description: "Internal — Called by /build. Generates the feature code using TDD."
 ---
 
 ## Execution
@@ -29,7 +29,7 @@ Also, read the PR comments looking for corrections or team responses to previous
 gh pr view --json comments -q '.comments[].body'
 ```
 
-If there are corrections: apply them in `tasks.md` or the affected artifacts before delegating to `speckit.implement`. If there are responses to unresolved questions: incorporate them as additional context in the delegation.
+If there are corrections: apply them in `tasks.md` or the affected artifacts before delegating to `speckit.implement.withTDD`. If there are responses to unresolved questions: incorporate them as additional context in the delegation.
 
 If the tasks have not been generated:
 
@@ -133,15 +133,6 @@ If it returns a **Blocked** status: do not show the final report until the user 
 
 ```
 ✅ Code generated
-
-─────────────────────────────────────────
-➡️  NEXT STEP
-─────────────────────────────────────────
-Run: /submit
-
-It will save the code and leave it ready
-for the development team's review.
-─────────────────────────────────────────
 ```
 
 ### Session close

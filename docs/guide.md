@@ -29,11 +29,11 @@ plugins/product-flow/
     │
     └── [Internal engines]
         ├── [Orchestrators]
-        │   ├── consolidate-spec, consolidate-plan, plan, tasks, implement, checklist, check-and-clear
+        │   ├── consolidate-spec, consolidate-plan, plan, tasks, implement, checklist, check-and-clear, pr-comments
         │
         ├── [Spec-Kit engines]
         │   ├── speckit.specify, speckit.clarify, speckit.plan, speckit.tasks
-        │   ├── speckit.implement, speckit.implement.withTDD
+        │   ├── speckit.implement.withTDD
         │   ├── speckit.taskstoissues, speckit.retro, speckit.checklist
         │
         └── [Praxis engineering skills]
@@ -58,7 +58,7 @@ PM commands have no logic. They delegate completely to internal engines and only
 | Command | Internal call chain |
 |---|---|
 | `/start` | `speckit.specify` → `speckit.retro` |
-| `/continue` | `consolidate-spec` / `plan` / `consolidate-plan` (dispatched by state machine) |
+| `/continue` | `pr-comments pending` → `consolidate-spec` / `plan` / `consolidate-plan` (dispatched by state machine) |
 | `/build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` → `speckit.implement.withTDD` → `praxis.test-desiderata`) |
 | `/submit` | git add/commit/push |
 | `/deploy-to-stage` | git merge --squash |
@@ -128,15 +128,20 @@ Expected: `📍 You are on the main branch, with no active feature.`
 ### `/continue` state machine
 
 ```
-SPEC_CREATED → SPEC_REVIEW ──→ SPEC_CREATED
-                               (via consolidate-spec)
-                                    ↓
-               PLAN_PENDING ← PLAN_PENDING (plan runs here)
-                    ↓
-               PLAN_REVIEW ──→ PLAN_PENDING
-                               (via consolidate-plan)
-                                    ↓
-               BUILD_READY ──→ run /build
+/start
+  │
+  ▼
+SPEC_CREATED  ←──── /consolidate-spec ←──── SPEC_REVIEW  (team adds comments)
+  │ (team approves)
+  ▼
+PLAN_PENDING  ──── /plan auto-runs ──────────────────────────────────────────┐
+  │                                                                           │
+  │ (team adds comments on plan)                                              ▼
+  ▼                                                                     PLAN_PENDING
+PLAN_REVIEW   ←──── /consolidate-plan ─────────────────────────────────  (waiting)
+  │ (team approves)
+  ▼
+BUILD_READY   ──── redirect to /build
 ```
 
 ### Key workflow steps
@@ -214,35 +219,6 @@ description: "Shown in Claude Code autocomplete"
 - Next step: always in a `─────` delimited block
 - Gates: read PR with `gh pr view --json body`, never local files
 - Error messages: actionable, explain what failed and why
-
----
-
-## Your role in the workflow
-
-### Approve the spec
-
-When `/start` runs:
-1. Review `specs/NNN-short-name/spec.md` in the PR
-2. Leave inline comments if changes needed
-3. **Review changes → Approve** on GitHub
-4. Edit PR body: `- [x] Spec approved`
-
-### Approve the plan
-
-When `/continue` generates the plan:
-1. Review `research.md`, `data-model.md`, `contracts/` in the PR
-2. Leave comments on technical decisions to change
-3. When ready: **Review changes → Approve**
-4. Edit PR body: `- [x] Plan approved`
-
-Note: `praxis.complexity-review` will have already challenged the design before you see it.
-
-### Review the code
-
-When `/submit` exits draft:
-1. Review the code in **Files changed**
-2. Request changes or approve
-3. After approval, anyone can run `/deploy-to-stage`
 
 ---
 

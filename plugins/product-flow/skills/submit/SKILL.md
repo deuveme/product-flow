@@ -32,9 +32,10 @@ If there are no changes: ERROR "There are no new changes to save."
 
 ```bash
 git diff --stat HEAD
+git status --short
 ```
 
-Show the user which files are going to be saved.
+Show the user which files are going to be saved (including untracked files that will be added).
 
 ### 5. Commit and push
 
