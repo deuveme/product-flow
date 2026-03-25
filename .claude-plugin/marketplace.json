@@ -1,8 +1,23 @@
 {
   "name": "product-flow",
-  "description": "Spec-driven development kit with SpecKit workflow, Praxis engineering skills, and PM-friendly commands for structured feature development.",
-  "version": "1.0.0",
-  "author": "product-flow",
-  "license": "MIT",
-  "plugin": "./plugins/product-flow"
+  "owner": {
+    "name": "David Valero"
+  },
+  "metadata": {
+    "description": "Spec-driven development kit with SpecKit workflow, Praxis engineering skills, and PM-friendly commands for structured feature development."
+  },
+  "plugins": [
+    {
+      "name": "product-flow",
+      "source": "./plugins/product-flow",
+      "description": "Spec-driven development kit with SpecKit workflow, Praxis engineering skills, and PM-friendly commands for structured feature development.",
+      "version": "1.0.0",
+      "author": {
+        "name": "David Valero"
+      },
+      "repository": "https://github.com/deuveme/product-flow",
+      "license": "MIT",
+      "keywords": ["spec", "product", "workflow", "development", "pm"]
+    }
+  ]
 }
