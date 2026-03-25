@@ -8,7 +8,7 @@ Claude Code plugin for spec-driven development. Enables PMs, designers, and deve
 
 ```bash
 # In your Claude Code session:
-/plugin marketplace add git@github.com:deuveme/product-flow.git
+/plugin marketplace add deuveme/product-flow
 /plugin install product-flow@product-flow
 ```
 
