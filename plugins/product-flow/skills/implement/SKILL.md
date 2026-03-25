@@ -18,9 +18,7 @@ gh pr view --json number,state,url,body
 
 Verify in the PR body:
 - `- [x] Spec created` ✓
-- `- [x] Spec approved by the development team` ✓
 - `- [x] Plan generated` ✓
-- `- [x] Plan approved by the development team` ✓
 - `- [x] Tasks generated` ✓
 
 Also, read the PR comments looking for corrections or team responses to previous technical decisions (comments starting with `Correction:` or `Answer:`):

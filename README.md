@@ -15,7 +15,7 @@ Claude Code plugin for spec-driven development. Enables PMs, designers, and deve
 **Commands:**
 - `/start` — start a new feature
 - `/continue` — advance to next step (repeatable)
-- `/build` — generate code (when plan is approved)
+- `/build` — generate code (when plan is ready)
 - `/submit` — share code for review
 - `/deploy-to-stage` — publish to staging
 - `/status` — see where you are
@@ -41,7 +41,7 @@ Claude Code plugin for spec-driven development. Enables PMs, designers, and deve
 
 ## Features
 
-- **Spec-driven**: No code without a spec. Specs are reviewed and approved before planning.
+- **Spec-driven**: No code without a spec. Specs are reviewed and refined before planning.
 - **Quality gates**: Specs, plans, and code are validated before moving to the next step.
 - **TDD by default**: Code is generated using Red-Green-Refactor cycles with ZOMBIES test ordering.
 - **Design challenge**: Plans are challenged against 30 complexity dimensions to prevent over-engineering.

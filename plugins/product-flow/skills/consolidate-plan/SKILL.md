@@ -25,14 +25,33 @@ If it returns `NO_PENDING_COMMENTS`: show a warning and stop:
     Nothing to consolidate.
 ```
 
-From the returned comments, identify those related to the plan (`Correction:`, `Answer:`, or general feedback on plan.md / data-model.md / contracts/). Group them by affected artifact:
+From the returned comments, classify each one before acting on it:
+
+- **Non-technical** (product feedback): scope changes, priority shifts, business rule clarifications, terminology. **NEVER resolve autonomously.**
+- **Technical** (resolve autonomously): architecture corrections, data model adjustments, API changes, implementation decisions.
+
+If any comment is non-technical, stop immediately and surface it to the PM:
+
+```
+🚫 Product feedback detected in the PR comments.
+
+The following must be answered by the PM before the plan can be updated:
+
+[list each non-technical comment]
+
+Please reply on the PR with your answer. Then run /continue again.
+```
+
+**STOP.**
+
+If all comments are technical, group them by affected artifact:
 - `research.md` — architecture decisions, approach changes, technology choices, constraint updates
 - `data-model.md` — entity or relationship corrections
 - `contracts/` — API or interface modifications
 
 ### 3. Apply corrections
 
-For each piece of feedback, update the relevant artifact:
+For each piece of technical feedback, update the relevant artifact:
 
 - **Corrections** (`Correction: ...`): Override the previous decision with the team's direction. Update the artifact and add a note: `<!-- Updated: <date> — team correction -->`
 - **Answers** (`Answer: ...`): Resolve the open question in research.md. Mark the question as resolved.
@@ -57,11 +76,11 @@ git commit -m "plan: integrate team feedback"
 git push origin HEAD
 ```
 
-### 6. Acknowledge processed comments
+### 6. Resolve processed comments
 
-Invoke `/pr-comments ack` passing for each comment what was done (change applied, artifact updated, or reason it was not applied).
+Invoke `/pr-comments resolve` passing the IDs of all bot comments that had `UNANSWERED` status and have now been addressed.
 
-**Wait for `/pr-comments ack` to finish before continuing.**
+**Wait for `/pr-comments resolve` to finish before continuing.**
 
 ### 7. Phase retro
 

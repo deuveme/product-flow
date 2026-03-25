@@ -75,8 +75,8 @@ To start a feature:
 Read the PR checkboxes and determine the last completed step.
 For each step, determine its status according to this logic:
 - ✅ if the checkbox is marked
-- ▶️  if it is the next one executable right now (previous steps complete)
-- ⏳ if it is pending an external action (team approval)
+- ▶️  if it is the next one to run
+- ⏳ if waiting for the team to approve or comment
 - 🔒 if it is blocked because previous steps are not complete
 
 ```
@@ -85,18 +85,17 @@ For each step, determine its status according to this logic:
 
 PROGRESS:
   ✅ Spec created
-  ✅ Spec approved
   ✅ Plan generated
-  ⏳ Plan approved by the team      ← team must approve on GitHub
   🔒 Tasks generated
   🔒 Code generated
   🔒 In code review
   🔒 Published
 
 ➡️  NEXT
-    When the team approves the plan on GitHub, run:
-    /build
+    Run: /continue
 ```
+
+Note: team approval is only required at `/deploy-to-stage`. Pending comments on the PR will be addressed automatically by `/continue` before advancing.
 
 ### 3. Unsaved changes
 

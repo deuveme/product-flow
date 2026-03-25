@@ -31,7 +31,7 @@ Invoke `/speckit.specify` passing `$ARGUMENTS` as the feature description, apply
 
 **Question classification** — when `speckit.specify` identifies `[NEEDS CLARIFICATION]` markers, classify each one before presenting it:
 
-- **Non-technical** (ask the PM): business intent, priorities, functional scope, user flows, terminology.
+- **Non-technical** (ask the PM): business intent, priorities, functional scope, user flows, terminology. **NEVER resolve autonomously. Always surface to the PM and wait for their answer.**
 - **Technical** (resolve autonomously): authentication, authorisation, security, compliance, data retention, integration patterns, infrastructure constraints.
 
 **For technical questions**, do NOT ask the PM. Instead:
@@ -83,9 +83,7 @@ Spec: $SPEC_PATH
 
 ## Status
 - [x] Spec created
-- [ ] Spec approved by the development team
 - [ ] Plan generated
-- [ ] Plan approved by the development team
 - [ ] Tasks generated
 - [ ] Code generated
 - [ ] In code review
@@ -109,7 +107,8 @@ If during step 2 there were technical questions, add **one individual comment pe
 For each question the AI was able to answer:
 
 ```bash
-gh pr comment --body "**Technical question detected:** \"[identified question]\"
+gh pr comment --body "<!-- status:ANSWERED -->
+**Technical question detected:** \"[identified question]\"
 
 **Proposed answers:** A. \"[option A]\" B. \"[option B]\" C. \"[option C]\"
 
@@ -121,7 +120,8 @@ gh pr comment --body "**Technical question detected:** \"[identified question]\"
 For each question the AI was unable to resolve:
 
 ```bash
-gh pr comment --body "**Technical question detected:** \"[identified question]\"
+gh pr comment --body "<!-- status:UNANSWERED -->
+**Technical question detected:** \"[identified question]\"
 
 **Possible answers:** A. \"[option A]\" B. \"[option B]\" C. \"[option C]\"
 

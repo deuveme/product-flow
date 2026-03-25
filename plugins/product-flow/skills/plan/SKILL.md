@@ -14,49 +14,28 @@ gh pr view --json number,state,url,body
 - If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /status."
 - If there is no PR: ERROR "There is no open PR. Did you run /start?"
 
-### 2. Gate: spec approved and technical corrections applied
+### 2. Gate: spec created and pending comments resolved
 
 Verify in the PR body:
 - `- [x] Spec created` ✓
-- `- [x] Spec approved by the development team` ✓
 
-Also, read the PR comments looking for corrections or team responses to previous technical decisions (comments starting with `Correction:` or `Answer:`):
+Read PR comments looking for corrections or team responses to previous technical decisions (comments starting with `Correction:` or `Answer:`):
 
 ```bash
 gh pr view --json comments -q '.comments[].body'
 ```
 
-If there are corrections: apply them in `spec.md` before delegating to `speckit.plan`. If there are responses to unresolved questions: incorporate them as additional context in the delegation.
+If there are `Correction:` responses: apply them in `spec.md` before delegating to `speckit.plan`.
+If there are `Answer:` responses to unresolved questions: incorporate them as additional context in the delegation.
 
-If the approval is not marked:
-
-```
-🚫 BLOCKED
-
-The spec has not been approved yet.
-
-The development team must approve the spec
-in the PR before generating the plan.
-
-If they have already commented but not approved:
-  Run /consolidate-spec first.
-```
-
-**STOP.**
-
-Verify that there are no unanswered technical decisions: among the PR comments, identify all those containing "Unresolved — requires input from the development team" and check that for each one there is a subsequent comment starting with `Answer:`.
-
-If any technical decision has no team response:
+Invoke `/pr-comments pending`. If it returns pending comments that require a response:
 
 ```
-🚫 BLOCKED — Unanswered technical decisions
+🚫 BLOCKED — Pending comments
 
-The following technical questions must be answered before generating the plan:
+There are unanswered comments on the PR that must be resolved before generating the plan.
 
-[list the unanswered questions]
-
-The team must answer in the PR with:
-  Answer: [letter or answer]
+Address them and run /continue again.
 ```
 
 **STOP.**
@@ -127,7 +106,8 @@ If during step 3 there were technical decisions, add **one individual comment pe
 For each decision the AI was able to make:
 
 ```bash
-gh pr comment --body "**Technical question detected:** \"[identified question]\"
+gh pr comment --body "<!-- status:ANSWERED -->
+**Technical question detected:** \"[identified question]\"
 
 **Proposed answers:** A. \"[option A]\" B. \"[option B]\" C. \"[option C]\"
 
@@ -139,7 +119,8 @@ gh pr comment --body "**Technical question detected:** \"[identified question]\"
 For each decision the AI was unable to resolve (also documented in `research.md`):
 
 ```bash
-gh pr comment --body "**Technical question detected:** \"[identified question]\"
+gh pr comment --body "<!-- status:UNANSWERED -->
+**Technical question detected:** \"[identified question]\"
 
 **Possible answers:** A. \"[option A]\" B. \"[option B]\" C. \"[option C]\"
 

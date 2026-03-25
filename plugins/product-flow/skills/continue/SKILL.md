@@ -23,36 +23,29 @@ If a transition requires work that has no dedicated sub-skill, stop and surface 
                ┌──────────────┐
                │ SPEC_CREATED │◄─── after consolidating feedback
                └──────┬───────┘
-                       │ team adds comments
-                       ▼
-               ┌──────────────┐
-               │ SPEC_REVIEW  │──── /consolidate-spec ──►  SPEC_CREATED
-               └──────────────┘
-                       │ team approves spec
+          has comments │  no comments
+                       ▼         ▼
+               ┌──────────────┐  │
+               │ SPEC_REVIEW  │──┘
+               │ consolidate  │
+               └──────┬───────┘
+                       │ (auto-proceed)
                        ▼
                ┌──────────────┐
                │ PLAN_PENDING │◄─── auto: /plan runs here
                └──────┬───────┘
-                       │ /plan finishes
-                       ▼
-               ┌──────────────┐
-               │ PLAN_WAITING │◄─── waiting for team approval
+          has comments │  no comments
+                       ▼         ▼
+               ┌──────────────┐  │
+               │ PLAN_REVIEW  │──┘
+               │ consolidate  │
                └──────┬───────┘
-                       │ team adds comments on plan
-                       ▼
-               ┌──────────────┐
-               │ PLAN_REVIEW  │──── consolidate plan feedback ──►  PLAN_WAITING
-               └──────────────┘
-                       │ team approves plan
+                       │ (auto-proceed)
                        ▼
                ┌──────────────┐
                │ BUILD_READY  │──── blocked: redirect to /build
                └──────────────┘
 ```
-
-**Waiting states** (no action possible — team must act first):
-- `SPEC_CREATED` with no comments and no approval → waiting for team review
-- `PLAN_WAITING` with no comments and no approval → waiting for team review
 
 **Blocked states** (invalid transitions):
 - Any state where required preconditions are not met → ERROR with explanation
@@ -77,19 +70,16 @@ Read PR body to check which boxes are marked (`- [x]`):
 
 ```bash
 gh pr view --json body -q '.body'
-gh pr view --json comments -q '.comments[].body'
 ```
 
 Map to state:
 
-| spec_created | spec_approved | plan_generated | plan_approved | has_comments | → State |
-|:---:|:---:|:---:|:---:|:---:|:---|
-| ✓ | ✗ | ✗ | ✗ | ✗ | `SPEC_CREATED` (waiting) |
-| ✓ | ✗ | ✗ | ✗ | ✓ | `SPEC_REVIEW` |
-| ✓ | ✓ | ✗ | ✗ | any | `PLAN_PENDING` → auto-generate plan |
-| ✓ | ✓ | ✓ | ✗ | ✗ | `PLAN_WAITING` |
-| ✓ | ✓ | ✓ | ✗ | ✓ | `PLAN_REVIEW` |
-| ✓ | ✓ | ✓ | ✓ | any | `BUILD_READY` |
+| spec_created | plan_generated | has_comments | → State |
+|:---:|:---:|:---:|:---|
+| ✓ | ✗ | ✓ | `SPEC_REVIEW` |
+| ✓ | ✗ | ✗ | `PLAN_PENDING` → auto-generate plan |
+| ✓ | ✓ | ✓ | `PLAN_REVIEW` |
+| ✓ | ✓ | ✗ | `BUILD_READY` |
 
 For `has_comments`: invoke `/pr-comments pending`. If it returns `NO_PENDING_COMMENTS`, `has_comments = false`. Otherwise `has_comments = true`.
 
@@ -110,36 +100,21 @@ Examples:
 ```
 
 ```
-📍 State: SPEC_CREATED — waiting
-   The spec is ready. Waiting for team approval in the PR.
-   No action available until the team approves or adds comments.
-
-🔗 PR: <url>
+📍 State: PLAN_PENDING
+   Spec is ready. Generating the technical plan.
 ```
 
 ```
 📍 State: BUILD_READY
-   The plan has been approved. /continue cannot proceed further.
+   The plan is ready. /continue has no further transitions.
 ```
 
 ### 4. Execute state transition
 
-#### `SPEC_CREATED` (waiting)
-
-```
-⏳ Nothing to do yet.
-   The development team must review and approve the spec in the PR.
-   When they do, run /continue again.
-
-🔗 PR: <url>
-```
-
-**STOP.**
-
 #### `SPEC_REVIEW`
 
 ```
-🔜 Transition: SPEC_REVIEW → SPEC_CREATED
+🔜 Transition: SPEC_REVIEW → PLAN_PENDING
    Integrating team feedback into the spec.
 
 Starting...
@@ -148,15 +123,13 @@ Starting...
 Invoke `/consolidate-spec`.
 Wait for it to finish. If ERROR: propagate and stop.
 
-After consolidating, check if spec is now approved:
-- If approved → continue to `PLAN_PENDING` transition below.
-- If not approved → show SPEC_CREATED waiting message and stop.
+Then continue automatically to `PLAN_PENDING` transition below.
 
 #### `PLAN_PENDING` (auto-generate)
 
 ```
-🔜 Transition: PLAN_PENDING → PLAN_WAITING
-   Generating technical plan from the approved spec.
+🔜 Transition: PLAN_PENDING → BUILD_READY
+   Generating technical plan from the spec.
 
 Starting...
 ```
@@ -172,27 +145,15 @@ After generating, show:
 ─────────────────────────────────────────
 ➡️  NEXT STEP
 ─────────────────────────────────────────
-Share the PR with the team so they can review the plan.
-When they approve it, run: /continue
+Run /continue to proceed to build,
+or add comments on the PR first if changes are needed.
 ─────────────────────────────────────────
 ```
-
-#### `PLAN_WAITING`
-
-```
-⏳ Nothing to do yet.
-   The plan has been generated. Waiting for team approval in the PR.
-   When they approve or add comments, run /continue again.
-
-🔗 PR: <url>
-```
-
-**STOP.**
 
 #### `PLAN_REVIEW`
 
 ```
-🔜 Transition: PLAN_REVIEW → PLAN_WAITING
+🔜 Transition: PLAN_REVIEW → BUILD_READY
    Integrating team feedback into the plan and related artifacts.
 
 Starting...
@@ -201,11 +162,13 @@ Starting...
 Invoke `/consolidate-plan`.
 Wait for it to finish. If ERROR: propagate and stop.
 
+Then continue automatically to `BUILD_READY`.
+
 #### `BUILD_READY`
 
 ```
 📍 State: BUILD_READY
-   The plan has been approved. /continue has no further transitions.
+   The plan is ready. /continue has no further transitions.
 
 ─────────────────────────────────────────
 ➡️  NEXT STEP

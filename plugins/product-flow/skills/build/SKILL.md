@@ -1,5 +1,5 @@
 ---
-description: "STEP 5 — Generates the feature code. Run when the team has approved the plan."
+description: "STEP 5 — Generates the feature code. Run when the plan is ready."
 ---
 
 ## Execution
@@ -14,41 +14,17 @@ gh pr view --json number,state,url,body
 - If the branch is `main` or `master`: ERROR "There is no active feature. Use /start to start a new one."
 - If there is no PR: ERROR "There is no open PR. Did you run /start?"
 
-### 2. Gate: plan approved
+### 2. Gate: plan generated
 
 Verify in the PR body:
-- `- [x] Plan approved by the development team` ✓
+- `- [x] Plan generated` ✓
 
 If not marked:
 
 ```
-🚫 The plan has not been approved by the team yet.
+🚫 The plan has not been generated yet.
 
-Share the PR with the team and wait for their approval.
-When they approve it, run /build again.
-
-🔗 PR: <url>
-```
-
-**STOP.**
-
-Also verify that there are no unanswered technical decisions: read the PR comments looking for those containing "Unresolved — requires input from the development team" and check that for each one there is a subsequent comment starting with `Answer:`.
-
-```bash
-gh pr view --json comments -q '.comments[].body'
-```
-
-If any technical decision has no team response:
-
-```
-🚫 There are technical questions pending a response.
-
-The development team must answer before building:
-
-[list the unanswered questions]
-
-To answer, the team must comment on the PR with:
-  Answer: [letter or answer]
+Run /continue to generate the plan first.
 ```
 
 **STOP.**
@@ -63,7 +39,7 @@ Check the PR body for completed steps:
 Build the pending steps list based on what is NOT yet done and show:
 
 ```
-📍 Current status: Plan approved · Ready to build
+📍 Current status: Plan generated · Ready to build
 
 🔜 I'm going to:
    [only list pending steps, e.g.:]

@@ -58,7 +58,7 @@ PM commands have no logic. They delegate completely to internal engines and only
 | Command | Internal call chain |
 |---|---|
 | `/start` | `speckit.specify` → `speckit.retro` |
-| `/continue` | `pr-comments pending` → `consolidate-spec` / `plan` / `consolidate-plan` (dispatched by state machine) |
+| `/continue` | state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` (dispatched by state machine) |
 | `/build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` → `speckit.implement.withTDD` → `praxis.test-desiderata`) |
 | `/submit` | git add/commit/push |
 | `/deploy-to-stage` | git merge --squash |
@@ -132,17 +132,63 @@ Expected: `📍 You are on the main branch, with no active feature.`
   │
   ▼
 SPEC_CREATED  ←──── /consolidate-spec ←──── SPEC_REVIEW  (team adds comments)
-  │ (team approves)
+  │ (no comments)
   ▼
 PLAN_PENDING  ──── /plan auto-runs ──────────────────────────────────────────┐
-  │                                                                           │
-  │ (team adds comments on plan)                                              ▼
-  ▼                                                                     PLAN_PENDING
-PLAN_REVIEW   ←──── /consolidate-plan ─────────────────────────────────  (waiting)
-  │ (team approves)
+                                                                             │
+  (team adds comments on plan)                                               ▼
+PLAN_REVIEW   ←──── /consolidate-plan ─────────────────────────────────  PLAN_PENDING
+  │ (no comments)
   ▼
 BUILD_READY   ──── redirect to /build
 ```
+
+The only approval gate is at `/deploy-to-stage`, which requires the PR to be approved by the team before merging.
+
+### PR comment classification
+
+When `/continue` processes comments on the PR, it classifies each one before acting on it:
+
+| Type | Criteria | How it's handled |
+|---|---|---|
+| **Non-technical** | Business intent, priorities, user flows, terminology, functional scope | **Always surfaced to the PM. Never resolved autonomously.** |
+| **Technical** | Architecture, security, integrations, data model, infrastructure, implementation patterns | Resolved autonomously using project context |
+
+**For autonomously resolved technical questions**, Claude posts a comment on the PR:
+
+```
+<!-- status:ANSWERED -->
+**Technical question detected:** "..."
+
+**Proposed answers:** A. "..." B. "..." C. "..."
+
+**Autonomously chosen answer:** We chose "..." because "..."
+
+> 💬 If you want to change this decision, reply with: `Correction: [letter or answer]`
+```
+
+**For unresolved technical questions** (insufficient project context), Claude posts:
+
+```
+<!-- status:UNANSWERED -->
+**Technical question detected:** "..."
+
+**Possible answers:** A. "..." B. "..." C. "..."
+
+⚠️ Unresolved — requires input from the development team.
+
+> 💬 To answer, comment with: `Answer: [letter or answer]`
+```
+
+The dev team answers by commenting on the PR with `Answer: B` (or whichever option). On the next `/continue` run, Claude picks up that answer and continues.
+
+### Comment lifecycle (pr-comments skill)
+
+Comments are tracked via invisible HTML markers embedded in the comment body:
+- `<!-- status:UNANSWERED -->` — pending, will be processed by `/continue`
+- `<!-- status:ANSWERED -->` — processed, will be ignored in future runs
+
+`/pr-comments pending` returns all `UNANSWERED` bot comments. `/pr-comments resolve` rewrites them to `ANSWERED` after processing.
 
 ### Key workflow steps
 

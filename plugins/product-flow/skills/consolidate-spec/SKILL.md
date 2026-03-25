@@ -34,7 +34,7 @@ Invoke `/speckit.clarify` with the context of the PR comments, applying the foll
 
 **Question classification** — before presenting each question, classify it:
 
-- **Non-technical** (ask the PM): business intent, priorities, user flow, terminology, functional scope.
+- **Non-technical** (ask the PM): business intent, priorities, user flow, terminology, functional scope. **NEVER resolve autonomously. Always surface to the PM and wait for their answer.**
 - **Technical** (resolve autonomously): architecture, performance, security, integrations, data model, infrastructure constraints, implementation patterns.
 
 **For technical questions**, do NOT ask the PM. Instead:
@@ -59,7 +59,8 @@ If during the previous step there were technical questions, add **one individual
 For each question the AI was able to answer:
 
 ```bash
-gh pr comment --body "**Technical question detected:** \"[identified question]\"
+gh pr comment --body "<!-- status:ANSWERED -->
+**Technical question detected:** \"[identified question]\"
 
 **Proposed answers:** A. \"[option A]\" B. \"[option B]\" C. \"[option C]\"
 
@@ -71,7 +72,8 @@ gh pr comment --body "**Technical question detected:** \"[identified question]\"
 For each question the AI was unable to resolve:
 
 ```bash
-gh pr comment --body "**Technical question detected:** \"[identified question]\"
+gh pr comment --body "<!-- status:UNANSWERED -->
+**Technical question detected:** \"[identified question]\"
 
 **Possible answers:** A. \"[option A]\" B. \"[option B]\" C. \"[option C]\"
 
@@ -90,11 +92,11 @@ git commit -m "docs: update spec with team feedback"
 git push origin HEAD
 ```
 
-### 7. Acknowledge processed comments
+### 7. Resolve processed comments
 
-Invoke `/pr-comments ack` passing for each comment what was done (change applied, decision taken, or reason it was not applied).
+Invoke `/pr-comments resolve` passing the IDs of all bot comments that had `UNANSWERED` status and have now been addressed.
 
-**Wait for `/pr-comments ack` to finish before continuing.**
+**Wait for `/pr-comments resolve` to finish before continuing.**
 
 ### 8. Update PR history
 
