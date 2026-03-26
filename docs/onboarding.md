@@ -103,9 +103,9 @@ Claude may post comments on the PR like this:
 >
 > **Autonomously chosen answer:** We chose Redis with TTL of 5 minutes because…
 >
-> 💬 If you want to change this decision, reply with: `Correction: [your answer]`
+> 💬 To change this decision, add a new comment: `Question 3. Correction: [your answer]`
 
-You don't need to act on these unless you want to change the decision.
+You don't need to act on these unless you want to change the decision. If you do, add a **new comment** to the PR (not a reply) with the question number. For example: `Question 3. Correction: I prefer option A`.
 
 ---
 

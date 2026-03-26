@@ -38,6 +38,13 @@ Given that feature description, do this:
 
 2. **Check for existing branches before creating new one**:
 
+   **FIRST**: Run `git branch --show-current`. If the current branch already matches the feature branch pattern `[0-9]+-*` (e.g., `1-user-auth`, `42-fix-payments`):
+   - Set `BRANCH_NAME` = current branch name
+   - Set `SPEC_FILE` = `specs/$BRANCH_NAME/spec.md`
+   - **Skip steps 2a–2d entirely** and go directly to step 3.
+
+   Otherwise, continue with branch creation:
+
    a. First, fetch all remote branches to ensure we have the latest information:
 
       ```bash
@@ -156,37 +163,20 @@ Given that feature description, do this:
       - **If [NEEDS CLARIFICATION] markers remain**:
         1. Extract all [NEEDS CLARIFICATION: ...] markers from the spec
         2. **LIMIT CHECK**: If more than 3 markers exist, keep only the 3 most critical (by scope/security/UX impact) and make informed guesses for the rest
-        3. For each clarification needed (max 3), present options to user in this format:
-
-           ```markdown
-           ## Question [N]: [Topic]
-
-           **Context**: [Quote relevant spec section]
-
-           **What we need to know**: [Specific question from NEEDS CLARIFICATION marker]
-
-           **Suggested Answers**:
-
-           | Option | Answer | Implications |
-           |--------|--------|--------------|
-           | A      | [First suggested answer] | [What this means for the feature] |
-           | B      | [Second suggested answer] | [What this means for the feature] |
-           | C      | [Third suggested answer] | [What this means for the feature] |
-           | Custom | Provide your own answer | [Explain how to provide custom input] |
-
-           **Your choice**: _[Wait for user response]_
-           ```
-
-        4. **CRITICAL - Table Formatting**: Ensure markdown tables are properly formatted:
-           - Use consistent spacing with pipes aligned
-           - Each cell should have spaces around content: `| Content |` not `|Content|`
-           - Header separator must have at least 3 dashes: `|--------|`
-           - Test that the table renders correctly in markdown preview
-        5. Number questions sequentially (Q1, Q2, Q3 - max 3 total)
-        6. Present all questions together before waiting for responses
-        7. Wait for user to respond with their choices for all questions (e.g., "Q1: A, Q2: Custom - [details], Q3: B")
-        8. Update the spec by replacing each [NEEDS CLARIFICATION] marker with the user's selected or provided answer
-        9. Re-run validation after all clarifications are resolved
+        3. **Classify each marker** as Technical or Product:
+           - **Technical** (authentication, authorisation, security, compliance, data retention, integration patterns, infrastructure): resolve autonomously using project context, `.agents/rules/base.md`, and industry standards. For each, invoke `/pr-comments write`:
+             - Resolved: `type: technical`, `status: ANSWERED`, body with chosen answer and reasoning.
+             - Unresolved: `type: technical`, `status: UNANSWERED`, body with possible options.
+             - Do NOT include technical markers in the AskUserQuestion call.
+           - **Product** (business intent, functional scope, user flows, terminology, acceptance criteria): collect these (max 3) and present via **AskUserQuestion** in a single call:
+             - `question`: the specific question from the marker, with brief context prepended if needed. Must end with "?"
+             - `header`: short topic label max 12 chars (e.g. "Scope", "User roles", "Auth")
+             - `options`: 2–4 suggested answers. Place the best-practice default **first** and append `" (Recommended)"` to its label. Each option's `description` = implications for the feature.
+             - `multiSelect`: false
+             - The tool adds "Other" automatically for custom answers.
+        4. Wait for the user's answers via the tool response (product questions only).
+        5. Update the spec by replacing each [NEEDS CLARIFICATION] marker with the resolved answer (auto or user-provided).
+        6. Re-run validation after all clarifications are resolved
 
    d. **Update Checklist**: After each validation iteration, update the checklist file with current pass/fail status
 

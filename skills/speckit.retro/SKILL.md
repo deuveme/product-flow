@@ -120,48 +120,59 @@ For each artifact that needs a change, classify the decision type and handle acc
 
 #### Product decisions (`spec.md` — requirements, user stories, acceptance criteria)
 
-Present a numbered questionnaire to the PM before making any changes:
+Use the **AskUserQuestion** tool to present all product findings to the PM before making any changes. Batch up to 4 questions per call (make multiple calls if there are more than 4 items). For each finding:
 
-```
-📋 I found the following items in the spec that need review:
+- `question`: describe the issue and ask what to do, ending with "?"
+- `header`: short topic label max 12 chars (e.g. "Spec scope", "User flow")
+- `options`: 2–4 choices. First option = "Accept proposed change" (with the proposed text as description). Last option = "Leave as is". Add alternatives in between if relevant.
+- `multiSelect`: false
 
-1. [Description of issue] — Proposed change: "[proposed text]"
-   a) Accept proposed change
-   b) [Alternative]
-   c) Leave as is
+The tool adds "Other" automatically for custom input.
 
-2. ...
+Wait for the PM's answers before proceeding. Once all answers are received:
 
-Reply with the number and letter for each item (e.g. "1a, 2c").
-```
+1. Update `spec.md` with the agreed changes.
+2. Post **one individual comment** per item to the PR using `/pr-comments write` with:
+   - `type`: `product`
+   - `status`: `ANSWERED`
+   - `body`:
+     ```
+     **Retro finding:** "[description of issue]"
 
-Wait for the PM's answers before updating `spec.md`.
+     **Question asked to PM:** [what was asked]
+
+     **PM answer:** [the answer received]
+
+     **Change applied:** [what was updated in spec.md, or "no change" if left as is]
+     ```
 
 #### Technical decisions (`plan.md`, `data-model.md`, `contracts/`, `constitution.md`)
 
-For each item, post **one individual comment** to the PR:
+For each item, attempt to resolve it autonomously using project context, existing code, `.agents/rules/base.md`, and industry standards. Then post **one individual comment** to the PR:
 
-If the AI can resolve it:
-```bash
-gh pr comment --body "**Retro finding:** \"[description of issue]\"
+If the AI can resolve it, invoke `/pr-comments write` with:
+- `type`: `technical`
+- `status`: `ANSWERED`
+- `body`:
+  ```
+  **Retro finding:** "[description of issue]"
 
-**Proposed change:** [concrete proposed update]
+  **Proposed change:** [concrete proposed update]
 
-**Reasoning:** [brief explanation]
+  **Reasoning:** [brief explanation]
+  ```
 
-> 💬 If you want to change this decision, reply with: \`Correction: [alternative]\`"
-```
+If the AI cannot resolve it, invoke `/pr-comments write` with:
+- `type`: `technical`
+- `status`: `UNANSWERED`
+- `body`:
+  ```
+  **Retro finding:** "[description of issue]"
 
-If the AI cannot resolve it:
-```bash
-gh pr comment --body "**Retro finding:** \"[description of issue]\"
+  **Possible approaches:** A. "[option A]" B. "[option B]"
 
-**Possible approaches:** A. \"[option A]\" B. \"[option B]\"
-
-⚠️ **Unresolved — requires input from the development team.**
-
-> 💬 To answer, comment with: \`Answer: [letter or approach]\`"
-```
+  ⚠️ **Unresolved — requires input from the development team.**
+  ```
 
 After posting, apply the proposed changes to the technical artifacts immediately (do not wait for team response — corrections from the team will be applied in the next `/continue` or `/plan` run).
 

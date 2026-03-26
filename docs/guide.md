@@ -57,7 +57,7 @@ PM commands have no logic. They delegate completely to internal engines and only
 
 | Command | Internal call chain |
 |---|---|
-| `/start` | `speckit.specify` → `speckit.retro` |
+| `/start` | create branch + Draft PR → `speckit.specify` → `speckit.retro` |
 | `/continue` | state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` (dispatched by state machine) |
 | `/build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` → `speckit.implement.withTDD` → `praxis.test-desiderata`) |
 | `/submit` | git add/commit/push |
@@ -157,38 +157,48 @@ When `/continue` processes comments on the PR, it classifies each one before act
 **For autonomously resolved technical questions**, Claude posts a comment on the PR:
 
 ```
-<!-- status:ANSWERED -->
+<!-- id:q3 type:technical status:ANSWERED -->
 **Technical question detected:** "..."
 
 **Proposed answers:** A. "..." B. "..." C. "..."
 
 **Autonomously chosen answer:** We chose "..." because "..."
 
-> 💬 If you want to change this decision, reply with: `Correction: [letter or answer]`
+> 💬 To change this decision, add a new comment: `Question 3. Correction: [letter or answer]`
 ```
 
 **For unresolved technical questions** (insufficient project context), Claude posts:
 
 ```
-<!-- status:UNANSWERED -->
+<!-- id:q4 type:technical status:UNANSWERED -->
 **Technical question detected:** "..."
 
 **Possible answers:** A. "..." B. "..." C. "..."
 
 ⚠️ Unresolved — requires input from the development team.
 
-> 💬 To answer, comment with: `Answer: [letter or answer]`
+> 💬 To answer, add a new comment: `Question 4. Answer: [letter or answer]`
 ```
 
-The dev team answers by commenting on the PR with `Answer: B` (or whichever option). On the next `/continue` run, Claude picks up that answer and continues.
+To respond, add a **new top-level comment** to the PR (GitHub does not support direct replies). The format is flexible — all of these are valid:
+
+```
+Question 4. Answer: B
+Q4: B
+Question 4 - Answer: go with option B because...
+```
+
+Multiple responses for the same question are allowed — the last one wins. A single comment can respond to multiple questions, one per line.
+
+On the next `/continue` run, Claude picks up those answers and continues.
 
 ### Comment lifecycle (pr-comments skill)
 
-Comments are tracked via invisible HTML markers embedded in the comment body:
-- `<!-- status:UNANSWERED -->` — pending, will be processed by `/continue`
-- `<!-- status:ANSWERED -->` — processed, will be ignored in future runs
+Bot comments are tracked via invisible HTML markers on the first line:
+- `<!-- id:q<N> type:technical|product status:UNANSWERED -->` — pending, will be processed by `/continue`
+- `<!-- id:q<N> type:technical|product status:ANSWERED -->` — processed, will be ignored in future runs
 
-`/pr-comments pending` returns all `UNANSWERED` bot comments. `/pr-comments resolve` rewrites them to `ANSWERED` after processing.
+All bot comments are written via `/pr-comments write`, which handles numbering automatically. `/pr-comments pending` returns all `UNANSWERED` comments. `/pr-comments resolve` rewrites them to `ANSWERED` after processing.
 
 ### Key workflow steps
 

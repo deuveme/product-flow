@@ -26,7 +26,7 @@ Invoke `/pr-comments pending`.
 
 If it returns `NO_PENDING_COMMENTS`: ERROR "There are no pending comments on the PR. Share the PR with the team and wait for their feedback."
 
-Record the returned comments internally — they will be used as context in step 4. Pay special attention to comments starting with `Correction:` or `Answer:`, which are responses to previous technical decisions.
+Also invoke `/pr-comments read-answers`. Record both the pending comments and the user responses internally — they will be used as context in step 4. User responses follow the format `Question <N>. Correction:` or `Question <N>. Answer:` — for each question, only the last response counts.
 
 ### 4. Delegate to speckit.clarify
 
@@ -56,31 +56,29 @@ If it produces an ERROR: propagate and stop.
 
 If during the previous step there were technical questions, add **one individual comment per question** to the PR.
 
-For each question the AI was able to answer:
+For each question the AI was able to answer, invoke `/pr-comments write` with:
+- `type`: `technical`
+- `status`: `ANSWERED`
+- `body`:
+  ```
+  **Technical question detected:** "[identified question]"
 
-```bash
-gh pr comment --body "<!-- status:ANSWERED -->
-**Technical question detected:** \"[identified question]\"
+  **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
 
-**Proposed answers:** A. \"[option A]\" B. \"[option B]\" C. \"[option C]\"
+  **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
+  ```
 
-**Autonomously chosen answer:** We chose \"[chosen option]\" because \"[brief reasoning]\"
+For each question the AI was unable to resolve, invoke `/pr-comments write` with:
+- `type`: `technical`
+- `status`: `UNANSWERED`
+- `body`:
+  ```
+  **Technical question detected:** "[identified question]"
 
-> 💬 If you want to change this decision, reply with: \`Correction: [letter or answer]\`"
-```
+  **Possible answers:** A. "[option A]" B. "[option B]" C. "[option C]"
 
-For each question the AI was unable to resolve:
-
-```bash
-gh pr comment --body "<!-- status:UNANSWERED -->
-**Technical question detected:** \"[identified question]\"
-
-**Possible answers:** A. \"[option A]\" B. \"[option B]\" C. \"[option C]\"
-
-⚠️ **Unresolved — requires input from the development team.**
-
-> 💬 To answer, comment with: \`Answer: [letter or answer]\`"
-```
+  ⚠️ **Unresolved — requires input from the development team.**
+  ```
 
 If there were no technical questions at all, skip this step entirely.
 
