@@ -8,16 +8,16 @@ description: "Advances to the next step in the workflow. Reads the current state
 
 | State | Sub-skill invoked |
 |-------|-------------------|
-| `SPEC_REVIEW` | `/consolidate-spec` |
-| `PLAN_PENDING` | `/plan` |
-| `PLAN_REVIEW` | `/consolidate-plan` |
+| `SPEC_REVIEW` | `/product-flow:consolidate-spec` |
+| `PLAN_PENDING` | `/product-flow:plan` |
+| `PLAN_REVIEW` | `/product-flow:consolidate-plan` |
 
 If a transition requires work that has no dedicated sub-skill, stop and surface the gap — do not implement it inline.
 
 ## State Machine
 
 ```
-                     /start
+                     /product-flow:start
                        │
                        ▼
                ┌──────────────┐
@@ -32,7 +32,7 @@ If a transition requires work that has no dedicated sub-skill, stop and surface 
                        │ (auto-proceed)
                        ▼
                ┌──────────────┐
-               │ PLAN_PENDING │◄─── auto: /plan runs here
+               │ PLAN_PENDING │◄─── auto: /product-flow:plan runs here
                └──────┬───────┘
           has comments │  no comments
                        ▼         ▼
@@ -43,7 +43,7 @@ If a transition requires work that has no dedicated sub-skill, stop and surface 
                        │ (auto-proceed)
                        ▼
                ┌──────────────┐
-               │ BUILD_READY  │──── blocked: redirect to /build
+               │ BUILD_READY  │──── blocked: redirect to /product-flow:build
                └──────────────┘
 ```
 
@@ -61,8 +61,8 @@ git branch --show-current
 gh pr view --json number,state,url,body
 ```
 
-- If the branch is `main` or `master`: ERROR "There is no active feature. Use /start to start a new one."
-- If there is no PR: ERROR "There is no open PR. Did you run /start?"
+- If the branch is `main` or `master`: ERROR "There is no active feature. Use /product-flow:start to start a new one."
+- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
 
 ### 2. Determine current state
 
@@ -81,7 +81,7 @@ Map to state:
 | ✓ | ✓ | ✓ | `PLAN_REVIEW` |
 | ✓ | ✓ | ✗ | `BUILD_READY` |
 
-For `has_comments`: invoke `/pr-comments pending`. If it returns `NO_PENDING_COMMENTS`, `has_comments = false`. Otherwise `has_comments = true`.
+For `has_comments`: invoke `/product-flow:pr-comments pending`. If it returns `NO_PENDING_COMMENTS`, `has_comments = false`. Otherwise `has_comments = true`.
 
 ### 3. Display current state
 
@@ -106,7 +106,7 @@ Examples:
 
 ```
 📍 State: BUILD_READY
-   The plan is ready. /continue has no further transitions.
+   The plan is ready. /product-flow:continue has no further transitions.
 ```
 
 ### 4. Execute state transition
@@ -120,7 +120,7 @@ Examples:
 Starting...
 ```
 
-Invoke `/consolidate-spec`.
+Invoke `/product-flow:consolidate-spec`.
 Wait for it to finish. If ERROR: propagate and stop.
 
 Then continue automatically to `PLAN_PENDING` transition below.
@@ -134,7 +134,7 @@ Then continue automatically to `PLAN_PENDING` transition below.
 Starting...
 ```
 
-Invoke `/plan`.
+Invoke `/product-flow:plan`.
 Wait for it to finish. If ERROR: propagate and stop.
 
 After generating, show:
@@ -145,7 +145,7 @@ After generating, show:
 ─────────────────────────────────────────
 ➡️  NEXT STEP
 ─────────────────────────────────────────
-Run /continue to proceed to build,
+Run /product-flow:continue to proceed to build,
 or add comments on the PR first if changes are needed.
 ─────────────────────────────────────────
 ```
@@ -159,7 +159,7 @@ or add comments on the PR first if changes are needed.
 Starting...
 ```
 
-Invoke `/consolidate-plan`.
+Invoke `/product-flow:consolidate-plan`.
 Wait for it to finish. If ERROR: propagate and stop.
 
 Then continue automatically to `BUILD_READY`.
@@ -168,12 +168,12 @@ Then continue automatically to `BUILD_READY`.
 
 ```
 📍 State: BUILD_READY
-   The plan is ready. /continue has no further transitions.
+   The plan is ready. /product-flow:continue has no further transitions.
 
 ─────────────────────────────────────────
 ➡️  NEXT STEP
 ─────────────────────────────────────────
-Run: /build
+Run: /product-flow:build
 ─────────────────────────────────────────
 ```
 
@@ -181,7 +181,7 @@ Run: /build
 
 ### 5. Session close
 
-Run the `/check-and-clear` logic to check the context and guide the user if they need to clear the session.
+Run the `/product-flow:check-and-clear` logic to check the context and guide the user if they need to clear the session.
 
 - **🟢 / 🟡**: Show nothing.
 - **🟠**: Show at the end of the report:

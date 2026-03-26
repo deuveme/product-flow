@@ -9,7 +9,7 @@ $ARGUMENTS
 ```
 
 Feature description in natural language. **Required.**
-If empty: ERROR "Describe the feature. Example: /start I want users to be able to reset their password"
+If empty: ERROR "Describe the feature. Example: /product-flow:start I want users to be able to reset their password"
 
 ---
 
@@ -23,7 +23,7 @@ git branch --show-current
 ```
 
 - If there are uncommitted changes: ERROR "There are unsaved changes. Save or discard them before starting a new feature."
-- If the current branch is not `main` or `master`: ERROR "You must be on the main branch. Run /status to see where you are."
+- If the current branch is not `main` or `master`: ERROR "You must be on the main branch. Run /product-flow:status to see where you are."
 
 ### 2. Generate branch identity and open Draft PR
 
@@ -101,7 +101,7 @@ Save the returned PR URL as `PR_URL` and PR number as `PR_NUMBER`.
 
 ### 3. Write spec (delegate to speckit.specify)
 
-Invoke `/speckit.specify` passing `$ARGUMENTS` as the feature description, applying the following question management rules:
+Invoke `/product-flow:speckit.specify` passing `$ARGUMENTS` as the feature description, applying the following question management rules:
 
 **Note**: The branch `$BRANCH_NAME` has already been created and pushed. When `speckit.specify` runs, it will detect the existing feature branch and skip branch creation, proceeding directly to writing the spec.
 
@@ -158,7 +158,7 @@ EOF
 
 If during step 3 there were technical questions, add **one individual comment per question** to the PR.
 
-For each question the AI was able to answer, invoke `/pr-comments write` with:
+For each question the AI was able to answer, invoke `/product-flow:pr-comments write` with:
 - `type`: `technical`
 - `status`: `ANSWERED`
 - `body`:
@@ -170,7 +170,7 @@ For each question the AI was able to answer, invoke `/pr-comments write` with:
   **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
   ```
 
-For each question the AI was unable to resolve, invoke `/pr-comments write` with:
+For each question the AI was unable to resolve, invoke `/product-flow:pr-comments write` with:
 - `type`: `technical`
 - `status`: `UNANSWERED`
 - `body`:
@@ -186,7 +186,7 @@ If there were no technical questions at all, skip this step entirely.
 
 ### 6. Phase retro
 
-Invoke `/speckit.retro` with context: "after specify phase".
+Invoke `/product-flow:speckit.retro` with context: "after specify phase".
 
 **Wait for `speckit.retro` to finish before continuing.**
 If it returns a **Blocked** status: do not show the final report until the user resolves the blockers.
@@ -207,13 +207,13 @@ Share the PR with the development team
 so they can review the spec.
 
 When they approve or comment, run:
-/continue
+/product-flow:continue
 ─────────────────────────────────────────
 ```
 
 ### Session close
 
-Run the `/check-and-clear` logic to check the context and guide the user if they need to clear the session.
+Run the `/product-flow:check-and-clear` logic to check the context and guide the user if they need to clear the session.
 
 - **🟢 / 🟡**: Show nothing.
 - **🟠**: Show at the end of the report:

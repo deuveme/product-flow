@@ -1,6 +1,7 @@
 ---
 name: frontend-architecture
 description: Applies feature-based architecture for React frontends. Use when designing frontend structure, organizing components, hooks, and features, or when user mentions frontend architecture, React structure, or feature-based design.
+user_invocable: false
 ---
 icon: 🧩
 

@@ -26,7 +26,7 @@ gh pr view --json number,state,url,body,reviewDecision
 
 Verify in the PR body: `- [x] In code review`
 
-If not marked: ERROR "The code has not been delivered. Run /submit first."
+If not marked: ERROR "The code has not been delivered. Run /product-flow:submit first."
 
 ### 3. Gate: PR approved
 
@@ -100,7 +100,7 @@ This feature is complete.
 
 ### Session close
 
-Run the `/check-and-clear` logic to check the context and guide the user if they need to clear the session.
+Run the `/product-flow:check-and-clear` logic to check the context and guide the user if they need to clear the session.
 
 - **🟢 / 🟡**: Show nothing.
 - **🟠**: Show at the end of the report:

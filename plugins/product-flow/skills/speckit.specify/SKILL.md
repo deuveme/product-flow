@@ -1,5 +1,6 @@
 ---
 description: Create or update the feature specification from a natural language feature description.
+user_invocable: false
 handoffs:
   - label: Build Technical Plan
     agent: speckit.plan
@@ -20,7 +21,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Outline
 
-The text the user typed after `/speckit.specify` in the triggering message **is** the feature description. Assume you always have it available in this conversation even if `$ARGUMENTS` appears literally below. Do not ask the user to repeat it unless they provided an empty command.
+The text the user typed after `/product-flow:speckit.specify` in the triggering message **is** the feature description. Assume you always have it available in this conversation even if `$ARGUMENTS` appears literally below. Do not ask the user to repeat it unless they provided an empty command.
 
 Given that feature description, do this:
 
@@ -143,7 +144,7 @@ Given that feature description, do this:
 
       ## Notes
 
-      - Items marked incomplete require spec updates before `/speckit.clarify` or `/speckit.plan`
+      - Items marked incomplete require spec updates before `/product-flow:speckit.clarify` or `/product-flow:speckit.plan`
       ```
 
    b. **Run Validation Check**: Review the spec against each checklist item:
@@ -164,7 +165,7 @@ Given that feature description, do this:
         1. Extract all [NEEDS CLARIFICATION: ...] markers from the spec
         2. **LIMIT CHECK**: If more than 3 markers exist, keep only the 3 most critical (by scope/security/UX impact) and make informed guesses for the rest
         3. **Classify each marker** as Technical or Product:
-           - **Technical** (authentication, authorisation, security, compliance, data retention, integration patterns, infrastructure): resolve autonomously using project context, `.agents/rules/base.md`, and industry standards. For each, invoke `/pr-comments write`:
+           - **Technical** (authentication, authorisation, security, compliance, data retention, integration patterns, infrastructure): resolve autonomously using project context, `.agents/rules/base.md`, and industry standards. For each, invoke `/product-flow:pr-comments write`:
              - Resolved: `type: technical`, `status: ANSWERED`, body with chosen answer and reasoning.
              - Unresolved: `type: technical`, `status: UNANSWERED`, body with possible options.
              - Do NOT include technical markers in the AskUserQuestion call.
@@ -180,7 +181,7 @@ Given that feature description, do this:
 
    d. **Update Checklist**: After each validation iteration, update the checklist file with current pass/fail status
 
-7. Report completion with branch name, spec file path, checklist results, and readiness for the next phase (`/speckit.clarify` or `/speckit.plan`).
+7. Report completion with branch name, spec file path, checklist results, and readiness for the next phase (`/product-flow:speckit.clarify` or `/product-flow:speckit.plan`).
 
 **NOTE:** The script creates and checks out the new branch and initializes the spec file before writing.
 

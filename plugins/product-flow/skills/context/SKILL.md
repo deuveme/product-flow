@@ -37,4 +37,4 @@ The recommendation is mandatory and is always shown below the bar.
 
 ### 4. Show next step
 
-Show the next pending step in the workflow (same as `/status`) so that after a `/clear` the user knows exactly what to run.
+Show the next pending step in the workflow (same as `/product-flow:status`) so that after a `/clear` the user knows exactly what to run.

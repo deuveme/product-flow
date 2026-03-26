@@ -1,12 +1,13 @@
 ---
 description: "UTILITY — Checks the context and, if it is high, clears automatically."
+user_invocable: false
 ---
 
 ## Execution
 
 ### 1. Estimate current context
 
-Use the same logic as `/context` to calculate the percentage used.
+Use the same logic as `/product-flow:context` to calculate the percentage used.
 
 ### 2. Branch by level
 

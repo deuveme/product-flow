@@ -1,5 +1,6 @@
 ---
-description: "Internal — Called by /build. Breaks the plan down into tasks and creates GitHub issues."
+description: "Internal — Called by /product-flow:build. Breaks the plan down into tasks and creates GitHub issues."
+user_invocable: false
 ---
 
 ## Execution
@@ -11,8 +12,8 @@ git branch --show-current
 gh pr view --json number,state,url,body
 ```
 
-- If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /status."
-- If there is no PR: ERROR "There is no open PR. Did you run /start?"
+- If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /product-flow:status."
+- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
 
 ### 2. Gate: plan generated and pending comments resolved
 
@@ -20,25 +21,25 @@ Verify in the PR body:
 - `- [x] Spec created` ✓
 - `- [x] Plan generated` ✓
 
-Invoke `/pr-comments read-answers`. If it returns responses, apply them before delegating to `speckit.tasks`:
+Invoke `/product-flow:pr-comments read-answers`. If it returns responses, apply them before delegating to `speckit.tasks`:
 - `Question <N>. Correction:` responses → apply to `research.md` or `data-model.md`. Use the last response per question number.
 - `Question <N>. Answer:` responses → incorporate as additional context in the delegation. Use the last response per question number.
 
-Invoke `/pr-comments pending`. If it returns pending comments:
+Invoke `/product-flow:pr-comments pending`. If it returns pending comments:
 
 ```
 🚫 BLOCKED — Pending comments
 
 There are unanswered comments on the PR that must be resolved before generating the tasks.
 
-Address them and run /continue again.
+Address them and run /product-flow:continue again.
 ```
 
 **STOP.**
 
 ### 3. Delegate to speckit.tasks
 
-Invoke `/speckit.tasks`, applying the following technical decision management rules:
+Invoke `/product-flow:speckit.tasks`, applying the following technical decision management rules:
 
 **Autonomous resolution of ambiguities** — if during task generation questions arise about technical prioritisation, phase structure, task dependencies, or gaps in the available artifacts:
 
@@ -57,7 +58,7 @@ If it produces an ERROR: propagate and stop.
 
 ### 4. Delegate to speckit.taskstoissues
 
-Invoke `/speckit.taskstoissues`.
+Invoke `/product-flow:speckit.taskstoissues`.
 
 `speckit.taskstoissues` takes care of:
 - Reading `tasks.md`
@@ -71,7 +72,7 @@ If it produces an ERROR: propagate and stop.
 
 If during steps 3 or 4 there were technical decisions, add **one individual comment per decision** to the PR.
 
-For each decision the AI was able to make, invoke `/pr-comments write` with:
+For each decision the AI was able to make, invoke `/product-flow:pr-comments write` with:
 - `type`: `technical`
 - `status`: `ANSWERED`
 - `body`:
@@ -83,7 +84,7 @@ For each decision the AI was able to make, invoke `/pr-comments write` with:
   **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
   ```
 
-For each decision the AI was unable to resolve (also documented in `tasks.md`), invoke `/pr-comments write` with:
+For each decision the AI was unable to resolve (also documented in `tasks.md`), invoke `/product-flow:pr-comments write` with:
 - `type`: `technical`
 - `status`: `UNANSWERED`
 - `body`:
@@ -120,7 +121,7 @@ gh pr edit --body "<updated-body>"
 
 ### 8. Phase retro
 
-Invoke `/speckit.retro` with context: "after tasks phase".
+Invoke `/product-flow:speckit.retro` with context: "after tasks phase".
 
 **Wait for `speckit.retro` to finish before continuing.**
 If it returns a **Blocked** status: do not show the final report until the user resolves the blockers.
@@ -136,7 +137,7 @@ If it returns a **Blocked** status: do not show the final report until the user 
 
 ### Session close
 
-Run the `/check-and-clear` logic to check the context and guide the user if they need to clear the session.
+Run the `/product-flow:check-and-clear` logic to check the context and guide the user if they need to clear the session.
 
 - **🟢 / 🟡**: Show nothing.
 - **🟠**: Show at the end of the report:

@@ -1,6 +1,7 @@
 ---
 name: backend-architecture
 description: Applies Domain-Driven Design with hexagonal (ports & adapters) architecture. Use when designing backend application structure, separating domain from infrastructure, creating testable boundaries, or when user mentions DDD, ports, adapters, hexagonal, or clean architecture.
+user_invocable: false
 ---
 icon: 🏗️
 

@@ -1,5 +1,6 @@
 ---
-description: "Internal — Called by /continue. Integrates team feedback into the spec. Repeatable."
+description: "Internal — Called by /product-flow:continue. Integrates team feedback into the spec. Repeatable."
+user_invocable: false
 ---
 
 ## Execution
@@ -11,26 +12,26 @@ git branch --show-current
 gh pr view --json number,state,url,body
 ```
 
-- If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /status."
-- If there is no PR: ERROR "There is no open PR. Did you run /start?"
+- If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /product-flow:status."
+- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
 
 ### 2. Gate: spec created
 
 Verify in the PR body: `- [x] Spec created`
 
-If not marked: ERROR "The spec does not exist yet. Run /start first."
+If not marked: ERROR "The spec does not exist yet. Run /product-flow:start first."
 
 ### 3. Collect pending comments
 
-Invoke `/pr-comments pending`.
+Invoke `/product-flow:pr-comments pending`.
 
 If it returns `NO_PENDING_COMMENTS`: ERROR "There are no pending comments on the PR. Share the PR with the team and wait for their feedback."
 
-Also invoke `/pr-comments read-answers`. Record both the pending comments and the user responses internally — they will be used as context in step 4. User responses follow the format `Question <N>. Correction:` or `Question <N>. Answer:` — for each question, only the last response counts.
+Also invoke `/product-flow:pr-comments read-answers`. Record both the pending comments and the user responses internally — they will be used as context in step 4. User responses follow the format `Question <N>. Correction:` or `Question <N>. Answer:` — for each question, only the last response counts.
 
 ### 4. Delegate to speckit.clarify
 
-Invoke `/speckit.clarify` with the context of the PR comments, applying the following question management rules:
+Invoke `/product-flow:speckit.clarify` with the context of the PR comments, applying the following question management rules:
 
 **Question classification** — before presenting each question, classify it:
 
@@ -56,7 +57,7 @@ If it produces an ERROR: propagate and stop.
 
 If during the previous step there were technical questions, add **one individual comment per question** to the PR.
 
-For each question the AI was able to answer, invoke `/pr-comments write` with:
+For each question the AI was able to answer, invoke `/product-flow:pr-comments write` with:
 - `type`: `technical`
 - `status`: `ANSWERED`
 - `body`:
@@ -68,7 +69,7 @@ For each question the AI was able to answer, invoke `/pr-comments write` with:
   **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
   ```
 
-For each question the AI was unable to resolve, invoke `/pr-comments write` with:
+For each question the AI was unable to resolve, invoke `/product-flow:pr-comments write` with:
 - `type`: `technical`
 - `status`: `UNANSWERED`
 - `body`:
@@ -92,9 +93,9 @@ git push origin HEAD
 
 ### 7. Resolve processed comments
 
-Invoke `/pr-comments resolve` passing the IDs of all bot comments that had `UNANSWERED` status and have now been addressed.
+Invoke `/product-flow:pr-comments resolve` passing the IDs of all bot comments that had `UNANSWERED` status and have now been addressed.
 
-**Wait for `/pr-comments resolve` to finish before continuing.**
+**Wait for `/product-flow:pr-comments resolve` to finish before continuing.**
 
 ### 8. Update PR history
 
@@ -109,7 +110,7 @@ gh pr edit --body "<updated-body>"
 
 ### 9. Phase retro
 
-Invoke `/speckit.retro` with context: "after clarify phase".
+Invoke `/product-flow:speckit.retro` with context: "after clarify phase".
 
 **Wait for `speckit.retro` to finish before continuing.**
 If it returns a **Blocked** status: do not show the final report until the user resolves the blockers.
@@ -122,7 +123,7 @@ If it returns a **Blocked** status: do not show the final report until the user 
 
 ### Session close
 
-Run the `/check-and-clear` logic to check the context and guide the user if they need to clear the session.
+Run the `/product-flow:check-and-clear` logic to check the context and guide the user if they need to clear the session.
 
 - **🟢 / 🟡**: Show nothing.
 - **🟠**: Show at the end of the report:

@@ -1,10 +1,11 @@
 ---
-description: "Internal — Called by /build. Validates requirements quality before implementation starts."
+description: "Internal — Called by /product-flow:build. Validates requirements quality before implementation starts."
+user_invocable: false
 ---
 
 ## Purpose
 
-Generates a checklist that validates that the spec, plan and tasks are well written, complete and free of ambiguities. If critical issues are found (gaps, conflicts, or ambiguities that would break implementation), `/build` will stop and ask the PM to resolve them before continuing.
+Generates a checklist that validates that the spec, plan and tasks are well written, complete and free of ambiguities. If critical issues are found (gaps, conflicts, or ambiguities that would break implementation), `/product-flow:build` will stop and ask the PM to resolve them before continuing.
 
 Remember: the checklist validates the **requirements**, not the code. It is a "unit test of the spec written in English".
 
@@ -19,8 +20,8 @@ git branch --show-current
 gh pr view --json number,state,url,body
 ```
 
-- If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /status."
-- If there is no PR: ERROR "There is no open PR. Did you run /start?"
+- If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /product-flow:status."
+- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
 
 ### 2. Verify there is something to review
 
@@ -30,11 +31,11 @@ Confirm that at least `spec.md` exists in the feature directory.
 ls specs/<branch-directory>/
 ```
 
-If there is no spec: ERROR "There is no spec to review. Run /start first."
+If there is no spec: ERROR "There is no spec to review. Run /product-flow:start first."
 
 ### 3. Delegate to speckit.checklist
 
-Invoke `/speckit.checklist` with the context of the current phase.
+Invoke `/product-flow:speckit.checklist` with the context of the current phase.
 
 `speckit.checklist` takes care of:
 - Detecting which artifacts are available (spec, plan, tasks)
@@ -65,7 +66,7 @@ or [Conflict] before continuing.
 
 ### Session close
 
-Run the `/check-and-clear` logic to check the context and guide the user if they need to clear the session.
+Run the `/product-flow:check-and-clear` logic to check the context and guide the user if they need to clear the session.
 
 - **🟢 / 🟡**: Show nothing.
 - **🟠**: Show at the end of the report:

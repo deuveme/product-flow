@@ -4,6 +4,7 @@ description: >
   (specify, plan, tasks, implement) or after completing a task group. Reviews
   learnings, simplifies generated code, and checks whether earlier artifacts
   need updating before proceeding.
+user_invocable: false
 ---
 
 ## User Input
@@ -20,7 +21,7 @@ the review. Otherwise, infer the current phase from available artifacts.
 
 There are two retro modes. Run the appropriate one based on context:
 
-- **Micro-retro** — after completing a single task (during `/speckit.implement`)
+- **Micro-retro** — after completing a single task (during `/product-flow:speckit.implement`)
 - **Phase retro** — after completing a full SpecKit phase (specify, plan, tasks,
   implement, or a user story block)
 
@@ -132,7 +133,7 @@ The tool adds "Other" automatically for custom input.
 Wait for the PM's answers before proceeding. Once all answers are received:
 
 1. Update `spec.md` with the agreed changes.
-2. Post **one individual comment** per item to the PR using `/pr-comments write` with:
+2. Post **one individual comment** per item to the PR using `/product-flow:pr-comments write` with:
    - `type`: `product`
    - `status`: `ANSWERED`
    - `body`:
@@ -150,7 +151,7 @@ Wait for the PM's answers before proceeding. Once all answers are received:
 
 For each item, attempt to resolve it autonomously using project context, existing code, `.agents/rules/base.md`, and industry standards. Then post **one individual comment** to the PR:
 
-If the AI can resolve it, invoke `/pr-comments write` with:
+If the AI can resolve it, invoke `/product-flow:pr-comments write` with:
 - `type`: `technical`
 - `status`: `ANSWERED`
 - `body`:
@@ -162,7 +163,7 @@ If the AI can resolve it, invoke `/pr-comments write` with:
   **Reasoning:** [brief explanation]
   ```
 
-If the AI cannot resolve it, invoke `/pr-comments write` with:
+If the AI cannot resolve it, invoke `/product-flow:pr-comments write` with:
 - `type`: `technical`
 - `status`: `UNANSWERED`
 - `body`:
@@ -174,7 +175,7 @@ If the AI cannot resolve it, invoke `/pr-comments write` with:
   ⚠️ **Unresolved — requires input from the development team.**
   ```
 
-After posting, apply the proposed changes to the technical artifacts immediately (do not wait for team response — corrections from the team will be applied in the next `/continue` or `/plan` run).
+After posting, apply the proposed changes to the technical artifacts immediately (do not wait for team response — corrections from the team will be applied in the next `/product-flow:continue` or `/product-flow:plan` run).
 
 #### Internal decisions (`tasks.md`)
 

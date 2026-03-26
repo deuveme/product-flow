@@ -82,7 +82,7 @@ gh auth status
 gh pr list
 ```
 
-The `speckit.taskstoissues` skill (called by `/build`) requires the **GitHub MCP server** to create issues. Install it via Claude Code:
+The `speckit.taskstoissues` skill (called by `/product-flow:build`) requires the **GitHub MCP server** to create issues. Install it via Claude Code:
 
 ```
 /mcp add github

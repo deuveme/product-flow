@@ -31,7 +31,7 @@ During login:
   4. Copy the code shown in the terminal
   5. The browser will open — paste the code and click Continue
 
-Then run /status again.
+Then run /product-flow:status again.
 ```
 
 If the result contains `GH_NOT_AUTHENTICATED`, stop execution and show:
@@ -49,7 +49,7 @@ During login:
   4. Copy the code shown in the terminal
   5. The browser will open — paste the code and click Continue
 
-Then run /status again.
+Then run /product-flow:status again.
 ```
 
 ### 1. Gather status
@@ -67,7 +67,7 @@ gh pr view --json number,title,state,isDraft,url,body,reviewDecision 2>/dev/null
 📍 You are on the main branch, with no active feature.
 
 To start a feature:
-  /start <description>
+  /product-flow:start <description>
 ```
 
 **Case: on a feature branch with PR**
@@ -92,22 +92,22 @@ PROGRESS:
   🔒 Published
 
 ➡️  NEXT
-    Run: /continue
+    Run: /product-flow:continue
 ```
 
-Note: team approval is only required at `/deploy-to-stage`. Pending comments on the PR will be addressed automatically by `/continue` before advancing.
+Note: team approval is only required at `/product-flow:deploy-to-stage`. Pending comments on the PR will be addressed automatically by `/product-flow:continue` before advancing.
 
 ### 3. Unsaved changes
 
 If `git status --porcelain` returns changes:
 ```
 ⚠️  There are unsaved changes on your branch.
-    They will be saved on the next /submit.
+    They will be saved on the next /product-flow:submit.
 ```
 
 ### Session close
 
-Run the `/check-and-clear` logic to check the context and guide the user if they need to clear the session.
+Run the `/product-flow:check-and-clear` logic to check the context and guide the user if they need to clear the session.
 
 - **🟢 / 🟡**: Show nothing.
 - **🟠**: Show at the end of the report:

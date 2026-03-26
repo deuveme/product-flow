@@ -1,5 +1,6 @@
 ---
 description: Identify underspecified areas in the current feature spec by asking up to 5 highly targeted clarification questions and encoding answers back into the spec.
+user_invocable: false
 handoffs:
   - label: Build Technical Plan
     agent: speckit.plan
@@ -18,7 +19,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 Goal: Detect and reduce ambiguity or missing decision points in the active feature specification and record the clarifications directly in the spec file.
 
-Note: This clarification workflow is expected to run (and be completed) BEFORE invoking `/speckit.plan`. If the user explicitly states they are skipping clarification (e.g., exploratory spike), you may proceed, but must warn that downstream rework risk increases.
+Note: This clarification workflow is expected to run (and be completed) BEFORE invoking `/product-flow:speckit.plan`. If the user explicitly states they are skipping clarification (e.g., exploratory spike), you may proceed, but must warn that downstream rework risk increases.
 
 Execution steps:
 
@@ -26,7 +27,7 @@ Execution steps:
    - `FEATURE_DIR`
    - `FEATURE_SPEC`
    - (Optionally capture `IMPL_PLAN`, `TASKS` for future chained flows.)
-   - If JSON parsing fails, abort and instruct user to re-run `/speckit.specify` or verify feature branch environment.
+   - If JSON parsing fails, abort and instruct user to re-run `/product-flow:speckit.specify` or verify feature branch environment.
    - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
 2. Load the current spec file. Perform a structured ambiguity & coverage scan using this taxonomy. For each category, mark status: Clear / Partial / Missing. Produce an internal coverage map used for prioritization (do not output raw map unless no questions will be asked).
@@ -103,7 +104,7 @@ Execution steps:
     - Process EXACTLY ONE question at a time.
     - **If the question is Technical**:
        - Attempt to resolve it using project context: existing code, `.agents/rules/base.md`, project stack, industry standards.
-       - If resolved: record the decision internally and invoke `/pr-comments write` with:
+       - If resolved: record the decision internally and invoke `/product-flow:pr-comments write` with:
          - `type`: `technical`, `status`: `ANSWERED`
          - `body`:
            ```
@@ -113,7 +114,7 @@ Execution steps:
 
            **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
            ```
-       - If unresolved: record it internally and invoke `/pr-comments write` with:
+       - If unresolved: record it internally and invoke `/product-flow:pr-comments write` with:
          - `type`: `technical`, `status`: `UNANSWERED`
          - `body`:
            ```
@@ -173,7 +174,7 @@ Execution steps:
 
 7. Write the updated spec back to `FEATURE_SPEC`.
 
-8. Record clarifications in the PR: after the questioning loop ends, invoke `/pr-comments write` once per answered question with:
+8. Record clarifications in the PR: after the questioning loop ends, invoke `/product-flow:pr-comments write` once per answered question with:
    - `type`: `product`, `status`: `ANSWERED`
    - `body`:
      ```
@@ -191,13 +192,13 @@ If no questions were asked (no critical ambiguities found), skip this step entir
    - Path to updated spec.
    - Sections touched (list names).
    - Coverage summary table listing each taxonomy category with Status: Resolved (was Partial/Missing and addressed), Deferred (exceeds question quota or better suited for planning), Clear (already sufficient), Outstanding (still Partial/Missing but low impact).
-   - If any Outstanding or Deferred remain, recommend whether to proceed to `/speckit.plan` or run `/speckit.clarify` again later post-plan.
+   - If any Outstanding or Deferred remain, recommend whether to proceed to `/product-flow:speckit.plan` or run `/product-flow:speckit.clarify` again later post-plan.
    - Suggested next command.
 
 Behavior rules:
 
 - If no meaningful ambiguities found (or all potential questions would be low-impact), respond: "No critical ambiguities detected worth formal clarification." and suggest proceeding.
-- If spec file missing, instruct user to run `/speckit.specify` first (do not create a new spec here).
+- If spec file missing, instruct user to run `/product-flow:speckit.specify` first (do not create a new spec here).
 - Never exceed 5 total asked questions (clarification retries for a single question do not count as new questions).
 - Avoid speculative tech stack questions unless the absence blocks functional clarity.
 - Respect user early termination signals ("stop", "done", "proceed").

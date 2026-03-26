@@ -11,8 +11,8 @@ git branch --show-current
 gh pr view --json number,state,url,body
 ```
 
-- If the branch is `main` or `master`: ERROR "There is no active feature. Use /start to start a new one."
-- If there is no PR: ERROR "There is no open PR. Did you run /start?"
+- If the branch is `main` or `master`: ERROR "There is no active feature. Use /product-flow:start to start a new one."
+- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
 
 ### 2. Gate: plan generated
 
@@ -24,7 +24,7 @@ If not marked:
 ```
 🚫 The plan has not been generated yet.
 
-Run /continue to generate the plan first.
+Run /product-flow:continue to generate the plan first.
 ```
 
 **STOP.**
@@ -58,27 +58,27 @@ If all three steps are already done, skip to the final report.
 
 Skip this step if `- [x] Tasks generated` is already marked in the PR body.
 
-Otherwise, invoke `/tasks`.
+Otherwise, invoke `/product-flow:tasks`.
 
-`/tasks` takes care of:
+`/product-flow:tasks` takes care of:
 - Generating `tasks.md` with tasks ordered by dependencies
 - Creating the issues on GitHub
 - Recording technical decisions in the PR
 
-**Wait for `/tasks` to finish completely before continuing.**
+**Wait for `/product-flow:tasks` to finish completely before continuing.**
 If it produces an ERROR: propagate and stop.
 
 ### 5. Validate requirements quality
 
 Skip this step if `specs/<feature-dir>/checklists/` already exists and contains at least one file.
 
-Otherwise, invoke `/checklist`.
+Otherwise, invoke `/product-flow:checklist`.
 
-`/checklist` takes care of:
+`/product-flow:checklist` takes care of:
 - Validating that spec, plan and tasks are complete, unambiguous and consistent
 - Generating `specs/<dir>/checklists/<domain>.md`
 
-**Wait for `/checklist` to finish completely before continuing.**
+**Wait for `/product-flow:checklist` to finish completely before continuing.**
 If it produces an ERROR: propagate and stop.
 
 If the checklist reveals CRITICAL issues (gaps, conflicts, or ambiguities that would break implementation), stop and inform the PM:
@@ -88,7 +88,7 @@ If the checklist reveals CRITICAL issues (gaps, conflicts, or ambiguities that w
 
 Review: specs/<dir>/checklists/<domain>.md
 
-Fix the issues and run /build again.
+Fix the issues and run /product-flow:build again.
 ```
 
 **STOP.**
@@ -97,14 +97,14 @@ Fix the issues and run /build again.
 
 Skip this step if `- [x] Code generated` is already marked in the PR body.
 
-Otherwise, invoke `/implement`.
+Otherwise, invoke `/product-flow:implement`.
 
-`/implement` takes care of:
+`/product-flow:implement` takes care of:
 - Reading spec, plan, data-model, contracts and tasks
 - Implementing the tasks in the correct order
 - Respecting the dependencies defined in tasks.md
 
-**Wait for `/implement` to finish completely before continuing.**
+**Wait for `/product-flow:implement` to finish completely before continuing.**
 If it produces an ERROR: propagate and stop.
 
 ### 7. Final report
@@ -115,7 +115,7 @@ If it produces an ERROR: propagate and stop.
 ─────────────────────────────────────────
 ➡️  NEXT STEP
 ─────────────────────────────────────────
-Run: /submit
+Run: /product-flow:submit
 
 It will save the code and leave it ready
 for the development team's review.
@@ -124,7 +124,7 @@ for the development team's review.
 
 ### Session close
 
-Run the `/check-and-clear` logic to check the context and guide the user if they need to clear the session.
+Run the `/product-flow:check-and-clear` logic to check the context and guide the user if they need to clear the session.
 
 - **🟢 / 🟡**: Show nothing.
 - **🟠**: Show at the end of the report:

@@ -1,5 +1,6 @@
 ---
-description: "Internal — Called by /continue. Generates the technical plan from the approved spec."
+description: "Internal — Called by /product-flow:continue. Generates the technical plan from the approved spec."
+user_invocable: false
 ---
 
 ## Execution
@@ -11,33 +12,33 @@ git branch --show-current
 gh pr view --json number,state,url,body
 ```
 
-- If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /status."
-- If there is no PR: ERROR "There is no open PR. Did you run /start?"
+- If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /product-flow:status."
+- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
 
 ### 2. Gate: spec created and pending comments resolved
 
 Verify in the PR body:
 - `- [x] Spec created` ✓
 
-Invoke `/pr-comments read-answers`. If it returns responses, apply them before delegating to `speckit.plan`:
+Invoke `/product-flow:pr-comments read-answers`. If it returns responses, apply them before delegating to `speckit.plan`:
 - `Question <N>. Correction:` responses → apply to `spec.md`. Use the last response per question number.
 - `Question <N>. Answer:` responses → incorporate as additional context in the delegation. Use the last response per question number.
 
-Invoke `/pr-comments pending`. If it returns pending comments that require a response:
+Invoke `/product-flow:pr-comments pending`. If it returns pending comments that require a response:
 
 ```
 🚫 BLOCKED — Pending comments
 
 There are unanswered comments on the PR that must be resolved before generating the plan.
 
-Address them and run /continue again.
+Address them and run /product-flow:continue again.
 ```
 
 **STOP.**
 
 ### 3. Delegate to speckit.plan
 
-Invoke `/speckit.plan`, applying the following technical decision management rules:
+Invoke `/product-flow:speckit.plan`, applying the following technical decision management rules:
 
 **Autonomous resolution of unknowns** — during Phase 0 (research) and Phase 1 (design), if questions or decisions arise that the research agents cannot resolve completely:
 
@@ -68,7 +69,7 @@ If missing: ERROR "speckit.plan did not generate all artifacts. Check the previo
 
 ### 5. Challenge plan complexity
 
-Invoke `/praxis.complexity-review` passing the contents of `research.md` and `data-model.md` as input.
+Invoke `/product-flow:praxis.complexity-review` passing the contents of `research.md` and `data-model.md` as input.
 
 `praxis.complexity-review` evaluates the proposal against 30 complexity dimensions and identifies over-engineering.
 
@@ -83,11 +84,11 @@ Read `research.md` and `data-model.md` to determine whether the plan involves ba
 
 **If backend work is involved:**
 
-Invoke `/praxis.backend-architecture` with the plan as input. It validates that the design follows hexagonal architecture (domain ↔ ports ↔ adapters), dependencies flow inward, and no anti-patterns are present (anemic domain, domain scope pollution, use-case interdependencies).
+Invoke `/product-flow:praxis.backend-architecture` with the plan as input. It validates that the design follows hexagonal architecture (domain ↔ ports ↔ adapters), dependencies flow inward, and no anti-patterns are present (anemic domain, domain scope pollution, use-case interdependencies).
 
 **If frontend work is involved:**
 
-Invoke `/praxis.frontend-architecture` with the plan as input. It validates that the design follows feature-based architecture (colocation, separation of concerns, no cross-feature imports).
+Invoke `/product-flow:praxis.frontend-architecture` with the plan as input. It validates that the design follows feature-based architecture (colocation, separation of concerns, no cross-feature imports).
 
 **Wait for each invoked skill to finish before continuing.**
 
@@ -98,7 +99,7 @@ Invoke `/praxis.frontend-architecture` with the plan as input. It validates that
 
 If during step 3 there were technical decisions, add **one individual comment per decision** to the PR.
 
-For each decision the AI was able to make, invoke `/pr-comments write` with:
+For each decision the AI was able to make, invoke `/product-flow:pr-comments write` with:
 - `type`: `technical`
 - `status`: `ANSWERED`
 - `body`:
@@ -110,7 +111,7 @@ For each decision the AI was able to make, invoke `/pr-comments write` with:
   **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
   ```
 
-For each decision the AI was unable to resolve (also documented in `research.md`), invoke `/pr-comments write` with:
+For each decision the AI was unable to resolve (also documented in `research.md`), invoke `/product-flow:pr-comments write` with:
 - `type`: `technical`
 - `status`: `UNANSWERED`
 - `body`:
@@ -147,7 +148,7 @@ gh pr edit --body "<updated-body>"
 
 ### 10. Phase retro
 
-Invoke `/speckit.retro` with context: "after plan phase".
+Invoke `/product-flow:speckit.retro` with context: "after plan phase".
 
 **Wait for `speckit.retro` to finish before continuing.**
 If it returns a **Blocked** status: do not show the final report until the user resolves the blockers.
@@ -166,7 +167,7 @@ If it returns a **Blocked** status: do not show the final report until the user 
 
 ### Session close
 
-Run the `/check-and-clear` logic to check the context and guide the user if they need to clear the session.
+Run the `/product-flow:check-and-clear` logic to check the context and guide the user if they need to clear the session.
 
 - **🟢 / 🟡**: Show nothing.
 - **🟠**: Show at the end of the report:

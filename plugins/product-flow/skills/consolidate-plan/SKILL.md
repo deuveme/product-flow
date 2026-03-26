@@ -1,5 +1,6 @@
 ---
 description: "Integrates team feedback on the technical plan. Reads PR comments, applies corrections to plan.md, research.md, data-model.md, and contracts/, then commits the updated artifacts."
+user_invocable: false
 ---
 
 ## Execution
@@ -12,11 +13,11 @@ gh pr view --json number,state,url,body,comments -q '{body: .body, comments: [.c
 ```
 
 - If branch is `main` or `master`: ERROR "Not on a feature branch."
-- Verify `- [x] Plan generated` is marked. If not: ERROR "Plan has not been generated yet. Run /continue first."
+- Verify `- [x] Plan generated` is marked. If not: ERROR "Plan has not been generated yet. Run /product-flow:continue first."
 
 ### 2. Collect pending comments
 
-Invoke `/pr-comments pending` and `/pr-comments read-answers`.
+Invoke `/product-flow:pr-comments pending` and `/product-flow:pr-comments read-answers`.
 
 If both return empty: show a warning and stop:
 
@@ -39,7 +40,7 @@ The following must be answered by the PM before the plan can be updated:
 
 [list each non-technical comment]
 
-Please reply on the PR with your answer. Then run /continue again.
+Please reply on the PR with your answer. Then run /product-flow:continue again.
 ```
 
 **STOP.**
@@ -57,7 +58,7 @@ For each piece of technical feedback, update the relevant artifact:
 - **Answers** (`Question <N>. Answer: ...`): Resolve the open question in research.md. Mark the question as resolved. If multiple answers exist for the same question number, use the last one.
 - **General feedback**: Interpret intent, apply changes conservatively, and note what was changed.
 
-Do NOT modify `tasks.md` here — if plan changes invalidate tasks, note it in the commit message so `/tasks` can be re-run.
+Do NOT modify `tasks.md` here — if plan changes invalidate tasks, note it in the commit message so `/product-flow:tasks` can be re-run.
 
 ### 4. Validate consistency
 
@@ -78,13 +79,13 @@ git push origin HEAD
 
 ### 6. Resolve processed comments
 
-Invoke `/pr-comments resolve` passing the IDs of all bot comments that had `UNANSWERED` status and have now been addressed.
+Invoke `/product-flow:pr-comments resolve` passing the IDs of all bot comments that had `UNANSWERED` status and have now been addressed.
 
-**Wait for `/pr-comments resolve` to finish before continuing.**
+**Wait for `/product-flow:pr-comments resolve` to finish before continuing.**
 
 ### 7. Phase retro
 
-Invoke `/speckit.retro` with context: "after consolidate-plan phase".
+Invoke `/product-flow:speckit.retro` with context: "after consolidate-plan phase".
 
 **Wait for `speckit.retro` to finish before continuing.**
 If it returns a **Blocked** status: do not show the final report until the user resolves the blockers.
@@ -100,7 +101,7 @@ Changes applied:
 
 ### Session close
 
-Run the `/check-and-clear` logic to check the context and guide the user if they need to clear the session.
+Run the `/product-flow:check-and-clear` logic to check the context and guide the user if they need to clear the session.
 
 - **🟢 / 🟡**: Show nothing.
 - **🟠**: Show at the end of the report:

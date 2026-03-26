@@ -1,5 +1,6 @@
 ---
 description: "Internal — Manages PR comment lifecycle. Detects unprocessed bot comments and marks them as resolved."
+user_invocable: false
 ---
 
 ## Purpose
@@ -67,7 +68,7 @@ gh pr comment --body "<!-- id:q<N> type:<type> status:<status> -->
 
 Returns the list of bot comments that are still `UNANSWERED`.
 
-**Used by:** `/continue`, `/plan`, `/tasks`, `/implement` to check for blocking comments.
+**Used by:** `/product-flow:continue`, `/product-flow:plan`, `/product-flow:tasks`, `/product-flow:implement` to check for blocking comments.
 
 #### Execution
 
@@ -91,7 +92,7 @@ gh pr view --json comments -q '.comments[] | {id: .id, author: .author.login, bo
 
 Marks one or more bot comments as `ANSWERED` by editing them in place.
 
-**Used by:** `/consolidate-spec` and `/consolidate-plan` after applying changes.
+**Used by:** `/product-flow:consolidate-spec` and `/product-flow:consolidate-plan` after applying changes.
 
 **Input (`$ARGUMENTS`):** A list of comment IDs to mark as resolved.
 

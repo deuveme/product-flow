@@ -1,5 +1,6 @@
 ---
 description: Execute the implementation plan by processing tasks defined in tasks.md following strict TDD with ZOMBIES-ordered test planning. Each task goes through Red-Green-Refactor cycles. Forked from speckit.implement.
+user_invocable: false
 ---
 
 ## User Input
@@ -146,7 +147,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Tests before code**: Write tests for contracts, entities, and integration scenarios before implementing them
    - **Core development**: Implement models, services, CLI commands, endpoints — all TDD
    - **Integration work**: Database connections, middleware, logging, external services
-   - **Polish and validation**: Final review pass using `/praxis.code-simplifier` logic
+   - **Polish and validation**: Final review pass using `/product-flow:praxis.code-simplifier` logic
 
 8. Progress tracking and error handling:
    - Report progress after each completed task
@@ -164,4 +165,4 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Run final evaluation: analyze tests for gaps, check nothing is hardcoded that shouldn't be
    - Report final status with summary of completed work.
 
-Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit.tasks` first to regenerate the task list.
+Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/product-flow:speckit.tasks` first to regenerate the task list.

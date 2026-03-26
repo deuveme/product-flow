@@ -11,14 +11,14 @@ git branch --show-current
 gh pr view --json number,state,url,body,isDraft
 ```
 
-- If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /status."
-- If there is no PR: ERROR "There is no open PR. Did you run /start?"
+- If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /product-flow:status."
+- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
 
 ### 2. Gate: code generated
 
 Verify in the PR body: `- [x] Code generated`
 
-If not marked: ERROR "The code has not been generated yet. Run /build first."
+If not marked: ERROR "The code has not been generated yet. Run /product-flow:build first."
 
 ### 3. Verify there are changes to save
 
@@ -80,16 +80,16 @@ gh pr edit --body "<updated-body>"
 The development team will review the code.
 
 If you need to make more changes:
-  Run /submit again
+  Run /product-flow:submit again
 
 When the dev approves the PR, run:
-  /deploy-to-stage
+  /product-flow:deploy-to-stage
 ─────────────────────────────────────────
 ```
 
 ### Session close
 
-Run the `/check-and-clear` logic to check the context and guide the user if they need to clear the session.
+Run the `/product-flow:check-and-clear` logic to check the context and guide the user if they need to clear the session.
 
 - **🟢 / 🟡**: Show nothing.
 - **🟠**: Show at the end of the report:
