@@ -6,11 +6,25 @@ Claude Code plugin for spec-driven development. Enables PMs, designers, and deve
 
 ## Quick start
 
-```bash
-# In your Claude Code session:
+**1. Instala el plugin**
+
+Abre el terminal, escribe `claude` y pulsa Enter. Cuando cargue, ejecuta:
+
+```
 /plugin marketplace add git@github.com:deuveme/product-flow.git
+```
+
+Cuando termine, cierra el terminal.
+
+Abre de nuevo el terminal, escribe `claude` y pulsa Enter. Cuando cargue, ejecuta:
+
+```
 /plugin install product-flow@product-flow
 ```
+
+Cierra el terminal. Si tenías Claude Code Desktop abierto, ciérralo y vuelve a abrirlo.
+
+Ya puedes empezar a usar los comandos del plugin!
 
 **Commands:**
 - `/product-flow:start` — start a new feature
