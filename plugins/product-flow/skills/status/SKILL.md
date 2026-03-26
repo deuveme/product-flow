@@ -329,6 +329,18 @@ If no other feature branches exist, omit the "OTHER FEATURES" section entirely.
 
 ---
 
+**Hint: starting a new feature while on a branch**
+
+If the current branch is a feature branch (not main), always show this hint at the bottom of the status output, before the "Offer to switch" section:
+
+```
+💡 To start a new feature from here, just run:
+   /product-flow:start <description>
+   (you will be switched to main automatically)
+```
+
+---
+
 ### 4. Unsaved changes
 
 If `git status --porcelain` returns changes:

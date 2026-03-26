@@ -23,7 +23,13 @@ git branch --show-current
 ```
 
 - If there are uncommitted changes: ERROR "There are unsaved changes. Save or discard them before starting a new feature."
-- If the current branch is not `main` or `master`: ERROR "You must be on the main branch. Run /product-flow:status to see where you are."
+- If the current branch is not `main` or `master`:
+  Run:
+  ```bash
+  git checkout main
+  git pull
+  ```
+  Then show: `ℹ️  Switched to main to start the new feature.` and continue normally.
 
 ### 2. Generate branch identity and open Draft PR
 
