@@ -33,7 +33,7 @@ The agent must **stop and escalate** — never decide unilaterally — on:
 
 - Adding a new dependency or library
 - Changing the plugin manifest (`plugin.json`)
-- Modifying the session hook (`session-start.sh`)
+- Modifying the security hook (`security-guard.sh`)
 - Adding or removing skills from the plugin
 - Changing the command structure that affects the PM workflow
 - Any change that affects more than one skill/module simultaneously

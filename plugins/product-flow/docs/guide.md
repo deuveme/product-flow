@@ -22,7 +22,7 @@ plugins/product-flow/
 ├── .claude-plugin/
 │   └── plugin.json           ← manifest: 7 public PM commands
 ├── hooks/
-│   └── session-start.sh      ← auto-runs /status on session start
+│   └── security-guard.sh     ← blocks writes/deletes outside the repository (PreToolUse)
 └── skills/
     ├── [PM Commands — user-facing]
     │   ├── start, continue, build, submit, deploy-to-stage, status, context
@@ -81,6 +81,14 @@ Verify:
 gh auth status
 gh pr list
 ```
+
+The `speckit.taskstoissues` skill (called by `/build`) requires the **GitHub MCP server** to create issues. Install it via Claude Code:
+
+```
+/mcp add github
+```
+
+Without it, task generation still works but GitHub issues will not be created.
 
 ### Install in a project
 

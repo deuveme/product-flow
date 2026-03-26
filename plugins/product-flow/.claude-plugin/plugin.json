@@ -5,12 +5,13 @@
   "author": { "name": "David Valero" },
   "license": "MIT",
   "hooks": {
-    "SessionStart": [
+    "PreToolUse": [
       {
+        "matcher": "Edit|Write|NotebookEdit|Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/security-guard.sh"
           }
         ]
       }
