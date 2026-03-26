@@ -55,6 +55,8 @@ Add 1 to the result (use 1 if the command returns 0 or fails).
 
 ```bash
 gh pr comment --body "<!-- id:q<N> type:<type> status:<status> -->
+**Question <N> · Type: <type> · Status: <status>**
+
 <body>
 
 <user instruction line>"
@@ -100,17 +102,17 @@ Marks one or more bot comments as `ANSWERED` by editing them in place.
 
 1. Run the `pending` operation. If `NO_PENDING_COMMENTS`: stop silently.
 
-2. For each comment ID in `$ARGUMENTS`, edit the comment replacing `status:UNANSWERED` with `status:ANSWERED` in the marker (keep `id` and `type` intact):
+2. For each comment ID in `$ARGUMENTS`, edit the comment replacing `UNANSWERED` with `ANSWERED` in both the HTML marker and the visible bold line (keep `id` and `type` intact):
 
 ```bash
 # Get repo info
 gh pr view --json number,headRepositoryOwner,headRepository \
   -q '{number: .number, owner: .headRepositoryOwner.login, repo: .headRepository.name}'
 
-# Edit the comment (replace only the status token in the marker)
+# Edit the comment (replace UNANSWERED with ANSWERED in both the marker and the bold line)
 gh api repos/{owner}/{repo}/issues/comments/{comment_id} \
   -X PATCH \
-  -f body="<updated body with status:UNANSWERED replaced by status:ANSWERED>"
+  -f body="<updated body with all occurrences of UNANSWERED replaced by ANSWERED>"
 ```
 
 3. Output: number of comments resolved.

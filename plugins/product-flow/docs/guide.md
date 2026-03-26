@@ -173,6 +173,8 @@ When `/product-flow:continue` processes comments on the PR, it classifies each o
 
 ```
 <!-- id:q3 type:technical status:ANSWERED -->
+**Question 3 · Type: technical · Status: ANSWERED**
+
 **Technical question detected:** "..."
 
 **Proposed answers:** A. "..." B. "..." C. "..."
@@ -186,6 +188,8 @@ When `/product-flow:continue` processes comments on the PR, it classifies each o
 
 ```
 <!-- id:q4 type:technical status:UNANSWERED -->
+**Question 4 · Type: technical · Status: UNANSWERED**
+
 **Technical question detected:** "..."
 
 **Possible answers:** A. "..." B. "..." C. "..."
