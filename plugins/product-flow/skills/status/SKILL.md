@@ -92,33 +92,39 @@ Inspect the output:
 
 ### 2. Gather all features
 
+Run these three commands — do not skip any, do not loop manually over branches:
+
+**Current branch and uncommitted changes:**
 ```bash
 git branch --show-current
-git branch --format="%(refname:short)" | grep -v "^main$" | grep -v "^master$"
 git status --porcelain
 ```
 
-For the **current branch** (if not main/master):
+**All branches + their spec files in one shell loop:**
 ```bash
-gh pr view --json number,title,state,isDraft,url,body,reviewDecision 2>/dev/null || echo "NO_PR"
+for branch in $(git branch --format="%(refname:short)" | grep -v "^main$" | grep -v "^master$"); do
+  echo "BRANCH:$branch"
+  ls specs/$branch/ 2>/dev/null || echo "NO_SPEC"
+done
 ```
 
-For **each other branch** (not current, not main/master):
+**All open PRs in one call:**
 ```bash
-gh pr list --head <branch_name> --json number,title,state,isDraft,url,body,reviewDecision --limit 1 2>/dev/null
+gh pr list --state open --json headRefName,number,title,state,isDraft,url,body,reviewDecision --limit 100 2>/dev/null
 ```
 
-For **each branch without a PR** (current or other), check what SPEC files exist:
-```bash
-ls specs/<branch_name>/ 2>/dev/null
-```
+The **branch list is the source of truth**. Every branch printed by the loop is a feature to display.
 
-Inspect the output to determine the furthest completed step:
+For each branch:
+- Match it to a PR by `headRefName`. If no match → no PR.
+- Check the `ls` output for that branch. If `NO_SPEC` → no spec files.
+
+Inspect spec files to determine the furthest completed step:
 - `spec.md` present → "Spec created" is done
 - `plan.md` present → "Plan generated" is done
 - `tasks.md` present → "Tasks generated" is done
 
-Track branches with no PR but with at least `spec.md` as **SPEC-only branches**. For each, record the furthest completed step.
+Track branches with no PR but with at least `spec.md` as **SPEC-only branches**.
 
 ### 2b. Validate naming consistency and numbering
 
