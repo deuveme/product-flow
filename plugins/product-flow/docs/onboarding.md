@@ -23,8 +23,8 @@ All work exists in one of these four places. At any given moment you can know ex
 
 ### Where is my work right now?
 
-- You just started something → **Your computer**
-- You ran `/product-flow:submit` → **Review room**
+- You just ran `/product-flow:start` → **Review room** (in DRAFT — team can see and comment, but not yet asked to approve)
+- You ran `/product-flow:submit` → **Review room** (out of DRAFT — team is notified for formal code review)
 - The team approved and you ran `/product-flow:deploy-to-stage` → **Internal testing**
 - The team published → **The real world**
 
@@ -37,32 +37,40 @@ These are the only commands you need. Type them in Claude Code exactly as they a
 ### `/product-flow:start`
 **When to use it:** When you want to start working on something new.
 
-Type `/product-flow:start` followed by a description of what you want to build. Claude takes care of everything else: creates your workspace, opens the review room and prepares the spec.
+Type `/product-flow:start` followed by a description of what you want to build. Claude takes care of everything else: creates your workspace, opens the review room as a **DRAFT**, and prepares the spec.
 
 ```
 /product-flow:start I want users to be able to reset their password
 ```
 
+After this, share the review room link with the team on Slack so they can read and comment on the spec.
+
 ---
 
 ### `/product-flow:continue`
-**When to use it:** Every time the team has commented on the PR and you want to advance to the next step, or when you want to move forward after the spec is ready.
+**When to use it:** Every time the team has commented on the spec or plan and you want to move forward.
 
-Claude reads the current state of your feature and automatically does what's needed: integrate spec feedback, generate the technical plan, integrate plan feedback, or let you know you can build. You can run it as many times as needed.
+Claude reads the current state of your feature and automatically does what's needed:
+- If there are comments on the spec → integrates feedback, asks you product questions
+- If the spec is ready → generates the technical plan
+- If there are comments on the plan → integrates feedback
+- If the plan is ready → tells you to run `/product-flow:build`
+
+You can run it as many times as needed. The review room stays in **DRAFT** throughout.
 
 ---
 
 ### `/product-flow:build`
-**When to use it:** When the team has approved the technical plan and you want Claude to write the code.
+**When to use it:** When `/product-flow:continue` tells you the plan is ready and you want Claude to write the code.
 
-Claude generates all the feature code. Requires the plan to be approved — if it isn't, it will let you know.
+Claude generates all the feature code. The review room is still in **DRAFT** while this runs. Requires the plan to be approved — if it isn't, it will let you know.
 
 ---
 
 ### `/product-flow:submit`
-**When to use it:** When you want the team to see the code Claude has generated.
+**When to use it:** When the code is generated and you want the team to do a formal code review.
 
-Sends everything to the review room and notifies the team. You can run it as many times as you want — each time, the team sees the most recent changes.
+The first time you run this, the review room **exits DRAFT** and the team receives a notification to review the code. You can run it as many times as you want if you need to iterate — each time, the team sees the most recent changes.
 
 ---
 
@@ -87,7 +95,9 @@ Tells you, in plain language, where you are in the workflow and what the next st
 
 ## How PR comments work
 
-When you leave comments on the PR, Claude reads them all when you run `/product-flow:continue` and classifies each one automatically:
+### Leaving feedback
+
+You and the team leave feedback by adding comments in the review room on GitHub. When you run `/product-flow:continue`, Claude reads all the comments and classifies each one automatically:
 
 **Your comments (product)** — questions about business intent, priorities, user flows, terminology, or functional scope. Claude will **always ask you** before making any decision. It will never resolve these autonomously.
 
@@ -106,6 +116,10 @@ Claude may post comments on the PR like this:
 > 💬 To change this decision, add a new comment: `Question 3. Correction: [your answer]`
 
 You don't need to act on these unless you want to change the decision. If you do, add a **new comment** to the PR (not a reply) with the question number. For example: `Question 3. Correction: I prefer option A`.
+
+### Code review comments (after `/product-flow:submit`)
+
+Once the review room exits DRAFT, the team does a formal code review. These comments are handled differently — they go directly to the developer or back to Claude for a new iteration. If you run `/product-flow:submit` again after fixing things, the team sees the updated code.
 
 ---
 
@@ -137,22 +151,48 @@ Round 4 ── Final review before moving to the technical plan
 
 ## The complete feature lifecycle
 
+Each step shows what happens to the review room and when to comment.
+
 ```
 /product-flow:start "description"
         ↓
-   /product-flow:continue (repeat as needed)
-   — integrates team feedback on the spec
-   — generates the technical plan once the spec is ready
-   — integrates team feedback on the plan
+   Review room opens as DRAFT ── team can comment on the spec
         ↓
-/product-flow:build → code generated
+   /product-flow:continue
+   — reads comments, asks you product questions, resolves technical ones
+   — repeat until the spec is ready, then generates the technical plan
+   — repeat again if the team comments on the plan
         ↓
-/product-flow:submit → review room exits DRAFT
+   Plan approved by team ── review room still in DRAFT
         ↓
-   Team does code review and approves  ← mandatory checkpoint
+/product-flow:build → code generated ── review room still in DRAFT
+        ↓
+/product-flow:submit → review room exits DRAFT, team is notified for code review
+        ↓
+   Team reviews code and approves  ← mandatory checkpoint
         ↓
 /product-flow:deploy-to-stage → feature in internal testing → published
 ```
+
+### What "DRAFT" means
+
+The review room is in **DRAFT** from the moment `/product-flow:start` runs until you run `/product-flow:submit` for the first time. During this time:
+
+- The team **can see the review room** and leave comments
+- The team **is not asked to approve** anything yet
+- All spec and plan work happens here
+
+When you run `/product-flow:submit`, the review room exits DRAFT and the team receives a notification to do a formal code review.
+
+### When to comment at each step
+
+| Phase | Who comments | What to comment on |
+|---|---|---|
+| After `/product-flow:start` | You and the whole team | The spec — does it describe the right thing? Is anything missing? |
+| After plan is generated | Dev team | The technical plan — architecture, data model, APIs |
+| After `/product-flow:submit` | Dev team | The code — logic, naming, edge cases |
+
+You always add comments directly in the review room on GitHub. Never edit the spec or plan files directly — use comments so Claude can integrate them.
 
 ---
 

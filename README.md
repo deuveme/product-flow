@@ -38,7 +38,7 @@ You are ready to use the plugin commands!
 **Workflow:**
 ```
 /product-flow:start → /product-flow:continue (repeat) → /product-flow:build → /product-flow:submit → /product-flow:deploy-to-stage
-                        (spec review)                     (TDD)                 (review)               (merge)
+  (DRAFT PR)            (spec → plan, team feedback)       (code, TDD)           (exit DRAFT, review)    (approved → merge)
 ```
 
 ---
