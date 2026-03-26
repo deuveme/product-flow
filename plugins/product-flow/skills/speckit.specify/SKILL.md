@@ -39,7 +39,7 @@ Given that feature description, do this:
 
 2. **Check for existing branches before creating new one**:
 
-   **FIRST**: Run `git branch --show-current`. If the current branch already matches the feature branch pattern `[0-9]+-*` (e.g., `1-user-auth`, `42-fix-payments`):
+   **FIRST**: Run `git branch --show-current`. If the current branch already matches the feature branch pattern `[0-9]+-*` (e.g., `001-user-auth`, `042-fix-payments`):
    - Set `BRANCH_NAME` = current branch name
    - Set `SPEC_FILE` = `specs/$BRANCH_NAME/spec.md`
    - **Skip steps 2a–2d entirely** and go directly to step 3.
@@ -60,17 +60,18 @@ Given that feature description, do this:
    c. Determine the next available number:
       - Extract all numbers from all three sources
       - Find the highest number N
-      - Use N+1 for the new branch number
+      - Use N+1 for the new branch number, zero-padded to 3 digits: `printf "%03d" $((N+1))`
+      - If no existing branches/directories found, use `001`
 
    d. Run the script `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS"` with the calculated number and short-name:
-      - Pass `--number N+1` and `--short-name "your-short-name"` along with the feature description
-      - Bash example: `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" --json --number 5 --short-name "user-auth" "Add user authentication"`
-      - PowerShell example: `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" -Json -Number 5 -ShortName "user-auth" "Add user authentication"`
+      - Pass `--number NNN` (zero-padded, e.g. `005`) and `--short-name "your-short-name"` along with the feature description
+      - Bash example: `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" --json --number 005 --short-name "user-auth" "Add user authentication"`
+      - PowerShell example: `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" -Json -Number 005 -ShortName "user-auth" "Add user authentication"`
 
    **IMPORTANT**:
    - Check all three sources (remote branches, local branches, specs directories) to find the highest number
    - Only match branches/directories with the exact short-name pattern
-   - If no existing branches/directories found with this short-name, start with number 1
+   - Branch names always use a zero-padded 3-digit number: `001-user-auth`, `042-fix-payments`
    - You must only ever run this script once per feature
    - The JSON is provided in the terminal as output - always refer to it to get the actual content you're looking for
    - The JSON output will contain BRANCH_NAME and SPEC_FILE paths

@@ -32,7 +32,7 @@ Invoke `/product-flow:pr-comments pending`. If it returns pending comments:
 
 There are unanswered comments on the PR that must be resolved before generating the tasks.
 
-Address them and run /product-flow:continue again.
+Address them and run /product-flow:build again.
 ```
 
 **STOP.**

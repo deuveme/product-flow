@@ -128,7 +128,7 @@ Inside Claude Code in your project:
 /product-flow:status
 ```
 
-Expected: `📍 You are on the main branch, with no active feature.`
+Expected: `📍 You have no active features.`
 
 ---
 

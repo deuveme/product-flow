@@ -45,10 +45,11 @@ ls specs/ 2>/dev/null | grep -E '^[0-9]+-<short-name>$'
 ```
 
 Extract all numbers found across the three sources. If none, use `1`. Otherwise use highest + 1.
+Zero-pad the number to 3 digits: `printf "%03d" $N`.
 
 Set:
-- `BRANCH_NUMBER = <N>`
-- `BRANCH_NAME = <N>-<short-name>` (e.g., `1-user-auth`)
+- `BRANCH_NUMBER = <NNN>`
+- `BRANCH_NAME = <NNN>-<short-name>` (e.g., `001-user-auth`)
 - `SPEC_PATH = specs/$BRANCH_NAME/spec.md`
 
 #### 2c. Create the branch
@@ -147,7 +148,8 @@ Spec: $SPEC_PATH
 
 | Status | Date | Note |
 |--------|-------|------|
-| Spec created | $(date +%Y-%m-%d) | Feature started |
+| PR created | $(date +%Y-%m-%d) | Feature started |
+| Spec created | $(date +%Y-%m-%d) | Spec written |
 
 ## Notes
 EOF
