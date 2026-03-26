@@ -25,9 +25,85 @@ git branch --show-current
 - If there are uncommitted changes: ERROR "There are unsaved changes. Save or discard them before starting a new feature."
 - If the current branch is not `main` or `master`: ERROR "You must be on the main branch. Run /status to see where you are."
 
-### 2. Delegate to speckit.specify
+### 2. Generate branch identity and open Draft PR
+
+This step establishes the branch and creates the Draft PR **before** writing the spec.
+
+#### 2a. Generate short name
+
+From `$ARGUMENTS`, generate a concise short name (2–4 words, kebab-case, action-noun format).
+Examples: `user-auth`, `fix-payment-timeout`, `analytics-dashboard`.
+Preserve technical terms (OAuth2, API, JWT, etc.).
+
+#### 2b. Find next branch number
+
+```bash
+git fetch --all --prune
+git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-<short-name>$'
+git branch | grep -E '^[* ]*[0-9]+-<short-name>$'
+ls specs/ 2>/dev/null | grep -E '^[0-9]+-<short-name>$'
+```
+
+Extract all numbers found across the three sources. If none, use `1`. Otherwise use highest + 1.
+
+Set:
+- `BRANCH_NUMBER = <N>`
+- `BRANCH_NAME = <N>-<short-name>` (e.g., `1-user-auth`)
+- `SPEC_PATH = specs/$BRANCH_NAME/spec.md`
+
+#### 2c. Create the branch
+
+```bash
+.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" --number <N> --short-name "<short-name>"
+```
+
+The script output (JSON) is the **authoritative source** for `BRANCH_NAME` and `SPEC_FILE`. Always read these values from the JSON output and update `BRANCH_NAME` and `SPEC_PATH` accordingly.
+
+> **Invariant**: `BRANCH_NAME`, the spec folder name (`specs/$BRANCH_NAME/`), and the PR title must always be identical. Never create the PR (step 2e) until `BRANCH_NAME` is confirmed from the script output.
+
+#### 2d. Push the branch
+
+```bash
+git push -u origin HEAD
+```
+
+#### 2e. Open Draft PR
+
+```bash
+gh pr create \
+  --title "$BRANCH_NAME" \
+  --draft \
+  --base main \
+  --body "$(cat <<EOF
+## Feature
+Spec: $SPEC_PATH
+
+## Status
+- [ ] Spec created
+- [ ] Plan generated
+- [ ] Tasks generated
+- [ ] Code generated
+- [ ] In code review
+- [ ] Published
+
+## History
+
+| Status | Date | Note |
+|--------|-------|------|
+| PR created | $(date +%Y-%m-%d) | Feature started |
+
+## Notes
+EOF
+)"
+```
+
+Save the returned PR URL as `PR_URL` and PR number as `PR_NUMBER`.
+
+### 3. Write spec (delegate to speckit.specify)
 
 Invoke `/speckit.specify` passing `$ARGUMENTS` as the feature description, applying the following question management rules:
+
+**Note**: The branch `$BRANCH_NAME` has already been created and pushed. When `speckit.specify` runs, it will detect the existing feature branch and skip branch creation, proceeding directly to writing the spec.
 
 **Question classification** — when `speckit.specify` identifies `[NEEDS CLARIFICATION]` markers, classify each one before presenting it:
 
@@ -39,45 +115,23 @@ Invoke `/speckit.specify` passing `$ARGUMENTS` as the feature description, apply
 2. If there is sufficient information: make the decision and record it internally as **AI-proposed decision**.
 3. If there is not sufficient information: record it internally as **Unresolved question** and continue.
 
-Save the list of technical decisions (resolved and unresolved) internally for step 6.
+Save the list of technical decisions (resolved and unresolved) internally for step 5.
 
-`speckit.specify` takes care of:
-- Generating the short name and branch number (`NNN-short-name`)
-- Creating and checking out the branch
-- Writing `specs/NNN-short-name/spec.md`
-- Generating the quality checklist
-- Asking clarification questions if there are any
+`speckit.specify` will:
+- Detect the existing branch and skip branch creation
+- Write `$SPEC_PATH`
+- Generate the quality checklist
+- Ask clarification questions if there are any
 
 **Wait for `speckit.specify` to finish completely before continuing.**
 If it produces an ERROR: propagate and stop.
 
-### 3. Read created branch and spec
+### 4. Update PR — mark spec created
+
+Update the PR body to reflect spec completion:
 
 ```bash
-git branch --show-current
-```
-
-```bash
-ls specs/ | sort | tail -1
-```
-
-`BRANCH_NAME` = active branch
-`SPEC_PATH` = `specs/<last-directory>/spec.md`
-
-### 4. Push the branch
-
-```bash
-git push -u origin HEAD
-```
-
-### 5. Open draft PR
-
-```bash
-gh pr create \
-  --title "$BRANCH_NAME" \
-  --draft \
-  --base main \
-  --body "$(cat <<EOF
+gh pr edit $PR_NUMBER --body "$(cat <<EOF
 ## Feature
 Spec: $SPEC_PATH
 
@@ -100,46 +154,44 @@ EOF
 )"
 ```
 
-### 6. Record technical decisions in the PR
+### 5. Record technical decisions in the PR
 
-If during step 2 there were technical questions, add **one individual comment per question** to the newly created PR.
+If during step 3 there were technical questions, add **one individual comment per question** to the PR.
 
-For each question the AI was able to answer:
+For each question the AI was able to answer, invoke `/pr-comments write` with:
+- `type`: `technical`
+- `status`: `ANSWERED`
+- `body`:
+  ```
+  **Technical question detected:** "[identified question]"
 
-```bash
-gh pr comment --body "<!-- status:ANSWERED -->
-**Technical question detected:** \"[identified question]\"
+  **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
 
-**Proposed answers:** A. \"[option A]\" B. \"[option B]\" C. \"[option C]\"
+  **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
+  ```
 
-**Autonomously chosen answer:** We chose \"[chosen option]\" because \"[brief reasoning]\"
+For each question the AI was unable to resolve, invoke `/pr-comments write` with:
+- `type`: `technical`
+- `status`: `UNANSWERED`
+- `body`:
+  ```
+  **Technical question detected:** "[identified question]"
 
-> 💬 If you want to change this decision, reply with: \`Correction: [letter or answer]\`"
-```
+  **Possible answers:** A. "[option A]" B. "[option B]" C. "[option C]"
 
-For each question the AI was unable to resolve:
-
-```bash
-gh pr comment --body "<!-- status:UNANSWERED -->
-**Technical question detected:** \"[identified question]\"
-
-**Possible answers:** A. \"[option A]\" B. \"[option B]\" C. \"[option C]\"
-
-⚠️ **Unresolved — requires input from the development team.**
-
-> 💬 To answer, comment with: \`Answer: [letter or answer]\`"
-```
+  ⚠️ **Unresolved — requires input from the development team.**
+  ```
 
 If there were no technical questions at all, skip this step entirely.
 
-### 7. Phase retro
+### 6. Phase retro
 
 Invoke `/speckit.retro` with context: "after specify phase".
 
 **Wait for `speckit.retro` to finish before continuing.**
 If it returns a **Blocked** status: do not show the final report until the user resolves the blockers.
 
-### 8. Final report
+### 7. Final report
 
 ```
 ✅ Feature started

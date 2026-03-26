@@ -135,7 +135,7 @@ Action thresholds:
 - **80–89% 🟠** → add warning at the end: "Open a new session before the next command"
 - **≥ 90% 🔴** → interrupt before executing any action and instruct the user to run `/clear`
 
-The user can check the status at any time with `/context`.
+The user can check the status at any time with `/product-flow:context`.
 
 ---
 
@@ -147,11 +147,11 @@ This project uses a spec-driven workflow where PM commands orchestrate internal 
 
 | Command | Internal delegates | Own responsibility |
 |---|---|---|
-| `/start` | Internal spec engine | Be on `main` |
-| `/continue` | Internal clarify / plan engine | Spec created |
-| `/build` | Internal tasks + implement engine | Plan approved in PR |
-| `/submit` | — | Code generated |
-| `/deploy-to-stage` | — | PR approved |
+| `/product-flow:start` | Internal spec engine | Be on `main` |
+| `/product-flow:continue` | Internal clarify / plan engine | Spec created |
+| `/product-flow:build` | Internal tasks + implement engine | Plan approved in PR |
+| `/product-flow:submit` | — | Code generated |
+| `/product-flow:deploy-to-stage` | — | PR approved |
 
 ### PR status as source of truth
 

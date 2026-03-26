@@ -21,13 +21,9 @@ Verify in the PR body:
 - `- [x] Plan generated` ✓
 - `- [x] Tasks generated` ✓
 
-Also, read the PR comments looking for corrections or team responses to previous technical decisions (comments starting with `Correction:` or `Answer:`):
-
-```bash
-gh pr view --json comments -q '.comments[].body'
-```
-
-If there are corrections: apply them in `tasks.md` or the affected artifacts before delegating to `speckit.implement.withTDD`. If there are responses to unresolved questions: incorporate them as additional context in the delegation.
+Invoke `/pr-comments read-answers`. If it returns responses, apply them before delegating to `speckit.implement.withTDD`:
+- `Question <N>. Correction:` responses → apply to `tasks.md` or affected artifacts. Use the last response per question number.
+- `Question <N>. Answer:` responses → incorporate as additional context in the delegation. Use the last response per question number.
 
 If the tasks have not been generated:
 
@@ -40,19 +36,17 @@ Run /tasks first.
 
 **STOP.**
 
-Verify that there are no unanswered technical decisions: among the PR comments, identify all those containing "Unresolved — requires input from the development team" and check that for each one there is a subsequent comment starting with `Answer:`.
-
-If any technical decision has no team response:
+Invoke `/pr-comments pending`. If it returns any `UNANSWERED` comments with no corresponding `Question <N>. Answer:` response from the user:
 
 ```
 🚫 BLOCKED — Unanswered technical decisions
 
 The following technical questions must be answered before implementing:
 
-[list the unanswered questions]
+[list the unanswered questions with their Question number]
 
-The team must answer in the PR with:
-  Answer: [letter or answer]
+Add a new comment to the PR for each:
+  Question <N>. Answer: [letter or answer]
 ```
 
 **STOP.**

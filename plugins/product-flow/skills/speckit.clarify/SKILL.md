@@ -95,40 +95,53 @@ Execution steps:
     - Exclude questions already answered, trivial stylistic preferences, or plan-level execution details (unless blocking correctness).
     - Favor clarifications that reduce downstream rework risk or prevent misaligned acceptance tests.
     - If more than 5 categories remain unresolved, select the top 5 by (Impact * Uncertainty) heuristic.
+    - **Classify each question** as **Technical** or **Product** before queuing:
+      - **Technical**: authentication, authorisation, security, compliance, data retention, integration patterns, infrastructure constraints, performance targets — resolve autonomously.
+      - **Product**: business intent, priorities, functional scope, user flows, terminology, acceptance criteria — ask the PM.
 
-4. Sequential questioning loop (interactive):
-    - Present EXACTLY ONE question at a time.
-    - For multiple‑choice questions:
-       - **Analyze all options** and determine the **most suitable option** based on:
-          - Best practices for the project type
-          - Common patterns in similar implementations
-          - Risk reduction (security, performance, maintainability)
-          - Alignment with any explicit project goals or constraints visible in the spec
-       - Present your **recommended option prominently** at the top with clear reasoning (1-2 sentences explaining why this is the best choice).
-       - Format as: `**Recommended:** Option [X] - <reasoning>`
-       - Then render all options as a Markdown table:
+4. Sequential questioning loop:
+    - Process EXACTLY ONE question at a time.
+    - **If the question is Technical**:
+       - Attempt to resolve it using project context: existing code, `.agents/rules/base.md`, project stack, industry standards.
+       - If resolved: record the decision internally and invoke `/pr-comments write` with:
+         - `type`: `technical`, `status`: `ANSWERED`
+         - `body`:
+           ```
+           **Technical question detected:** "[question]"
 
-       | Option | Description |
-       |--------|-------------|
-       | A | <Option A description> |
-       | B | <Option B description> |
-       | C | <Option C description> (add D/E as needed up to 5) |
-       | Short | Provide a different short answer (<=5 words) (Include only if free-form alternative is appropriate) |
+           **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
 
-       - After the table, add: `You can reply with the option letter (e.g., "A"), accept the recommendation by saying "yes" or "recommended", or provide your own short answer.`
-    - For short‑answer style (no meaningful discrete options):
-       - Provide your **suggested answer** based on best practices and context.
-       - Format as: `**Suggested:** <your proposed answer> - <brief reasoning>`
-       - Then output: `Format: Short answer (<=5 words). You can accept the suggestion by saying "yes" or "suggested", or provide your own answer.`
-    - After the user answers:
-       - If the user replies with "yes", "recommended", or "suggested", use your previously stated recommendation/suggestion as the answer.
-       - Otherwise, validate the answer maps to one option or fits the <=5 word constraint.
-       - If ambiguous, ask for a quick disambiguation (count still belongs to same question; do not advance).
-       - Once satisfactory, record it in working memory (do not yet write to disk) and move to the next queued question.
+           **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
+           ```
+       - If unresolved: record it internally and invoke `/pr-comments write` with:
+         - `type`: `technical`, `status`: `UNANSWERED`
+         - `body`:
+           ```
+           **Technical question detected:** "[question]"
+
+           **Possible answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+
+           ⚠️ **Unresolved — requires input from the development team.**
+           ```
+       - Do NOT ask the PM. Move to the next question.
+    - **If the question is Product**: use the **AskUserQuestion** tool.
+       - Determine the best option based on: best practices, common patterns, risk reduction, alignment with spec context.
+       - Call AskUserQuestion with:
+         - `question`: full question text ending with "?"
+         - `header`: short topic label max 12 chars (e.g. "Auth method", "Data scope", "User roles")
+         - `options`: 2–4 choices. Place the recommended option **first** and append `" (Recommended)"` to its label. Each option must have a `description` explaining implications.
+         - `multiSelect`: false
+       - The tool automatically adds an "Other" option — the user can type a custom answer there.
+       - For short‑answer style questions with no meaningful discrete options: model 2–3 common answers as options (with the best practice as first/recommended) and rely on "Other" for free-form input.
+       - After the user answers via the tool:
+         - If they selected "Other", treat the typed text as their answer.
+         - Otherwise use the selected option label as the answer.
+         - If ambiguous, call AskUserQuestion again for that same question (does not count toward the 5-question limit).
+         - Once satisfactory, record it in working memory (do not yet write to disk) and move to the next queued question.
     - Stop asking further questions when:
        - All critical ambiguities resolved early (remaining queued items become unnecessary), OR
        - User signals completion ("done", "good", "no more"), OR
-       - You reach 5 asked questions.
+       - You reach 5 processed questions (technical auto-resolved + product asked).
     - Never reveal future queued questions in advance.
     - If no valid questions exist at start, immediately report no critical ambiguities.
 
@@ -160,7 +173,20 @@ Execution steps:
 
 7. Write the updated spec back to `FEATURE_SPEC`.
 
-8. Report completion (after questioning loop ends or early termination):
+8. Record clarifications in the PR: after the questioning loop ends, invoke `/pr-comments write` once per answered question with:
+   - `type`: `product`, `status`: `ANSWERED`
+   - `body`:
+     ```
+     **Clarification:** "[the question asked]"
+
+     **Answer:** [the user's accepted answer]
+
+     **Applied to spec:** [which section(s) were updated and what changed]
+     ```
+
+If no questions were asked (no critical ambiguities found), skip this step entirely.
+
+9. Report completion (after questioning loop ends or early termination):
    - Number of questions asked & answered.
    - Path to updated spec.
    - Sections touched (list names).

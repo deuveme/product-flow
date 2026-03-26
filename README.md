@@ -13,18 +13,18 @@ Claude Code plugin for spec-driven development. Enables PMs, designers, and deve
 ```
 
 **Commands:**
-- `/start` — start a new feature
-- `/continue` — advance to next step (repeatable)
-- `/build` — generate code (when plan is ready)
-- `/submit` — share code for review
-- `/deploy-to-stage` — publish to staging
-- `/status` — see where you are
-- `/context` — see memory usage
+- `/product-flow:start` — start a new feature
+- `/product-flow:continue` — advance to next step (repeatable)
+- `/product-flow:build` — generate code (when plan is ready)
+- `/product-flow:submit` — share code for review
+- `/product-flow:deploy-to-stage` — publish to staging
+- `/product-flow:status` — see where you are
+- `/product-flow:context` — see memory usage
 
 **Workflow:**
 ```
-/start → /continue (repeat) → /build → /submit → /deploy-to-stage
-           (spec review)     (TDD)    (review)  (merge)
+/product-flow:start → /product-flow:continue (repeat) → /product-flow:build → /product-flow:submit → /product-flow:deploy-to-stage
+                        (spec review)                     (TDD)                 (review)               (merge)
 ```
 
 ---
@@ -33,9 +33,9 @@ Claude Code plugin for spec-driven development. Enables PMs, designers, and deve
 
 | Document | For | Content |
 |---|---|---|
-| [`docs/onboarding.md`](docs/onboarding.md) | PMs & designers | How to use the commands, full workflow, FAQs |
-| [`docs/guide.md`](docs/guide.md) | Dev team | Architecture, setup, how to modify skills |
-| [`docs/constitution.md`](docs/constitution.md) | Tech lead & AI | Project governance, standards, scope discipline |
+| [`docs/onboarding.md`](plugins/product-flow/docs/onboarding.md) | PMs & designers | How to use the commands, full workflow, FAQs |
+| [`docs/guide.md`](plugins/product-flow/docs/guide.md) | Dev team | Architecture, setup, how to modify skills |
+| [`docs/constitution.md`](plugins/product-flow/docs/constitution.md) | Tech lead & AI | Project governance, standards, scope discipline |
 
 ---
 

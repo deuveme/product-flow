@@ -57,11 +57,11 @@ PM commands have no logic. They delegate completely to internal engines and only
 
 | Command | Internal call chain |
 |---|---|
-| `/start` | create branch + Draft PR → `speckit.specify` → `speckit.retro` |
-| `/continue` | state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` (dispatched by state machine) |
-| `/build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` → `speckit.implement.withTDD` → `praxis.test-desiderata`) |
-| `/submit` | git add/commit/push |
-| `/deploy-to-stage` | git merge --squash |
+| `/product-flow:start` | create branch + Draft PR → `speckit.specify` → `speckit.retro` |
+| `/product-flow:continue` | state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` (dispatched by state machine) |
+| `/product-flow:build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` → `speckit.implement.withTDD` → `praxis.test-desiderata`) |
+| `/product-flow:submit` | git add/commit/push |
+| `/product-flow:deploy-to-stage` | git merge --squash |
 
 ---
 
@@ -93,6 +93,7 @@ Inside Claude Code in your project:
 
 ### Configure settings.json
 
+
 ```json
 {
   "permissions": {
@@ -116,7 +117,7 @@ Inside Claude Code in your project:
 ### Verify
 
 ```
-/status
+/product-flow:status
 ```
 
 Expected: `📍 You are on the main branch, with no active feature.`
@@ -125,29 +126,29 @@ Expected: `📍 You are on the main branch, with no active feature.`
 
 ## 3. Workflow details
 
-### `/continue` state machine
+### `/product-flow:continue` state machine
 
 ```
-/start
+/product-flow:start
   │
   ▼
-SPEC_CREATED  ←──── /consolidate-spec ←──── SPEC_REVIEW  (team adds comments)
+SPEC_CREATED  ←──── /product-flow:consolidate-spec ←──── SPEC_REVIEW  (team adds comments)
   │ (no comments)
   ▼
-PLAN_PENDING  ──── /plan auto-runs ──────────────────────────────────────────┐
-                                                                             │
-  (team adds comments on plan)                                               ▼
-PLAN_REVIEW   ←──── /consolidate-plan ─────────────────────────────────  PLAN_PENDING
+PLAN_PENDING  ──── /product-flow:plan auto-runs ─────────────────────────────────────────┐
+                                                                                         │
+  (team adds comments on plan)                                                            ▼
+PLAN_REVIEW   ←──── /product-flow:consolidate-plan ──────────────────────────────  PLAN_PENDING
   │ (no comments)
   ▼
-BUILD_READY   ──── redirect to /build
+BUILD_READY   ──── redirect to /product-flow:build
 ```
 
-The only approval gate is at `/deploy-to-stage`, which requires the PR to be approved by the team before merging.
+The only approval gate is at `/product-flow:deploy-to-stage`, which requires the PR to be approved by the team before merging.
 
 ### PR comment classification
 
-When `/continue` processes comments on the PR, it classifies each one before acting on it:
+When `/product-flow:continue` processes comments on the PR, it classifies each one before acting on it:
 
 | Type | Criteria | How it's handled |
 |---|---|---|
@@ -190,31 +191,31 @@ Question 4 - Answer: go with option B because...
 
 Multiple responses for the same question are allowed — the last one wins. A single comment can respond to multiple questions, one per line.
 
-On the next `/continue` run, Claude picks up those answers and continues.
+On the next `/product-flow:continue` run, Claude picks up those answers and continues.
 
 ### Comment lifecycle (pr-comments skill)
 
 Bot comments are tracked via invisible HTML markers on the first line:
-- `<!-- id:q<N> type:technical|product status:UNANSWERED -->` — pending, will be processed by `/continue`
+- `<!-- id:q<N> type:technical|product status:UNANSWERED -->` — pending, will be processed by `/product-flow:continue`
 - `<!-- id:q<N> type:technical|product status:ANSWERED -->` — processed, will be ignored in future runs
 
-All bot comments are written via `/pr-comments write`, which handles numbering automatically. `/pr-comments pending` returns all `UNANSWERED` comments. `/pr-comments resolve` rewrites them to `ANSWERED` after processing.
+All bot comments are written via `/product-flow:pr-comments write`, which handles numbering automatically. `/product-flow:pr-comments pending` returns all `UNANSWERED` comments. `/product-flow:pr-comments resolve` rewrites them to `ANSWERED` after processing.
 
 ### Key workflow steps
 
 **`plan` skill:**
-1. Calls `speckit.plan` → generates `research.md`, `data-model.md`, `contracts/`
-2. Calls `praxis.complexity-review` → challenges design against 30 dimensions
-3. Calls `praxis.backend-architecture` (if backend) → validates hexagonal structure
-4. Calls `praxis.frontend-architecture` (if frontend) → validates feature-based structure
+1. Calls `/product-flow:speckit.plan` → generates `research.md`, `data-model.md`, `contracts/`
+2. Calls `/product-flow:praxis.complexity-review` → challenges design against 30 dimensions
+3. Calls `/product-flow:praxis.backend-architecture` (if backend) → validates hexagonal structure
+4. Calls `/product-flow:praxis.frontend-architecture` (if frontend) → validates feature-based structure
 5. Posts technical decisions as PR comments
-6. Calls `speckit.retro` for quality validation
+6. Calls `/product-flow:speckit.retro` for quality validation
 
 **`implement` skill:**
-1. Calls `praxis.bdd-with-approvals` → writes approval fixtures (executable specs)
-2. Calls `speckit.implement.withTDD` → implements with Red-Green-Refactor TDD + ZOMBIES
-3. Calls `praxis.test-desiderata` → validates test quality against Kent Beck's 12 properties
-4. Calls `speckit.retro` for quality validation
+1. Calls `/product-flow:praxis.bdd-with-approvals` → writes approval fixtures (executable specs)
+2. Calls `/product-flow:speckit.implement.withTDD` → implements with Red-Green-Refactor TDD + ZOMBIES
+3. Calls `/product-flow:praxis.test-desiderata` → validates test quality against Kent Beck's 12 properties
+4. Calls `/product-flow:speckit.retro` for quality validation
 
 ---
 
@@ -258,15 +259,15 @@ description: "Shown in Claude Code autocomplete"
 1. Create `plugins/product-flow/skills/my-skill/SKILL.md`
 2. Add to `plugins/product-flow/.claude-plugin/plugin.json` only if public
 3. Add bash permissions to project's `settings.json` if needed
-4. Update PR template in `start/SKILL.md` if adding a workflow step
-5. Update `status/SKILL.md` if adding a progress indicator
+4. Update PR template in `/product-flow:start` SKILL.md if adding a workflow step
+5. Update `/product-flow:status` SKILL.md if adding a progress indicator
 
 ### Modifying an existing skill
 
 - **Upstream skills** (`speckit.*`, `praxis.*`): fork with `withX` suffix
 - **Internal skills** (`consolidate-spec`, `plan`, etc.): freely editable
-- Update `continue/SKILL.md` if changing state machine
-- Update `status/SKILL.md` if changing gates
+- Update `/product-flow:continue` SKILL.md if changing state machine
+- Update `/product-flow:status` SKILL.md if changing gates
 
 ### Conventions
 

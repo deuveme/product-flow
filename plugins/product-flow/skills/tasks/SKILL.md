@@ -20,13 +20,9 @@ Verify in the PR body:
 - `- [x] Spec created` ✓
 - `- [x] Plan generated` ✓
 
-Read PR comments looking for `Correction:` or `Answer:` responses to previous technical decisions:
-
-```bash
-gh pr view --json comments -q '.comments[].body'
-```
-
-If there are `Correction:` responses: apply them in `research.md` or `data-model.md` before delegating to `speckit.tasks`. If there are `Answer:` responses: incorporate them as additional context in the delegation.
+Invoke `/pr-comments read-answers`. If it returns responses, apply them before delegating to `speckit.tasks`:
+- `Question <N>. Correction:` responses → apply to `research.md` or `data-model.md`. Use the last response per question number.
+- `Question <N>. Answer:` responses → incorporate as additional context in the delegation. Use the last response per question number.
 
 Invoke `/pr-comments pending`. If it returns pending comments:
 
@@ -75,31 +71,29 @@ If it produces an ERROR: propagate and stop.
 
 If during steps 3 or 4 there were technical decisions, add **one individual comment per decision** to the PR.
 
-For each decision the AI was able to make:
+For each decision the AI was able to make, invoke `/pr-comments write` with:
+- `type`: `technical`
+- `status`: `ANSWERED`
+- `body`:
+  ```
+  **Technical question detected:** "[identified question]"
 
-```bash
-gh pr comment --body "<!-- status:ANSWERED -->
-**Technical question detected:** \"[identified question]\"
+  **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
 
-**Proposed answers:** A. \"[option A]\" B. \"[option B]\" C. \"[option C]\"
+  **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
+  ```
 
-**Autonomously chosen answer:** We chose \"[chosen option]\" because \"[brief reasoning]\"
+For each decision the AI was unable to resolve (also documented in `tasks.md`), invoke `/pr-comments write` with:
+- `type`: `technical`
+- `status`: `UNANSWERED`
+- `body`:
+  ```
+  **Technical question detected:** "[identified question]"
 
-> 💬 If you want to change this decision, reply with: \`Correction: [letter or answer]\`"
-```
+  **Possible answers:** A. "[option A]" B. "[option B]" C. "[option C]"
 
-For each decision the AI was unable to resolve (also documented in `tasks.md`):
-
-```bash
-gh pr comment --body "<!-- status:UNANSWERED -->
-**Technical question detected:** \"[identified question]\"
-
-**Possible answers:** A. \"[option A]\" B. \"[option B]\" C. \"[option C]\"
-
-⚠️ **Unresolved — requires input from the development team.**
-
-> 💬 To answer, comment with: \`Answer: [letter or answer]\`"
-```
+  ⚠️ **Unresolved — requires input from the development team.**
+  ```
 
 If there were no relevant technical decisions, skip this step entirely.
 
