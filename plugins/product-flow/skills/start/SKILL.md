@@ -74,7 +74,7 @@ BRANCH_NUMBER=${BRANCH_NAME%%-*}
 BRANCH_SLUG=${BRANCH_NAME#*-}
 PR_TITLE="$BRANCH_NUMBER: ${BRANCH_SLUG//-/ }"
 ```
-Example: `001-user-auth` → `001: user auth`.
+Example: `001-user-auth` → `001: User auth`.
 
 #### 2d. Push the branch
 

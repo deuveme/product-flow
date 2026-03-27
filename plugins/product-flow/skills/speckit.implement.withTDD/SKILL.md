@@ -147,7 +147,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Tests before code**: Write tests for contracts, entities, and integration scenarios before implementing them
    - **Core development**: Implement models, services, CLI commands, endpoints — all TDD
    - **Integration work**: Database connections, middleware, logging, external services
-   - **Polish and validation**: Final review pass using `/product-flow:praxis.code-simplifier` logic
+   - **Polish and validation**: Final review pass using `/product-flow:praxis.code-simplifier`
 
 8. Progress tracking and error handling:
    - Report progress after each completed task

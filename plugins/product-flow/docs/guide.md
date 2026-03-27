@@ -41,7 +41,8 @@ plugins/product-flow/
             ├── praxis.backend-architecture   (called in plan: validate hexagonal structure)
             ├── praxis.frontend-architecture  (called in plan: validate feature-based structure)
             ├── praxis.bdd-with-approvals     (called in implement: write approval specs first)
-            └── praxis.test-desiderata        (called in implement: validate test quality)
+            ├── praxis.test-desiderata        (called in implement: validate test quality)
+            └── praxis.code-simplifier        (called in implement: simplify and refine code after TDD cycles)
 ```
 
 ### Design principle
@@ -128,7 +129,7 @@ Inside Claude Code in your project:
 /product-flow:status
 ```
 
-Expected: `📍 You have no active features.`
+Expected: `📍 main  ·  no active feature`
 
 ---
 
@@ -231,7 +232,7 @@ All bot comments are written via `/product-flow:pr-comments write`, which handle
 
 **`implement` skill:**
 1. Calls `/product-flow:praxis.bdd-with-approvals` → writes approval fixtures (executable specs)
-2. Calls `/product-flow:speckit.implement.withTDD` → implements with Red-Green-Refactor TDD + ZOMBIES
+2. Calls `/product-flow:speckit.implement.withTDD` → implements with Red-Green-Refactor TDD + ZOMBIES, then polishes with `praxis.code-simplifier`
 3. Calls `/product-flow:praxis.test-desiderata` → validates test quality against Kent Beck's 12 properties
 4. Calls `/product-flow:speckit.retro` for quality validation
 

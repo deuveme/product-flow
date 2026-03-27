@@ -6,11 +6,10 @@ description: "UTILITY — Shows where you are in the workflow right now."
 
 ### 0. Verify dependencies
 
-Check that `gh` is installed and authenticated:
+Check that `gh` is installed:
 
 ```bash
 which gh 2>/dev/null || echo "GH_NOT_FOUND"
-gh auth status 2>/dev/null || echo "GH_NOT_AUTHENTICATED"
 ```
 
 If the result contains `GH_NOT_FOUND`, stop execution and show:
@@ -34,71 +33,35 @@ During login:
 Then run /product-flow:status again.
 ```
 
-If the result contains `GH_NOT_AUTHENTICATED`, stop execution and show:
+Do not check `gh auth status` — authentication will be validated implicitly when `gh pr list` runs in step 2. If it fails due to auth, surface the error then.
 
-```
-⚠️  GitHub CLI is installed but not authenticated.
+### 1. Fetch latest changes
 
-Run in your terminal:
-  gh auth login
-
-During login:
-  1. Select "GitHub.com"
-  2. Select "HTTPS"
-  3. Choose "Login with a web browser"
-  4. Copy the code shown in the terminal
-  5. The browser will open — paste the code and click Continue
-
-Then run /product-flow:status again.
-```
-
-### 1. Pull latest changes
-
-Run git pull on the current branch to sync with remote and capture the full output:
+Run a non-blocking fetch to update remote tracking refs without modifying the working tree. Also capture branch and file status in one call to reuse in step 2:
 
 ```bash
-git pull 2>&1
+git fetch --quiet 2>&1
+git status --branch --porcelain 2>/dev/null
 ```
 
-Inspect the output:
-
-- **If it succeeded**: continue normally.
-
-- **If it failed with conflict markers** (output contains "CONFLICT" or "Automatic merge failed"):
-
-  Stop execution and show:
+From the `git status` output:
+- First line (starts with `##`) contains branch tracking info — if it contains `behind`, show an inline note and continue:
   ```
-  ⚠️  Your feature has changes that conflict with updates made by someone else on the team.
-
-  This means two people edited the same part of the code at the same time.
-  You need to decide which version to keep:
-
-    [1] Keep the server version (discard your local changes)
-        Run: git merge --abort && git reset --hard origin/<current_branch>
-
-    [2] Keep your local version (ignore the incoming changes for now)
-        Run: git merge --abort
-
-    [3] Resolve manually (ask a developer for help)
-
-  Type 1, 2, or 3 to choose.
+  ⚠️  Your branch is behind the remote — consider running git pull when ready.
   ```
+- Remaining lines are file changes — store them for step 2 (unsaved changes check) and step 4.
 
-  Wait for user input and execute the corresponding command. After resolving, re-run `/product-flow:status`.
+If `git fetch` failed for any reason (no remote, no network, etc.):
 
-- **If it failed for any other reason** (no remote, no network, etc.):
-
-  Show a note and continue: `⚠️ Could not sync with remote. Showing local version.`
+  Show a note and continue: `⚠️  Could not sync with remote. Showing local version.`
 
 ### 2. Gather all features
 
-Run these three commands — do not skip any, do not loop manually over branches:
+Run these two commands — do not skip any, do not loop manually over branches:
 
-**Current branch and uncommitted changes:**
-```bash
-git branch --show-current
-git status --porcelain
-```
+**Current branch** (reuse `git status` output from step 1 — no need to run again):
+- Current branch name: from the `##` line of `git status --branch --porcelain`
+- Uncommitted changes: from the remaining lines of the same output
 
 **All branches + their spec files in one shell loop:**
 ```bash
@@ -110,7 +73,17 @@ done
 
 **All open PRs in one call:**
 ```bash
-gh pr list --state open --json headRefName,number,title,state,isDraft,url,body,reviewDecision --limit 100 2>/dev/null
+gh pr list --state open --json headRefName,number,title,state,isDraft,url,body,reviewDecision --limit 100 2>&1
+```
+
+If the output contains `authentication` or `auth` errors, stop and show:
+```
+⚠️  GitHub CLI is not authenticated.
+
+Run in your terminal:
+  gh auth login
+
+Then run /product-flow:status again.
 ```
 
 The **branch list is the source of truth**. Every branch printed by the loop is a feature to display.
@@ -167,7 +140,13 @@ Do not proceed with the rest of the status until the user resolves this.
 
 #### Check 3 — Numbers are chronological (001 = oldest)
 
-For each numbered branch, determine the date of its **first commit not in main**:
+First, do a fast pre-check: extract all numeric prefixes from numbered branches and verify they are already in ascending order by name. If they are in order, **skip this check entirely** — no git log needed.
+
+```bash
+git branch --format="%(refname:short)" | grep -v "^main$" | grep -v "^master$" | grep -E '^[0-9]+' | sort -V
+```
+
+Only if the numeric prefixes are **not** in simple ascending order, run the per-branch date check to confirm:
 
 ```bash
 git log --reverse --format="%ci" origin/<branch_name> ^origin/main 2>/dev/null | head -1
@@ -236,9 +215,10 @@ Continue with step 3 using the corrected names.
 
 Convert branch names to human-readable feature names:
 - Strip common prefixes: `feature/`, `feat/`, `fix/`, `pm/`, `chore/`
-- Replace hyphens and underscores with spaces
-- Capitalize the first word
-- Example: `feature/add-login-button` → "Add login button"
+- If the branch starts with a numeric prefix (`NNN-`), replace the **first** hyphen with `: ` and keep the number — then replace remaining hyphens/underscores with spaces and capitalize the first word after the colon
+  - Example: `001-workflow-mvp` → `001: Workflow mvp`
+- Otherwise, replace all hyphens and underscores with spaces and capitalize the first word
+  - Example: `feature/add-login-button` → `Add login button`
 
 #### Workflow step labels
 
@@ -251,102 +231,134 @@ Use the PR body checkbox labels as-is:
 - `Published`
 
 Step status icons:
-- ✅ checkbox is marked
-- ▶️  next step to run
-- ⏳ waiting for team review/approval
-- 🔒 blocked (previous steps incomplete)
+- ✅ completed
+- 🟡 current step (next to run)
+- ⚫ not yet reached
+- ⚠️  warning or issue
 
 ---
 
-**Case: on main with no other features**
+Every output starts with a single top separator, then uses separators only as dividers between sections — never as closing borders. Omit a section entirely when it has nothing to show.
 
+---
+
+**Current state section** — always first
+
+On main:
 ```
-📍 You have no active features.
+─────────────────────────────────────────
+  📍 main  ·  no active feature
+```
 
-To start a new one:
-  /product-flow:start <description>
+On a feature branch with PR:
+```
+─────────────────────────────────────────
+  📍 Working on: **<feature name in human language>**
+
+  🔗 <PR_URL>
+
+  ✅ Spec created
+  ✅ Plan generated
+  🟡 **Tasks generated**
+  ⚫ Code generated
+  ⚫ In code review
+  ⚫ Published
+
+  ➡️  ***​/product-flow:continue***
+```
+
+On a feature branch with no PR and no spec:
+```
+─────────────────────────────────────────
+  📍 Working on: **<feature name in human language>**
+
+  (no PR yet)
+
+  ➡️  ***​/product-flow:continue***
+```
+
+On a feature branch with no PR but spec exists:
+```
+─────────────────────────────────────────
+  📍 Working on: **<feature name in human language>**
+
+  ⚠️  no PR — spec found (no PR was created for this branch)
 ```
 
 ---
 
-**Case: one or more feature branches exist**
+**OTHER FEATURES IN PROGRESS section** — only when other feature branches exist
 
-Show current feature first, then others:
+Each entry can be in one of three states:
 
+**With PR** — inline progress + link:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🟢 CURRENT FEATURE: <feature name in human language>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
-If current branch is main, show instead:
-```
-🟢 CURRENT FEATURE: (none — you are on the main branch)
+  [N]  **<feature name>**
+       ✅ Spec  ✅ Plan  🟡 Tasks  ⚫ Code  ⚫ Review  ⚫ Done
+       🔗 <PR_URL>
 ```
 
-Then show progress for current feature (if it has a PR):
+**No PR but has spec** — inline progress + warning:
 ```
-   🔗 <PR_URL>
-
-   PROGRESS:
-     ✅ Spec created
-     ✅ Plan generated
-     ▶️  Tasks generated
-     🔒 Code generated
-     🔒 In code review
-     🔒 Published
-
-   ➡️  NEXT: /product-flow:continue
+  [N]  **<feature name>**
+       ✅ Spec  ⚫ Plan  ⚫ Tasks  ⚫ Code  ⚫ Review  ⚫ Done
+       *⚠️  no PR yet*
 ```
 
-If current feature branch has no PR yet and **no SPEC files found**:
+**No PR and no spec** — not started:
 ```
-   (No PR yet — has not been submitted for review)
-   ➡️  NEXT: /product-flow:continue
-```
-
-If current feature branch has no PR yet but **SPEC files exist**:
-```
-   ⚠️  No PR yet — SPEC found (no PR was created for this branch)
-   ➡️  NEXT: Create PR to track progress (see step 5a)
+  [N]  **<feature name>**
+       (not started)
 ```
 
-Then for each other feature branch:
-
+Full section example:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📌 OTHER FEATURES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  [1] <feature name> — <last completed step or "Not started">
-      🔗 <PR_URL if exists>
-      ⚠️  No PR yet — SPEC found   ← only if no PR but SPEC files exist
+─────────────────────────────────────────
+  **OTHER FEATURES IN PROGRESS:**
 
-  [2] <feature name> — <last completed step or "Not started">
-      🔗 <PR_URL if exists>
+  [1]  **001: Workflow mvp**
+       ✅ Spec  🟡 Plan  ⚫ Tasks  ⚫ Code  ⚫ Review  ⚫ Done
+       🔗 https://github.com/…/pull/6
+
+  [2]  **003: New payments flow**
+       ✅ Spec  ⚫ Plan  ⚫ Tasks  ⚫ Code  ⚫ Review  ⚫ Done
+       *⚠️  no PR yet*
+
+  [3]  **004: Experimental branch**
+       (not started)
 ```
-
-If no other feature branches exist, omit the "OTHER FEATURES" section entirely.
 
 ---
 
-**Hint: starting a new feature while on a branch**
+**Footer section** — always last
 
-If the current branch is a feature branch (not main), always show this hint at the bottom of the status output, before the "Offer to switch" section:
-
+When other features exist and on a feature branch:
 ```
-💡 To start a new feature from here, just run:
-   /product-flow:start <description>
-   (you will be switched to main automatically)
+─────────────────────────────────────────
+  Switch? Type 1 · 2 · …  or  Enter to stay
+  *💡 /product-flow:start <description>  to start a new feature*
+```
+
+When other features exist and on main:
+```
+─────────────────────────────────────────
+  Switch? Type 1 · 2 · …  or  Enter to stay on main
+  *💡 /product-flow:start <description>  to start a new feature*
+```
+
+When no other features exist (regardless of branch):
+```
+─────────────────────────────────────────
+  *💡 /product-flow:start <description>  to start a new feature*
 ```
 
 ---
 
 ### 4. Unsaved changes
 
-If `git status --porcelain` returns changes:
+Using the file changes captured in step 1 (`git status --branch --porcelain`), if any lines beyond the `##` header are present:
 ```
-⚠️  You have unsaved changes on your current feature.
-    They will be saved on the next /product-flow:submit.
+⚠️  Unsaved changes on your current feature — will be saved on the next /product-flow:submit.
 ```
 
 ---
@@ -356,11 +368,11 @@ If `git status --porcelain` returns changes:
 If one or more branches have SPEC files but no PR, show the following prompt (one per branch, in order — current branch first, then others):
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔧 MISSING PR: <feature name>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  This branch has a SPEC but no GitHub PR.
-  Progress so far: <list completed steps e.g. "Spec created, Plan generated">
+─────────────────────────────────────────
+  🔧 MISSING PR: **<feature name>**
+
+  This branch has a spec but no GitHub PR.
+  Progress: <list completed steps e.g. "Spec created, Plan generated">
 
   Create a PR for this feature? (yes / no)
 ```
@@ -415,15 +427,8 @@ Then continue to the next SPEC-only branch (if any), and finally proceed to step
 
 ### 5. Offer to switch feature
 
-If there are other feature branches, ask at the end:
+The footer section (defined in step 3) already renders the switch prompt. Wait for user input:
 
-```
-Do you want to continue with the current feature or switch to another one?
-  • Type the number of the feature you want to switch to (e.g. "1" or "2")
-  • Or press Enter / say "continue" to stay where you are
-```
-
-Wait for user input:
 - If the user inputs a valid number corresponding to a listed feature, run:
   ```bash
   git stash  # only if there are unsaved changes
@@ -436,7 +441,9 @@ Wait for user input:
 
 ### 6. Session close
 
-Run the `/product-flow:check-and-clear` logic to check the context and guide the user if they need to clear the session.
+Only run this check if the conversation already has significant context (more than ~10 messages or prior tool calls visible in the session). If the session is fresh, skip entirely.
+
+If the check runs, apply `/product-flow:check-and-clear` logic:
 
 - **🟢 / 🟡**: Show nothing.
 - **🟠**: Show at the end of the report:

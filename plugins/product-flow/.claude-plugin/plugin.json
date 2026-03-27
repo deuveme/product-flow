@@ -45,6 +45,7 @@
     "./skills/praxis.test-desiderata",
     "./skills/praxis.bdd-with-approvals",
     "./skills/praxis.backend-architecture",
-    "./skills/praxis.frontend-architecture"
+    "./skills/praxis.frontend-architecture",
+    "./skills/praxis.code-simplifier"
   ]
 }
