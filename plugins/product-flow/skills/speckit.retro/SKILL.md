@@ -45,7 +45,7 @@ Re-read the code just written for this task.
 Apply fixes immediately if they are small. For larger simplifications, log them
 as a follow-up item and continue (do not block progress).
 
-If the `/simplify` skill is available, invoke it on the files touched by this task.
+If the `/product-flow:praxis.code-simplifier` skill is available, invoke it on the files touched by this task.
 
 ### Step 2: Quick Learning Check
 

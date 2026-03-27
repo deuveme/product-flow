@@ -60,7 +60,7 @@ PM commands have no logic. They delegate completely to internal engines and only
 |---|---|
 | `/product-flow:start` | create branch + Draft PR → `speckit.specify` → `speckit.retro` |
 | `/product-flow:continue` | state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` (dispatched by state machine) |
-| `/product-flow:build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` → `speckit.implement.withTDD` → `praxis.test-desiderata`) |
+| `/product-flow:build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` → `speckit.implement.withTDD` → `praxis.code-simplifier` → `praxis.test-desiderata`) |
 | `/product-flow:submit` | git add/commit/push → `gh pr ready` on first run (exits DRAFT) |
 | `/product-flow:deploy-to-stage` | git merge --squash |
 
@@ -232,7 +232,7 @@ All bot comments are written via `/product-flow:pr-comments write`, which handle
 
 **`implement` skill:**
 1. Calls `/product-flow:praxis.bdd-with-approvals` → writes approval fixtures (executable specs)
-2. Calls `/product-flow:speckit.implement.withTDD` → implements with Red-Green-Refactor TDD + ZOMBIES, then polishes with `praxis.code-simplifier`
+2. Calls `/product-flow:speckit.implement.withTDD` → implements with Red-Green-Refactor TDD + ZOMBIES, then polishes with `/product-flow:praxis.code-simplifier`
 3. Calls `/product-flow:praxis.test-desiderata` → validates test quality against Kent Beck's 12 properties
 4. Calls `/product-flow:speckit.retro` for quality validation
 
