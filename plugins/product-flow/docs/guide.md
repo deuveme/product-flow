@@ -37,12 +37,15 @@ plugins/product-flow/
         │   ├── speckit.taskstoissues, speckit.retro, speckit.checklist
         │
         └── [Praxis engineering skills]
-            ├── praxis.complexity-review      (called in plan: challenge design)
-            ├── praxis.backend-architecture   (called in plan: validate hexagonal structure)
-            ├── praxis.frontend-architecture  (called in plan: validate feature-based structure)
-            ├── praxis.bdd-with-approvals     (called in implement: write approval specs first)
-            ├── praxis.test-desiderata        (called in implement: validate test quality)
-            └── praxis.code-simplifier        (called in implement: simplify and refine code after TDD cycles)
+            ├── praxis.complexity-review        (called in plan: challenge design)
+            ├── praxis.backend-architecture     (called in plan: validate hexagonal structure)
+            ├── praxis.frontend-architecture    (called in plan: validate feature-based structure)
+            ├── praxis.bdd-with-approvals       (called in implement: write approval specs first)
+            ├── praxis.test-desiderata          (called in implement: validate test quality)
+            ├── praxis.code-simplifier          (called in implement: simplify and refine code after TDD cycles)
+            ├── praxis.collaborative-design     (optional pre-spec: explore ambiguous features visually before speckit.specify)
+            ├── praxis.event-modeling           (optional in plan: decompose event-driven features into slices before speckit.plan)
+            └── praxis.expand-contract          (optional in plan/implement: safe migration pattern for breaking changes)
 ```
 
 ### Design principle
@@ -236,6 +239,16 @@ All bot comments are written via `/product-flow:pr-comments write`, which handle
 3. Calls `/product-flow:praxis.test-desiderata` → validates test quality against Kent Beck's 12 properties
 4. Calls `/product-flow:speckit.retro` for quality validation
 
+### Optional praxis skills (manual invocation)
+
+These three skills are not called automatically by any workflow step. Invoke them explicitly when the situation calls for it:
+
+| Skill | When to use | How to invoke |
+|---|---|---|
+| `/product-flow:praxis.collaborative-design` | Feature is ambiguous — before running `/product-flow:start`, use this to explore the problem space visually with story splitting and vertical slicing | Say: "Let's explore this feature with collaborative design" |
+| `/product-flow:praxis.event-modeling` | Feature involves integrations, automations, or reactive logic — use during planning to decompose into STATE_CHANGE / STATE_VIEW / AUTOMATION slices before `speckit.plan` | Say: "Let's model this with event modeling" |
+| `/product-flow:praxis.expand-contract` | Plan includes breaking changes (rename DB column, change API contract, replace service) — use to define the three migration phases | Say: "Apply expand-contract to this migration" |
+
 ---
 
 ## 4. How to modify skills
@@ -276,7 +289,7 @@ description: "Shown in Claude Code autocomplete"
 ### Adding a new skill
 
 1. Create `plugins/product-flow/skills/my-skill/SKILL.md`
-2. Add to `plugins/product-flow/.claude-plugin/plugin.json` only if public
+2. Add to `plugins/product-flow/.claude-plugin/plugin.json` — all skills must be registered, both public and internal
 3. Add bash permissions to project's `settings.json` if needed
 4. Update PR template in `/product-flow:start` SKILL.md if adding a workflow step
 5. Update `/product-flow:status` SKILL.md if adding a progress indicator

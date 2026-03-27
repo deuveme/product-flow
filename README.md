@@ -70,6 +70,9 @@ Close the terminal and reopen Claude Code.
 - **Approval testing**: Specs are written as executable fixtures before implementation.
 - **Test quality**: Tests are validated against Kent Beck's 12 Test Desiderata properties.
 - **Team collaboration**: Team feedback integrates back into specs and plans via PR comments.
+- **Visual design exploration**: Collaborative design skill for exploring ambiguous features through scenarios and vertical slicing before spec creation.
+- **Event modeling**: Decompose event-driven features into independently testable slices (STATE_CHANGE / STATE_VIEW / AUTOMATION) before planning.
+- **Safe migrations**: Expand-contract pattern for breaking changes — rename columns, refactor APIs, or replace services with zero downtime.
 
 ---
 

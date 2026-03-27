@@ -46,6 +46,9 @@
     "./skills/praxis.bdd-with-approvals",
     "./skills/praxis.backend-architecture",
     "./skills/praxis.frontend-architecture",
-    "./skills/praxis.code-simplifier"
+    "./skills/praxis.code-simplifier",
+    "./skills/praxis.collaborative-design",
+    "./skills/praxis.event-modeling",
+    "./skills/praxis.expand-contract"
   ]
 }
