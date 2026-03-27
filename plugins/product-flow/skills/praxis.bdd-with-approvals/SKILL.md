@@ -1,5 +1,4 @@
 ---
-name: bdd-with-approvals
 description: Scannable BDD tests written in domain language. Use when doing BDD.
 user_invocable: false
 ---
