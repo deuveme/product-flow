@@ -26,6 +26,16 @@ Close the terminal. If you had Claude Code Desktop open, close it and reopen it.
 
 You are ready to use the plugin commands!
 
+**2. Update the plugin**
+
+Open your terminal, type `claude` and press Enter. Once it loads, run:
+
+```
+/plugin update product-flow@product-flow
+```
+
+Close the terminal and reopen Claude Code.
+
 **Commands:**
 - `/product-flow:start` — start a new feature
 - `/product-flow:continue` — advance to next step (repeatable)
