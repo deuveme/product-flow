@@ -14,9 +14,7 @@ Open your terminal, type `claude` and press Enter. Once it loads, run:
 /plugin marketplace add git@github.com:deuveme/product-flow.git
 ```
 
-When it finishes, close the terminal.
-
-Open the terminal again, type `claude` and press Enter. Once it loads, run:
+Then, in the same session, run:
 
 ```
 /plugin install product-flow@product-flow
