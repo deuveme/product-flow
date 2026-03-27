@@ -122,7 +122,43 @@ Invoke `/product-flow:speckit.retro` with context: "after implement phase".
 **Wait for `speckit.retro` to finish before continuing.**
 If it returns a **Blocked** status: do not show the final report until the user resolves the blockers.
 
-### 10. Final report
+### 10. Propose verify-tasks
+
+After the retro completes, propose:
+
+```
+🔍 Detect phantom completions?
+
+speckit.verify-tasks checks that every task marked [X] has real code behind it
+— not stubs, empty bodies, or TODOs.
+
+⚠️  For maximum reliability this should run in a NEW session (the current
+session has context from the implementation that may bias the check).
+
+  A. Run now in this session (faster, slight bias risk)
+  B. I'll open a new session — remind me to run verify-tasks there
+  C. Skip
+
+Your choice:
+```
+
+Wait for the user's response:
+
+- **A** → invoke `/product-flow:speckit.verify-tasks`. Wait for it to finish.
+  - If it flags **NOT_FOUND** or **PARTIAL** tasks: surface the walkthrough and
+    wait for the user to resolve each item before continuing.
+  - When the walkthrough finishes (or if no items are flagged): continue to
+    step 11.
+- **B** → output:
+  ```
+  ✅ Noted. When you open a new session, run /product-flow:build — it will
+  detect that the code is already generated and run verify-tasks automatically.
+  ```
+  Then continue to step 11.
+
+- **C** → continue to step 11 silently.
+
+### 11. Final report
 
 ```
 ✅ Code generated

@@ -37,9 +37,9 @@ You **MUST** consider the user input before proceeding (if not empty).
 
    - **If any checklist is incomplete**:
      - Display the table with incomplete item counts
-     - **STOP** and ask: "Some checklists are incomplete. Do you want to proceed with implementation anyway? (yes/no)"
+     - **STOP** and ask: "Some checklists are incomplete. Proceed with implementation anyway, or stop to complete them first? (yes to proceed / no to stop)"
      - Wait for user response before continuing
-     - If user says "no" or "wait" or "stop", halt execution
+     - If user says "no" or "stop", halt execution
      - If user says "yes" or "proceed" or "continue", proceed to step 3
 
    - **If all checklists are complete**:
@@ -138,9 +138,21 @@ You **MUST** consider the user input before proceeding (if not empty).
    11. Run tests after each refactoring step
    12. Commit: every green + refactored state = one commit
 
-   ### c. Mark task complete
+   ### c. Mark task complete and close issue
 
-   After all tests for a task pass, mark `[X]` in tasks.md.
+   After all tests for a task pass:
+
+   1. Mark `[X]` in `tasks.md` for this task.
+
+   2. Check if the task line contains a `(#N)` annotation (added by
+      `speckit.taskstoissues`). If it does, close the corresponding GitHub issue:
+
+      ```bash
+      gh issue close N --comment "Implemented in this PR. Closing as part of the feature build."
+      ```
+
+      If the task has no `(#N)` annotation (issues were not created, or the task
+      was added after issue creation), skip the close step silently.
 
 7. Implementation execution rules:
    - **Setup first**: Initialize project structure, dependencies, configuration

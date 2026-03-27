@@ -29,14 +29,21 @@ Run /product-flow:continue to generate the plan first.
 
 **STOP.**
 
-### 3. Detect progress and inform the PM
+### 3. Detect progress and decide entry point
 
-Check the PR body for completed steps:
+Check the PR body and feature directory:
 - Tasks done? → `- [x] Tasks generated` is marked
 - Checklist done? → `specs/<feature-dir>/checklists/` directory exists and is non-empty
 - Code done? → `- [x] Code generated` is marked
+- Verify-tasks done? → `specs/<feature-dir>/verify-tasks-report.md` exists
 
-Build the pending steps list based on what is NOT yet done and show:
+**Re-entry shortcut**: If code is already generated (`- [x] Code generated`)
+but `verify-tasks-report.md` does NOT exist in FEATURE_DIR, the user chose
+option B ("open a new session") from the verify-tasks proposal. In this case:
+**skip directly to step 6b (verify-tasks)** without re-running tasks, checklist,
+or implement.
+
+Otherwise, build the pending steps list based on what is NOT yet done and show:
 
 ```
 📍 Current status: Plan generated · Ready to build
@@ -52,7 +59,7 @@ This may take several minutes.
 Starting...
 ```
 
-If all three steps are already done, skip to the final report.
+If all steps (including verify-tasks) are already done, skip to the final report.
 
 ### 4. Generate tasks
 
@@ -103,9 +110,27 @@ Otherwise, invoke `/product-flow:implement`.
 - Reading spec, plan, data-model, contracts and tasks
 - Implementing the tasks in the correct order
 - Respecting the dependencies defined in tasks.md
+- Proposing `speckit.verify-tasks` at the end (step 10 of implement)
 
 **Wait for `/product-flow:implement` to finish completely before continuing.**
 If it produces an ERROR: propagate and stop.
+
+### 6b. Verify-tasks (re-entry from new session)
+
+This step runs only when the re-entry shortcut was triggered in step 3:
+code is already generated AND `verify-tasks-report.md` does NOT exist.
+
+The user opened a new session specifically to run verify-tasks with a clean
+context — execute it directly without re-proposing.
+
+Invoke `/product-flow:speckit.verify-tasks`.
+
+**Wait for `speckit.verify-tasks` to finish before continuing.**
+
+- If it flags **NOT_FOUND** or **PARTIAL** tasks: surface the interactive
+  walkthrough and wait for the user to resolve each item.
+- When the walkthrough finishes (or if no items are flagged): continue to
+  step 7.
 
 ### 7. Final report
 

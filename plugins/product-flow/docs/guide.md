@@ -35,6 +35,7 @@ plugins/product-flow/
         │   ├── speckit.specify, speckit.clarify, speckit.plan, speckit.tasks
         │   ├── speckit.implement.withTDD
         │   ├── speckit.taskstoissues, speckit.retro, speckit.checklist
+        │   ├── speckit.verify, speckit.verify-tasks, speckit.reconcile
         │
         └── [Praxis engineering skills]
             ├── praxis.complexity-review        (called in plan: challenge design)
@@ -50,9 +51,10 @@ plugins/product-flow/
 
 ### Design principle
 
-PM commands have no logic. They delegate completely to internal engines and only:
+PM commands delegate to internal engines and only:
 - Manage the PR (open, update status, history)
 - Verify gates before executing each step
+- Detect progress and optimize re-entry points (e.g. skip already-completed steps)
 - Provide clear next-step instructions
 
 **The PR body is the source of truth** — `gh pr view --json body` determines workflow state, not local files.
@@ -63,8 +65,8 @@ PM commands have no logic. They delegate completely to internal engines and only
 |---|---|
 | `/product-flow:start` | create branch + Draft PR → `speckit.specify` → `speckit.retro` |
 | `/product-flow:continue` | state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` (dispatched by state machine) |
-| `/product-flow:build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` → `speckit.implement.withTDD` → `praxis.code-simplifier` → `praxis.test-desiderata`) |
-| `/product-flow:submit` | git add/commit/push → `gh pr ready` on first run (exits DRAFT) |
+| `/product-flow:build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` → `speckit.implement.withTDD` → `praxis.code-simplifier` → `praxis.test-desiderata` → proposes `speckit.verify-tasks`) |
+| `/product-flow:submit` | `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM asks, passes silently) → git add/commit/push → `gh pr ready` on first run (exits DRAFT) |
 | `/product-flow:deploy-to-stage` | git merge --squash |
 
 ---
@@ -112,6 +114,7 @@ Inside Claude Code in your project:
     "allow": [
       "Bash(git *)",
       "Bash(gh pr *)",
+      "Bash(gh issue *)",
       "Bash(gh run *)",
       "Bash(jq *)",
       "Bash(mkdir *)",
@@ -235,13 +238,28 @@ All bot comments are written via `/product-flow:pr-comments write`, which handle
 
 **`implement` skill:**
 1. Calls `/product-flow:praxis.bdd-with-approvals` → writes approval fixtures (executable specs)
-2. Calls `/product-flow:speckit.implement.withTDD` → implements with Red-Green-Refactor TDD + ZOMBIES, then polishes with `/product-flow:praxis.code-simplifier`
+2. Calls `/product-flow:speckit.implement.withTDD` → implements with Red-Green-Refactor TDD + ZOMBIES, then polishes with `/product-flow:praxis.code-simplifier`. As each task is completed, its GitHub issue (linked via `#N` in `tasks.md`) is closed automatically
 3. Calls `/product-flow:praxis.test-desiderata` → validates test quality against Kent Beck's 12 properties
 4. Calls `/product-flow:speckit.retro` for quality validation
 
+**`tasks` skill:**
+1. Calls `/product-flow:speckit.tasks` → generates `tasks.md` ordered by dependencies
+2. Calls `/product-flow:speckit.taskstoissues` → creates one GitHub issue per task; writes the issue number `(#N)` back into each task line in `tasks.md`; adds `Closes #N` references to the PR body so GitHub auto-closes linked issues on merge
+
+### Automatic quality gates
+
+These three skills are **internal** — they are not invokable directly. The
+orchestrators decide when to run them:
+
+| Skill | Triggered by | Behaviour |
+|---|---|---|
+| `speckit.verify` | `/product-flow:submit` (always) | Validates implementation against spec, plan, tasks, constitution. CRITICAL findings block submit; HIGH/MEDIUM ask the user; clean pass is silent |
+| `speckit.verify-tasks` | `/product-flow:build` (proposed) | Proposed at the end of implement. User chooses: run now, open a new session, or skip |
+| `speckit.reconcile` | `speckit.verify` (user opt-in on CRITICAL) | When verify finds CRITICAL drift, the user is offered two options: fix manually (A) or reconcile (B). Only invoked if the user chooses B and provides a gap description |
+
 ### Optional praxis skills (manual invocation)
 
-These three skills are not called automatically by any workflow step. Invoke them explicitly when the situation calls for it:
+These skills are not called automatically by any workflow step. Invoke them explicitly when the situation calls for it:
 
 | Skill | When to use | How to invoke |
 |---|---|---|

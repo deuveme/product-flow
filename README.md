@@ -73,6 +73,9 @@ Close the terminal and reopen Claude Code.
 - **Visual design exploration**: Collaborative design skill for exploring ambiguous features through scenarios and vertical slicing before spec creation.
 - **Event modeling**: Decompose event-driven features into independently testable slices (STATE_CHANGE / STATE_VIEW / AUTOMATION) before planning.
 - **Safe migrations**: Expand-contract pattern for breaking changes — rename columns, refactor APIs, or replace services with zero downtime.
+- **Implementation verification**: Post-implement quality gate (`speckit.verify`) that validates code against spec, plan, tasks, and constitution before submitting for review.
+- **Phantom completion detection**: `speckit.verify-tasks` checks that tasks marked done have real code behind them — not stubs or TODOs — using a 5-layer cascade (file existence, git diff, pattern matching, dead-code detection, semantic assessment).
+- **Drift reconciliation**: `speckit.reconcile` surgically updates spec, plan, and tasks when implementation diverges from the original design.
 
 ---
 
@@ -92,3 +95,6 @@ Close the terminal and reopen Claude Code.
 - **Test Desiderata** — Kent Beck framework
 - **ZOMBIES** — TDD test ordering heuristic by James Grenning
 - **Retro SpecKit + more ideas** - skills by [Alex Fernández](https://github.com/alexfdz)
+- **speckit.verify** — adapted from [ismaelJimenez/spec-kit-verify](https://github.com/ismaelJimenez/spec-kit-verify)
+- **speckit.verify-tasks** — adapted from [datastone-inc/spec-kit-verify-tasks](https://github.com/datastone-inc/spec-kit-verify-tasks)
+- **speckit.reconcile** — adapted from [stn1slv/spec-kit-reconcile](https://github.com/stn1slv/spec-kit-reconcile)

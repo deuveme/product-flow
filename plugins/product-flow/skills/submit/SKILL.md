@@ -20,6 +20,48 @@ Verify in the PR body: `- [x] Code generated`
 
 If not marked: ERROR "The code has not been generated yet. Run /product-flow:build first."
 
+### 2b. Verification gate
+
+Invoke `/product-flow:speckit.verify`.
+
+**Wait for `speckit.verify` to finish before continuing.**
+
+- If it reports **CRITICAL** issues → **STOP**. Do not commit or push. Show:
+
+  ```
+  🚫 BLOCKED — Verification failed
+
+  The implementation has critical issues that must be resolved before submitting.
+
+  Options:
+    A. Fix the issues manually and run /product-flow:submit again
+    B. Run /product-flow:speckit.reconcile "<gap description>" if the
+       implementation is correct and the spec/plan need updating instead
+
+  What do you want to do?
+  ```
+
+  Wait for the user's response:
+  - Option A → stop here. User fixes and re-runs `/product-flow:submit`.
+  - Option B → invoke `/product-flow:speckit.reconcile` passing the gap
+    description the user provides. After it finishes, re-run
+    `/product-flow:speckit.verify` once more. If it still shows CRITICAL issues,
+    stop and repeat this decision. If it passes, continue to step 3.
+
+- If it reports only **HIGH / MEDIUM / LOW** issues → show the findings summary
+  and ask:
+
+  ```
+  ⚠️  Verification found warnings (no blockers). Do you want to proceed with
+  submit anyway, or fix them first? (yes to proceed / no to stop)
+  ```
+
+  Wait for the user's response:
+  - yes → continue to step 3.
+  - no → stop here.
+
+- If it reports **no issues** → continue to step 3 silently.
+
 ### 3. Verify there are changes to save
 
 ```bash

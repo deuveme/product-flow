@@ -110,7 +110,7 @@ key question:
 
 | Artifact | Type | Key question |
 |----------|------|-------------|
-| `spec.md` | **Product** | Do any user stories, acceptance scenarios, or requirements need correction? Is the `Status` field current? |
+| `spec.md` | **Product** | Do any user stories, acceptance scenarios, or requirements need correction? |
 | `plan.md` | **Technical** | Do any technical decisions, constraints, or the project structure need updating? |
 | `tasks.md` | **Internal** | Are any tasks now unnecessary, missing, or mis-sequenced? Are all completed tasks marked `[x]`? |
 | `constitution.md` | **Technical** | Did this phase reveal a principle violation or gap worth amending? |
