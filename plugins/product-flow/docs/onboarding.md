@@ -250,6 +250,21 @@ Yes, but it's better to finish one before starting another. If you need to do it
 **What is GitHub?**
 It's the site where the review room lives. You don't need to go there directly — Claude manages it for you — but if you want to see the status of your feature, you can find it at github.com/[project-name].
 
+**How do I install the plugin?**
+Open your terminal, type `claude` and press Enter. Once it loads, run:
+
+```
+/plugin marketplace add git@github.com:deuveme/product-flow.git
+```
+
+Then, in the same session, run:
+
+```
+/plugin install product-flow@product-flow
+```
+
+Close the terminal and reopen Claude Code.
+
 **How do I update the plugin?**
 Open your terminal, type `claude` and press Enter. Once it loads, run:
 
