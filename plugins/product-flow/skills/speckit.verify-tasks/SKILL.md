@@ -1,11 +1,7 @@
 ---
-description: >
-  Detects phantom completions: tasks marked [X] in tasks.md that have no real
-  implementation behind them. Uses a 5-layer verification cascade (file
-  existence, git diff, content matching, dead-code detection, semantic
-  assessment). Run in a fresh session after speckit.implement.withTDD for
-  maximum reliability.
-user_invocable: false
+description: "Detects phantom completions: tasks marked done with no real implementation."
+user-invocable: false
+context: fork
 ---
 
 ## User Input

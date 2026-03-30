@@ -1,6 +1,6 @@
 ---
-description: "UTILITY — Checks the context and, if it is high, clears automatically."
-user_invocable: false
+description: "Checks context level and warns if it is high."
+user-invocable: false
 ---
 
 ## Execution

@@ -1,10 +1,6 @@
 ---
-description: >
-  Analyze and improve test code quality using Kent Beck's 12 Test Desiderata properties.
-  Use when reviewing test files, identifying test quality issues, or evaluating tests
-  before a speckit.retro. Applies to unit tests, integration tests, and any automated
-  test code in backend/ or frontend/.
-user_invocable: false
+description: "Analyzes test quality using Kent Beck's 12 Test Desiderata properties."
+user-invocable: false
 ---
 
 ## User Input

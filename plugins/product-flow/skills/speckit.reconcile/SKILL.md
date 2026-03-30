@@ -1,10 +1,6 @@
 ---
-description: >
-  Reconciles implementation drift by surgically updating the feature's own
-  spec.md, plan.md, and tasks.md. Takes a gap report describing what diverged
-  (missing routes, changed API contracts, behavior differences) and applies the
-  minimum edits needed to bring artifacts back in sync with reality.
-user_invocable: false
+description: "Reconciles drift between implementation and spec/plan/tasks."
+user-invocable: false
 ---
 
 ## User Input

@@ -1,9 +1,6 @@
 ---
-description: >
-  Designs software features collaboratively through visual scenarios and iterative
-  refinement. Use before speckit.specify when a feature is ambiguous, to explore the
-  problem space through concrete scenarios before committing to a spec.
-user_invocable: false
+description: "Explores ambiguous features through visual scenarios before the spec."
+user-invocable: false
 ---
 icon: 🎨
 

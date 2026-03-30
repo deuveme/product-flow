@@ -1,9 +1,6 @@
 ---
-description: >
-  Zero-downtime pattern for breaking changes. Use when renaming DB columns, changing
-  data types, replacing services or libraries, or modifying public APIs. Applies
-  expand-contract to maintain backward compatibility throughout the migration.
-user_invocable: false
+description: "Zero-downtime expand-contract pattern for breaking changes."
+user-invocable: false
 ---
 icon: 🔄
 

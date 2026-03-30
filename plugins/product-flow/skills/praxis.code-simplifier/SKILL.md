@@ -1,7 +1,7 @@
 ---
 name: praxis.code-simplifier
-description: Simplifies and refines code for clarity, readability, and maintainability. Reduces complexity without changing behavior. Use when simplifying, cleaning up, or reducing complexity in code.
-user_invocable: false
+description: "Simplifies code for clarity without changing behavior."
+user-invocable: false
 ---
 icon: ✂️
 

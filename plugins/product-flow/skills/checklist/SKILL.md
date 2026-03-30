@@ -1,6 +1,6 @@
 ---
-description: "Internal — Called by /product-flow:build. Validates requirements quality before implementation starts."
-user_invocable: false
+description: "Validates requirements quality before implementation starts."
+user-invocable: false
 ---
 
 ## Purpose

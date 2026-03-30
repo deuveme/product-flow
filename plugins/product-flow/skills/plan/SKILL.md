@@ -1,6 +1,6 @@
 ---
-description: "Internal — Called by /product-flow:continue. Generates the technical plan from the approved spec."
-user_invocable: false
+description: "Generates the technical plan from the approved spec."
+user-invocable: false
 ---
 
 ## Execution

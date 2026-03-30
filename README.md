@@ -85,6 +85,7 @@ Close the terminal and reopen Claude Code.
 - `gh` CLI installed and authenticated
 - `jq` installed
 - Repo access with push permissions
+- [GitHub MCP server](https://github.com/github/github-mcp-server) configured (required by `/product-flow:build` to create GitHub issues)
 
 ---
 

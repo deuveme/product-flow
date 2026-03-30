@@ -1,9 +1,6 @@
 ---
-description: >
-  Designs systems using Event Modeling methodology. Use during the planning phase
-  when a feature involves integrations, automations, or reactive logic — to decompose
-  behavior into independently testable slices before speckit.plan.
-user_invocable: false
+description: "Decomposes event-driven features into independently testable slices."
+user-invocable: false
 ---
 icon: 📊
 

@@ -1,5 +1,5 @@
 ---
-description: "UTILITY — Shows how much memory Claude has left in this session."
+description: "Shows how much context memory Claude has left in this session."
 ---
 
 ## Execution

@@ -1,6 +1,7 @@
 ---
-description: Generate an actionable, dependency-ordered tasks.md for the feature based on available design artifacts.
-user_invocable: false
+description: Generates a dependency-ordered tasks.md from design artifacts.
+user-invocable: false
+context: fork
 handoffs:
   - label: Implement Project
     agent: speckit.implement.withTDD

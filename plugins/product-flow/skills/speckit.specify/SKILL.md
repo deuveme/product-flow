@@ -1,6 +1,6 @@
 ---
-description: Create or update the feature specification from a natural language feature description.
-user_invocable: false
+description: Creates or updates the feature spec from a natural language description.
+user-invocable: false
 handoffs:
   - label: Build Technical Plan
     agent: speckit.plan

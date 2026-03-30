@@ -1,6 +1,7 @@
 ---
-description: Execute the implementation planning workflow using the plan template to generate design artifacts.
-user_invocable: false
+description: Generates design artifacts: research, data model, and contracts.
+user-invocable: false
+context: fork
 handoffs:
   - label: Create Tasks
     agent: speckit.tasks

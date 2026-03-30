@@ -1,6 +1,6 @@
 ---
-description: "Internal — Called by /product-flow:build. Generates the feature code using TDD."
-user_invocable: false
+description: "Generates the feature code using TDD."
+user-invocable: false
 ---
 
 ## Execution

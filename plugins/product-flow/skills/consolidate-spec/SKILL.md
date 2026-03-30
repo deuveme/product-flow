@@ -1,6 +1,6 @@
 ---
-description: "Internal — Called by /product-flow:continue. Integrates team feedback into the spec. Repeatable."
-user_invocable: false
+description: "Integrates team feedback into the spec."
+user-invocable: false
 ---
 
 ## Execution

@@ -1,10 +1,6 @@
 ---
-description: >
-  Post-phase retrospective for SpecKit workflows. Run after any SpecKit phase
-  (specify, plan, tasks, implement) or after completing a task group. Reviews
-  learnings, simplifies generated code, and checks whether earlier artifacts
-  need updating before proceeding.
-user_invocable: false
+description: "Post-phase retrospective. Reviews learnings and syncs artifacts."
+user-invocable: false
 ---
 
 ## User Input

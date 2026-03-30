@@ -1,6 +1,6 @@
 ---
-description: "Internal — Called by /product-flow:build. Breaks the plan down into tasks and creates GitHub issues."
-user_invocable: false
+description: "Breaks the plan into tasks and creates GitHub issues."
+user-invocable: false
 ---
 
 ## Execution

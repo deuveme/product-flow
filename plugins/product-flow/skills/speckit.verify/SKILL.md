@@ -1,10 +1,7 @@
 ---
-description: >
-  Post-implementation quality gate. Validates the implementation against
-  spec.md, plan.md, tasks.md, and constitution.md. Read-only — produces a
-  structured report with CRITICAL / HIGH / MEDIUM / LOW findings. Run before
-  /product-flow:submit to confirm the feature is ready for review.
-user_invocable: false
+description: "Post-implementation quality gate. Validates code against spec, plan and tasks."
+user-invocable: false
+context: fork
 ---
 
 ## User Input

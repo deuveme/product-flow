@@ -1,9 +1,6 @@
 ---
-description: >
-  Challenge and simplify a technical proposal by evaluating it against 30 complexity
-  dimensions. Use before speckit.plan when a design involves Kafka, microservices,
-  event sourcing, or any component that feels over-engineered.
-user_invocable: false
+description: "Challenges a technical proposal against 30 complexity dimensions."
+user-invocable: false
 ---
 
 ## User Input

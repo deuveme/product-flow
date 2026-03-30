@@ -1,5 +1,5 @@
 ---
-description: "UTILITY — Shows where you are in the workflow right now."
+description: "Shows current workflow position and what the next step is."
 ---
 
 ## Execution

@@ -1,6 +1,6 @@
 ---
-description: "Internal — Manages PR comment lifecycle. Detects unprocessed bot comments and marks them as resolved."
-user_invocable: false
+description: "Manages PR comment lifecycle."
+user-invocable: false
 ---
 
 ## Purpose

@@ -1,6 +1,6 @@
 ---
-description: "Integrates team feedback on the technical plan. Reads PR comments, applies corrections to plan.md, research.md, data-model.md, and contracts/, then commits the updated artifacts."
-user_invocable: false
+description: "Integrates team feedback into the technical plan."
+user-invocable: false
 ---
 
 ## Execution

@@ -1,6 +1,6 @@
 ---
-description: Scannable BDD tests written in domain language. Use when doing BDD.
-user_invocable: false
+description: "BDD tests written in domain language with approval snapshots."
+user-invocable: false
 ---
 icon: 📋
 

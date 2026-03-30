@@ -1,6 +1,6 @@
 ---
-description: Convert existing tasks into actionable, dependency-ordered GitHub issues for the feature based on available design artifacts.
-user_invocable: false
+description: Converts tasks.md entries into GitHub issues.
+user-invocable: false
 tools: ['github/github-mcp-server/issue_write']
 ---
 

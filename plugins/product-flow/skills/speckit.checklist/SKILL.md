@@ -1,6 +1,6 @@
 ---
-description: Generate a custom checklist for the current feature based on user requirements.
-user_invocable: false
+description: Generates a requirements quality checklist for the feature.
+user-invocable: false
 ---
 
 ## Checklist Purpose: "Unit Tests for English"

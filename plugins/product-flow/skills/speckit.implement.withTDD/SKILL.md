@@ -1,6 +1,7 @@
 ---
-description: Execute the implementation plan by processing tasks defined in tasks.md following strict TDD with ZOMBIES-ordered test planning. Each task goes through Red-Green-Refactor cycles. Forked from speckit.implement.
-user_invocable: false
+description: "Implements tasks from tasks.md using strict TDD with ZOMBIES ordering."
+user-invocable: false
+context: fork
 ---
 
 ## User Input
