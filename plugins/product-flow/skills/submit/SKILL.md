@@ -82,9 +82,11 @@ Show the user which files are going to be saved (including untracked files that 
 ### 5. Commit and push
 
 ```bash
+mkdir -p .claude && touch .claude/.workflow-submit-active
 git add -A
 git commit -m "feat(<branch-name>): <brief-summary-of-changes>"
 git push origin HEAD
+rm -f .claude/.workflow-submit-active
 ```
 
 ### 6. Take the PR out of draft (first time only)

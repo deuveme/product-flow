@@ -22,7 +22,8 @@ plugins/product-flow/
 ├── .claude-plugin/
 │   └── plugin.json           ← manifest: 7 public PM commands
 ├── hooks/
-│   └── security-guard.sh     ← blocks writes/deletes outside the repository (PreToolUse)
+│   ├── security-guard.sh     ← blocks writes/deletes outside the repository (PreToolUse)
+│   └── workflow-guard.sh     ← enforces product-flow git discipline: branch naming, no direct commits/pushes/merges to main, no PRs outside NNN-kebab-name branches, squash-only merges (PreToolUse)
 └── skills/
     ├── [PM Commands — user-facing]
     │   ├── start, continue, build, submit, deploy-to-stage, status, context
@@ -276,6 +277,14 @@ These skills are not called automatically by any workflow step. Invoke them expl
 ```markdown
 ---
 description: "Shown in Claude Code autocomplete"
+user-invocable: false        # optional — Claude-only (hides from user /menu)
+context: fork                # optional — runs in isolated subagent
+handoffs:                    # optional — transition buttons to other skills
+  - label: "Next Step"
+    agent: other-skill
+    prompt: "Continue with..."
+    send: true
+tools: ['github/github-mcp-server/issue_write']  # optional — required MCP tools
 ---
 
 ## Execution
