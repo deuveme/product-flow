@@ -300,7 +300,7 @@ tools: ['github/github-mcp-server/issue_write']  # optional — required MCP too
 ### 5. Final report
 ...
 ### Session close
-(context traffic light)
+Invoke `/product-flow:context`.
 ```
 
 ### Naming conventions
