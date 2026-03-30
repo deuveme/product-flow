@@ -443,7 +443,7 @@ The footer section (defined in step 3) already renders the switch prompt. Wait f
 
 Only run this check if the conversation already has significant context (more than ~10 messages or prior tool calls visible in the session). If the session is fresh, skip entirely.
 
-If the check runs, apply `/product-flow:check-and-clear` logic:
+If the check runs, apply `/product-flow:context` logic:
 
 - **🟢 / 🟡**: Show nothing.
 - **🟠**: Show at the end of the report:

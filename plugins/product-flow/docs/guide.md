@@ -30,7 +30,7 @@ plugins/product-flow/
     │
     └── [Internal engines]
         ├── [Orchestrators]
-        │   ├── consolidate-spec, consolidate-plan, plan, tasks, implement, checklist, check-and-clear, pr-comments
+        │   ├── consolidate-spec, consolidate-plan, plan, tasks, implement, checklist, pr-comments
         │
         ├── [Spec-Kit engines]
         │   ├── speckit.specify, speckit.clarify, speckit.plan, speckit.tasks

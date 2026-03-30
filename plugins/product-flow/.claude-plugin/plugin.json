@@ -38,7 +38,6 @@
     "./skills/tasks",
     "./skills/implement",
     "./skills/checklist",
-    "./skills/check-and-clear",
     "./skills/consolidate-spec",
     "./skills/consolidate-plan",
     "./skills/pr-comments",

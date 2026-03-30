@@ -66,14 +66,4 @@ or [Conflict] before continuing.
 
 ### Session close
 
-Run the `/product-flow:check-and-clear` logic to check the context and guide the user if they need to clear the session.
-
-- **🟢 / 🟡**: Show nothing.
-- **🟠**: Show at the end of the report:
-  ```
-  🟠 Context is high. Open a new session before the next command.
-  ```
-- **🔴**: Show before the final report and interrupt if the user tries to continue:
-  ```
-  🔴 Critical context. Open a new session NOW before continuing.
-  ```
+Invoke `/product-flow:context`.

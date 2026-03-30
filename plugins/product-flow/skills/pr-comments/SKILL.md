@@ -36,6 +36,24 @@ Writes a single bot comment to the PR with the correct marker, user instruction,
 - `status` — `ANSWERED` or `UNANSWERED`
 - `body` — the comment content (plain text, without marker or user instruction)
 
+**Technical decision body format:**
+- `ANSWERED`:
+  ```
+  **Technical question detected:** "[identified question]"
+
+  **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+
+  **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
+  ```
+- `UNANSWERED`:
+  ```
+  **Technical question detected:** "[identified question]"
+
+  **Possible answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+
+  ⚠️ **Unresolved — requires input from the development team.**
+  ```
+
 #### Execution
 
 1. Determine the next question number `<N>`:

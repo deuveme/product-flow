@@ -55,33 +55,9 @@ If it produces an ERROR: propagate and stop.
 
 ### 5. Record technical decisions in the PR
 
-If during the previous step there were technical questions, add **one individual comment per question** to the PR.
-
-For each question the AI was able to answer, invoke `/product-flow:pr-comments write` with:
-- `type`: `technical`
-- `status`: `ANSWERED`
-- `body`:
-  ```
-  **Technical question detected:** "[identified question]"
-
-  **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
-
-  **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
-  ```
-
-For each question the AI was unable to resolve, invoke `/product-flow:pr-comments write` with:
-- `type`: `technical`
-- `status`: `UNANSWERED`
-- `body`:
-  ```
-  **Technical question detected:** "[identified question]"
-
-  **Possible answers:** A. "[option A]" B. "[option B]" C. "[option C]"
-
-  ⚠️ **Unresolved — requires input from the development team.**
-  ```
-
-If there were no technical questions at all, skip this step entirely.
+For each technical decision made, invoke `/product-flow:pr-comments write`
+following the technical decision format (ANSWERED/UNANSWERED).
+Skip if no technical decisions were made.
 
 ### 6. Commit the updated spec
 
@@ -123,14 +99,4 @@ If it returns a **Blocked** status: do not show the final report until the user 
 
 ### Session close
 
-Run the `/product-flow:check-and-clear` logic to check the context and guide the user if they need to clear the session.
-
-- **🟢 / 🟡**: Show nothing.
-- **🟠**: Show at the end of the report:
-  ```
-  🟠 Context is high. Open a new session before the next command.
-  ```
-- **🔴**: Show before the final report and interrupt if the user tries to continue:
-  ```
-  🔴 Critical context. Open a new session NOW before continuing.
-  ```
+Invoke `/product-flow:context`.
