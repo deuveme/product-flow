@@ -71,7 +71,7 @@ If there are conflicts: ERROR "There are conflicts with main. The development te
 
 ### 5. Generate BDD approval fixtures
 
-Invoke `/product-flow:praxis.bdd-with-approvals` passing the contents of `spec.md` and `contracts/` as input.
+Read `research.md` to detect the project tech stack. If the stack is TypeScript or JavaScript, invoke `/product-flow:praxis.bdd-with-approvals` passing the contents of `spec.md` and `contracts/` as input. For other stacks (Python, Go, Java, etc.), skip this step — `speckit.implement.withTDD` will handle test scaffolding directly.
 
 `praxis.bdd-with-approvals` writes approval fixture files before any implementation begins — each fixture is an executable specification in domain language that drives and validates the implementation.
 

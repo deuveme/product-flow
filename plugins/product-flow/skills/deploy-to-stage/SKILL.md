@@ -47,19 +47,7 @@ before publishing to main.
 
 **STOP.**
 
-### 4. Mark as published
-
-Mark `- [x] Published` in the PR body and add a history row:
-
-```
-| Published | YYYY-MM-DD | Merged to main |
-```
-
-```bash
-gh pr edit --body "<updated-body>"
-```
-
-### 5. Squash merge to main
+### 4. Squash merge to main
 
 ```bash
 gh pr merge --squash --delete-branch
@@ -75,6 +63,20 @@ Resolve the conflicts manually before continuing.
 ```
 
 **STOP.**
+
+### 5. Mark as published
+
+Use `$PR_NUMBER` from step 1 (the branch may no longer exist after the merge).
+
+Mark `- [x] Published` in the PR body and add a history row:
+
+```
+| Published | YYYY-MM-DD | Merged to main |
+```
+
+```bash
+gh pr edit $PR_NUMBER --body "<updated-body>"
+```
 
 ### 6. Check CI/CD status
 

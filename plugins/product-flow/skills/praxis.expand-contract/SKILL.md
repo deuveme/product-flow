@@ -1,8 +1,8 @@
 ---
 description: "Zero-downtime expand-contract pattern for breaking changes."
 user-invocable: false
----
 icon: 🔄
+---
 
 # Expand-Contract
 

@@ -1,8 +1,8 @@
 ---
 description: "Decomposes event-driven features into independently testable slices."
 user-invocable: false
----
 icon: 📊
+---
 
 # Event Modeling
 

@@ -1,9 +1,8 @@
 ---
-name: frontend-architecture
 description: "Feature-based architecture for React frontends."
 user-invocable: false
----
 icon: 🧩
+---
 
 # Frontend Architecture (Feature-Based)
 

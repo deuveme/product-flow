@@ -190,8 +190,6 @@ Given that feature description, do this:
 
 **NOTE:** The script creates and checks out the new branch and initializes the spec file before writing.
 
-## General Guidelines
-
 ## Quick Guidelines
 
 - Focus on **WHAT** users need and **WHY**.

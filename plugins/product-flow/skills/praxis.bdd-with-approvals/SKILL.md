@@ -1,10 +1,12 @@
 ---
 description: "BDD tests written in domain language with approval snapshots."
 user-invocable: false
----
 icon: 📋
+---
 
 # BDD with Approval Tests
+
+> **Stack requirement:** This skill uses Vitest's `toMatchFileSnapshot()` API and TypeScript examples. It applies to TypeScript/JavaScript projects. For other stacks, use the equivalent approval-testing library for your language (e.g., `approvaltests` for Python/Java/C#).
 
 ## The Problem
 

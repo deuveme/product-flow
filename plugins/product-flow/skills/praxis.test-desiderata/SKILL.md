@@ -1,6 +1,7 @@
 ---
 description: "Analyzes test quality using Kent Beck's 12 Test Desiderata properties."
 user-invocable: false
+icon: 🧪
 ---
 
 ## User Input
@@ -120,7 +121,7 @@ After evaluating properties, identify active tradeoffs:
 - Writable vs. Predictive — simple tests may not cover enough scenarios
 
 Note any tradeoffs in the output and explain the recommended balance for this
-project's context (Python/pytest backend, TypeScript/bun frontend).
+project's context based on the detected tech stack.
 
 ---
 

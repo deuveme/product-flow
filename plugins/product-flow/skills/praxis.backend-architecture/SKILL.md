@@ -1,9 +1,8 @@
 ---
-name: backend-architecture
 description: "DDD with hexagonal architecture for backend structure."
 user-invocable: false
----
 icon: 🏗️
+---
 
 # Hexagonal Architecture
 

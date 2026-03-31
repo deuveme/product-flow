@@ -1,9 +1,8 @@
 ---
-name: praxis.code-simplifier
 description: "Simplifies code for clarity without changing behavior."
 user-invocable: false
----
 icon: ✂️
+---
 
 # Code Simplifier
 
