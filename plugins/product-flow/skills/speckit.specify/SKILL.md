@@ -9,6 +9,10 @@ handoffs:
     agent: speckit.clarify
     prompt: Clarify specification requirements
     send: true
+  - label: Analyze Split
+    agent: speckit.split
+    prompt: Analyze if this spec should be split
+    send: true
 ---
 
 ## User Input

@@ -244,6 +244,9 @@ Contact the development team. It's the only situation where you need their direc
 **After `/product-flow:build`, Claude asks me something about "verify-tasks". What is that?**
 It's an optional quality check that confirms every completed task has real code behind it — not empty stubs or placeholders. You can run it immediately, open a new session and run it later, or skip it. If you're unsure, choose "run now" — it only takes a moment and catches problems before the team reviews the code.
 
+**The spec is covering too many things. Can I split it into two features?**
+Yes. After `/product-flow:start` writes the first spec, run `/product-flow:speckit.split`. Claude will analyze the spec, detect whether it covers independent deliverables or different user journeys, and propose a clean split. If you confirm, it trims the current spec and opens a new review room for the extracted feature — ready to continue from where the split happened.
+
 **Can I work on two features at the same time?**
 Yes, but it's better to finish one before starting another. If you need to do it, notify the development team first.
 

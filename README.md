@@ -76,6 +76,7 @@ Close the terminal and reopen Claude Code.
 - **Implementation verification**: Post-implement quality gate (`speckit.verify`) that validates code against spec, plan, tasks, and constitution before submitting for review.
 - **Phantom completion detection**: `speckit.verify-tasks` checks that tasks marked done have real code behind them — not stubs or TODOs — using a 5-layer cascade (file existence, git diff, pattern matching, dead-code detection, semantic assessment).
 - **Drift reconciliation**: `speckit.reconcile` surgically updates spec, plan, and tasks when implementation diverges from the original design.
+- **Scope splitting**: `speckit.split` analyzes a spec for scope creep using linguistic, size, and bounded-context signals. If a split is warranted, it trims the current spec and creates a new branch with a draft PR for the extracted feature — with vertical-slice validation and expand-contract warnings when features share entities.
 
 ---
 

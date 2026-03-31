@@ -37,6 +37,7 @@ plugins/product-flow/
         │   ├── speckit.implement.withTDD
         │   ├── speckit.taskstoissues, speckit.retro, speckit.checklist
         │   ├── speckit.verify, speckit.verify-tasks, speckit.reconcile
+        │   ├── speckit.split                          (optional pre-tasks: split over-scoped specs)
         │
         └── [Praxis engineering skills]
             ├── praxis.complexity-review        (called in plan: challenge design)
@@ -267,6 +268,7 @@ These skills are not called automatically by any workflow step. Invoke them expl
 | `/product-flow:praxis.collaborative-design` | Feature is ambiguous — before running `/product-flow:start`, use this to explore the problem space visually with story splitting and vertical slicing | Say: "Let's explore this feature with collaborative design" |
 | `/product-flow:praxis.event-modeling` | Feature involves integrations, automations, or reactive logic — use during planning to decompose into STATE_CHANGE / STATE_VIEW / AUTOMATION slices before `speckit.plan` | Say: "Let's model this with event modeling" |
 | `/product-flow:praxis.expand-contract` | Plan includes breaking changes (rename DB column, change API contract, replace service) — use to define the three migration phases | Say: "Apply expand-contract to this migration" |
+| `/product-flow:speckit.split` | Spec covers too many bounded contexts, user personas, or independent deliverables — use after `speckit.specify`, `speckit.clarify`, or `speckit.plan` and before `speckit.tasks` to extract the excess scope into a new branch with its own draft PR. Also offered automatically as a handoff button at the end of those three skills. | Say: "Analyze if this spec should be split" or use the handoff button |
 
 ---
 

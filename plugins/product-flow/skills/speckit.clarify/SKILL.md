@@ -5,6 +5,10 @@ handoffs:
   - label: Build Technical Plan
     agent: speckit.plan
     prompt: Create a plan for the spec. I am building with...
+  - label: Analyze Split
+    agent: speckit.split
+    prompt: Analyze if this spec should be split
+    send: true
 ---
 
 ## User Input
