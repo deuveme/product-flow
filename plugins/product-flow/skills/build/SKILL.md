@@ -77,7 +77,7 @@ If it produces an ERROR: propagate and stop.
 
 ### 5. Validate requirements quality
 
-Skip this step if `specs/<feature-dir>/checklists/` already exists and contains at least one file.
+Skip this step if `specs/<feature-dir>/checklists/` already exists and contains at least one file other than `requirements.md`.
 
 Otherwise, invoke `/product-flow:checklist`.
 

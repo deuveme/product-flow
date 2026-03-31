@@ -64,6 +64,6 @@ Review items marked as [Gap], [Ambiguity]
 or [Conflict] before continuing.
 ```
 
-### Session close
+### 6. Session close
 
 Invoke `/product-flow:context`.

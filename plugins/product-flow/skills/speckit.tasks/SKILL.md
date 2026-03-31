@@ -3,9 +3,9 @@ description: Generates a dependency-ordered tasks.md from design artifacts.
 user-invocable: false
 context: fork
 handoffs:
-  - label: Implement Project
-    agent: speckit.implement.withTDD
-    prompt: Start the implementation in phases
+  - label: Build Feature
+    agent: build
+    prompt: Build the feature
     send: true
 ---
 

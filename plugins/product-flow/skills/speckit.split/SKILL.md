@@ -3,7 +3,7 @@ description: "Analyzes a spec for scope creep, proposes a split, and creates a n
 user-invocable: false
 handoffs:
   - label: Continue Current Feature
-    agent: speckit.plan
+    agent: continue
     prompt: Continue with the reduced spec
     send: true
   - label: Run Split Analysis Again

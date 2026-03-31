@@ -67,7 +67,7 @@ PM commands delegate to internal engines and only:
 |---|---|
 | `/product-flow:start` | create branch + Draft PR → `speckit.specify` → `speckit.retro` |
 | `/product-flow:continue` | state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` (dispatched by state machine) |
-| `/product-flow:build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` → `praxis.code-simplifier` → `praxis.test-desiderata` → proposes `speckit.verify-tasks`) |
+| `/product-flow:build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `speckit.retro` → proposes `speckit.verify-tasks`) |
 | `/product-flow:submit` | `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM asks, passes silently) → git add/commit/push → `gh pr ready` on first run (exits DRAFT) |
 | `/product-flow:deploy-to-stage` | gh pr merge --squash --delete-branch |
 
@@ -226,7 +226,7 @@ Bot comments are tracked via invisible HTML markers on the first line:
 - `<!-- id:q<N> type:technical|product status:UNANSWERED -->` — pending, will be processed by `/product-flow:continue`
 - `<!-- id:q<N> type:technical|product status:ANSWERED -->` — processed, will be ignored in future runs
 
-All bot comments are written via `/product-flow:pr-comments write`, which handles numbering automatically. `/product-flow:pr-comments pending` returns all `UNANSWERED` comments. `/product-flow:pr-comments resolve` rewrites them to `ANSWERED` after processing.
+All bot comments are written via `/product-flow:pr-comments write`, which handles numbering automatically. `/product-flow:pr-comments pending` returns all `UNANSWERED` comments. `/product-flow:pr-comments resolve` rewrites them to `ANSWERED` after processing. `/product-flow:pr-comments read-answers` reads all user responses (`Answer:` / `Correction:`) and returns the last one per question number — used by `plan`, `implement`, and `consolidate-*` before applying changes.
 
 ### Key workflow steps
 
@@ -239,10 +239,11 @@ All bot comments are written via `/product-flow:pr-comments write`, which handle
 6. Calls `/product-flow:speckit.retro` for quality validation
 
 **`implement` skill:**
-1. Calls `/product-flow:praxis.bdd-with-approvals` → writes approval fixtures (executable specs)
-2. Calls `/product-flow:speckit.implement.withTDD` → implements with Red-Green-Refactor TDD + ZOMBIES, then polishes with `/product-flow:praxis.code-simplifier`. As each task is completed, its GitHub issue (linked via `#N` in `tasks.md`) is closed automatically
+1. Calls `/product-flow:praxis.bdd-with-approvals` → writes approval fixtures (executable specs) *(TS/JS only)*
+2. Calls `/product-flow:speckit.implement.withTDD` → implements with Red-Green-Refactor TDD + ZOMBIES. After each task, `praxis.code-simplifier` is invoked on the touched files. As each task is completed, its GitHub issue (linked via `#N` in `tasks.md`) is closed automatically
 3. Calls `/product-flow:praxis.test-desiderata` → validates test quality against Kent Beck's 12 properties
-4. Calls `/product-flow:speckit.retro` for quality validation
+4. Calls `/product-flow:speckit.retro` → phase retrospective and artifact sync
+5. Proposes `/product-flow:speckit.verify-tasks` → user chooses: run now, open new session, or skip
 
 **`tasks` skill:**
 1. Calls `/product-flow:speckit.tasks` → generates `tasks.md` ordered by dependencies
