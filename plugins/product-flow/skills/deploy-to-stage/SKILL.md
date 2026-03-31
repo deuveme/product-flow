@@ -22,6 +22,8 @@ gh pr view --json number,state,url,body,reviewDecision
 - If the branch is `main`: ERROR "You are already on main."
 - If there is no PR: ERROR "There is no open PR for this branch."
 
+Save the `number` field as `PR_NUMBER` and the `url` field as `PR_URL`. These are needed in later steps after the branch is deleted.
+
 ### 2. Gate: code delivered
 
 Verify in the PR body: `- [x] In code review`

@@ -45,9 +45,9 @@ Preserve technical terms (OAuth2, API, JWT, etc.).
 
 ```bash
 git fetch --all --prune
-git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-<short-name>$'
-git branch | grep -E '^[* ]*[0-9]+-<short-name>$'
-ls specs/ 2>/dev/null | grep -E '^[0-9]+-<short-name>$'
+git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-'
+git branch | grep -E '^[* ]*[0-9]+-'
+ls specs/ 2>/dev/null | grep -E '^[0-9]+-'
 ```
 
 Extract all numbers found across the three sources. If none, use `1`. Otherwise use highest + 1.

@@ -17,34 +17,40 @@ If a transition requires work that has no dedicated sub-skill, stop and surface 
 ## State Machine
 
 ```
-                     /product-flow:start
-                       │
-                       ▼
-               ┌──────────────┐
-               │ SPEC_CREATED │◄─── after consolidating feedback
-               └──────┬───────┘
-          has comments │  no comments
-                       ▼         ▼
-               ┌──────────────┐  │
-               │ SPEC_REVIEW  │──┘
-               │ consolidate  │
-               └──────┬───────┘
-                       │ (auto-proceed)
-                       ▼
-               ┌──────────────┐
-               │ PLAN_PENDING │◄─── auto: /product-flow:plan runs here
-               └──────┬───────┘
-          has comments │  no comments
-                       ▼         ▼
-               ┌──────────────┐  │
-               │ PLAN_REVIEW  │──┘
-               │ consolidate  │
-               └──────┬───────┘
-                       │ (auto-proceed)
-                       ▼
-               ┌──────────────┐
-               │ BUILD_READY  │──── blocked: redirect to /product-flow:build
-               └──────────────┘
+                /product-flow:start
+                        │
+                        ▼
+            ┌───────────────────────┐
+            │      SPEC_CREATED     │◄── after consolidating feedback
+            └───────────┬───────────┘
+                        │
+              has comments?  no comments?
+                  │                  │
+                  ▼                  │
+       ┌──────────────────┐          │
+       │   SPEC_REVIEW    │          │
+       │   consolidate    │          │
+       └────────┬─────────┘          │
+                └──────────────┬─────┘
+                               │ (auto-proceed)
+                               ▼
+            ┌───────────────────────┐
+            │     PLAN_PENDING      │◄── auto: /product-flow:plan runs here
+            └───────────┬───────────┘
+                        │
+              has comments?  no comments?
+                  │                  │
+                  ▼                  │
+       ┌──────────────────┐          │
+       │   PLAN_REVIEW    │          │
+       │   consolidate    │          │
+       └────────┬─────────┘          │
+                └──────────────┬─────┘
+                               │ (auto-proceed)
+                               ▼
+            ┌───────────────────────┐
+            │      BUILD_READY      │──── blocked: redirect to /product-flow:build
+            └───────────────────────┘
 ```
 
 **Blocked states** (invalid transitions):
@@ -66,11 +72,7 @@ gh pr view --json number,state,url,body
 
 ### 2. Determine current state
 
-Read PR body to check which boxes are marked (`- [x]`):
-
-```bash
-gh pr view --json body -q '.body'
-```
+Use the PR body already fetched in step 1 to check which boxes are marked (`- [x]`).
 
 Map to state:
 

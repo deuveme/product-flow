@@ -163,10 +163,12 @@ Run steps 4a through 4g in order. Do not skip any.
   - Specs directories: `ls specs/ 2>/dev/null | grep -E '^[0-9]+-'`
 - Compute next number: highest N + 1, zero-padded to 3 digits (`printf "%03d" $((N+1))`). If nothing found, use `001`. Set BRANCH_NUMBER.
 - Set NEW_BRANCH = `BRANCH_NUMBER-SHORT_NAME` (e.g. `004-notifications-engine`)
-- Derive human-readable PR title:
+- Derive human-readable PR title (capitalize the first word after the colon):
   ```bash
-  PR_TITLE="$BRANCH_NUMBER: ${SHORT_NAME//-/ }"
+  SLUG_WORDS="${SHORT_NAME//-/ }"
+  PR_TITLE="$BRANCH_NUMBER: ${SLUG_WORDS^}"
   ```
+  Example: `004-notifications-engine` → `004: Notifications engine`
 - Set NEW_SPEC_PATH = `specs/$NEW_BRANCH/spec.md`
 
 #### 4b. Create the new branch via the standard script

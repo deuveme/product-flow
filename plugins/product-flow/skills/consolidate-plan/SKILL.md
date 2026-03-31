@@ -9,10 +9,10 @@ user-invocable: false
 
 ```bash
 git branch --show-current
-gh pr view --json number,state,url,body,comments -q '{body: .body, comments: [.comments[].body]}'
+gh pr view --json number,state,url,body
 ```
 
-- If branch is `main` or `master`: ERROR "Not on a feature branch."
+- If branch is `main` or `master`: ERROR "You are not on a feature branch. Run /product-flow:status."
 - Verify `- [x] Plan generated` is marked. If not: ERROR "Plan has not been generated yet. Run /product-flow:continue first."
 
 ### 2. Collect pending comments
