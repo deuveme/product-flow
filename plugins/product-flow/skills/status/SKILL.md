@@ -443,14 +443,4 @@ The footer section (defined in step 3) already renders the switch prompt. Wait f
 
 Only run this check if the conversation already has significant context (more than ~10 messages or prior tool calls visible in the session). If the session is fresh, skip entirely.
 
-If the check runs, apply `/product-flow:context` logic:
-
-- **🟢 / 🟡**: Show nothing.
-- **🟠**: Show at the end of the report:
-  ```
-  🟠 Context is high. Open a new session before the next command.
-  ```
-- **🔴**: Show before the final report and interrupt if the user tries to continue:
-  ```
-  🔴 Critical context. Open a new session NOW before continuing.
-  ```
+If the check runs, invoke `/product-flow:context`.

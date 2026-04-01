@@ -11,7 +11,7 @@ icon: ✂️
 Default scope: code modified in the current session or specified by the user.
 Broader scope only when explicitly requested.
 
-Read CLAUDE.md for project-specific coding standards before making changes.
+Read `.agents/rules/base.md` (or `CLAUDE.md` if present) for project-specific coding standards before making changes.
 
 ## Process
 

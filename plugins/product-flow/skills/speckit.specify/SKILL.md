@@ -69,8 +69,7 @@ Given that feature description, do this:
 
    d. Run the script `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS"` with the calculated number and short-name:
       - Pass `--number NNN` (zero-padded, e.g. `005`) and `--short-name "your-short-name"` along with the feature description
-      - Bash example: `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" --number 005 --short-name "user-auth"`
-      - PowerShell example: `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" -Json -Number 005 -ShortName "user-auth" "Add user authentication"`
+      - Example: `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" --number 005 --short-name "user-auth"`
 
    **IMPORTANT**:
    - Check all three sources (remote branches, local branches, specs directories) to find the highest number

@@ -244,6 +244,12 @@ Contact the development team. It's the only situation where you need their direc
 **After `/product-flow:build`, Claude asks me something about "verify-tasks". What is that?**
 It's an optional quality check that confirms every completed task has real code behind it — not empty stubs or placeholders. You can run it immediately, open a new session and run it later, or skip it. If you're unsure, choose "run now" — it only takes a moment and catches problems before the team reviews the code.
 
+**During `/product-flow:build`, Claude is asking me questions before writing code. Is that normal?**
+Yes. Before generating code, Claude runs a requirements quality check that may ask up to 5 clarification questions to make sure the spec, plan and tasks are clear and complete. Answer them as best you can — they are quick and help prevent implementation mistakes. Once the questions are done, code generation continues automatically.
+
+**I want to refine the spec before sharing it with the team. How?**
+Run `/product-flow:speckit.clarify` after `/product-flow:start`. Claude will scan the spec, identify the most important ambiguities, and ask you up to 5 targeted questions to sharpen it. The spec is updated in place. You can then share the PR with the team as usual.
+
 **The spec is covering too many things. Can I split it into two features?**
 Yes. After `/product-flow:start` writes the first spec, run `/product-flow:speckit.split`. Claude will analyze the spec, detect whether it covers independent deliverables or different user journeys, and propose a clean split. If you confirm, it trims the current spec and opens a new review room for the extracted feature — ready to continue from where the split happened.
 

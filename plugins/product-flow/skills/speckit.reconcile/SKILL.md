@@ -180,8 +180,9 @@ Output the final report:
 ```
 
 Next step recommendation:
-- If remediation tasks were added → run `/product-flow:speckit.implement.withTDD`
-  to execute them, then `/product-flow:speckit.verify` to confirm.
+- If remediation tasks were added → run `/product-flow:build` to execute them
+  (runs checklist, implement, and proposes verify-tasks), then
+  `/product-flow:submit` when done.
 - If only spec/plan were updated with no new tasks → run
   `/product-flow:speckit.verify` to confirm alignment.
 

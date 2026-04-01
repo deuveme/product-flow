@@ -67,7 +67,7 @@ PM commands delegate to internal engines and only:
 |---|---|
 | `/product-flow:start` | create branch + Draft PR → `speckit.specify` → `speckit.retro` |
 | `/product-flow:continue` | state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` (dispatched by state machine) |
-| `/product-flow:build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `speckit.retro` → proposes `speckit.verify-tasks`) |
+| `/product-flow:build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `speckit.retro`) → proposes `speckit.verify-tasks` |
 | `/product-flow:submit` | `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → git add/commit/push → `gh pr ready` on first run (exits DRAFT) |
 | `/product-flow:deploy-to-stage` | gh pr merge --squash --delete-branch |
 

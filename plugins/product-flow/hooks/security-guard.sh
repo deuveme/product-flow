@@ -38,6 +38,8 @@ PROJECT_ROOT="${PROJECT_ROOT%/}"
 in_project() {
   local raw="$1"
   [[ "$raw" != /* ]] && raw="$PROJECT_ROOT/$raw"
+  # /dev/* are kernel virtual devices (e.g. /dev/null) — always safe to write to.
+  [[ "$raw" == /dev/* ]] && return 0
   local real
   real=$(realpath -m "$raw" 2>/dev/null) \
     || real=$(python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" "$raw" 2>/dev/null) \

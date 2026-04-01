@@ -100,8 +100,12 @@ fi
 if echo "$cmd" | grep -qE '\bgit[[:space:]]+push\b'; then
   branch=$(current_branch)
   if [[ "$branch" == "main" || "$branch" == "master" ]]; then
-    block "Direct push from '$branch' is not allowed.
+    # Allow ref-deletion / branch-rename operations (git push origin :old new)
+    # These are used by /product-flow:status when reordering branch numbers.
+    if ! echo "$cmd" | grep -qE '\bgit[[:space:]]+push[[:space:]]+\S+[[:space:]]+:'; then
+      block "Direct push from '$branch' is not allowed.
   Use /product-flow:deploy-to-stage to publish a feature to main."
+    fi
   fi
   if echo "$cmd" | grep -qE '\bgit[[:space:]]+push[[:space:]]+[^[:space:]]+[[:space:]]+(main|master)\b'; then
     block "Direct push to main/master is not allowed.
