@@ -35,6 +35,36 @@ Then run /product-flow:status again.
 
 Do not check `gh auth status` — authentication will be validated implicitly when `gh pr list` runs in step 2. If it fails due to auth, surface the error then.
 
+### 0b. Sync with remote (git pull)
+
+Before doing anything else, bring the local branch up to date with the remote.
+
+```bash
+git status --porcelain 2>/dev/null
+```
+
+- If there are uncommitted changes (output is non-empty):
+  ```bash
+  git stash
+  git pull
+  git stash pop
+  ```
+- If the working tree is clean (output is empty):
+  ```bash
+  git pull
+  ```
+
+If `git pull` fails for any reason (no remote, no network, not tracking a remote branch, etc.), show a note and continue:
+```
+⚠️  Could not pull from remote. Showing local version.
+```
+
+If `git stash pop` fails (e.g. conflict after pull), show:
+```
+⚠️  Could not restore stashed changes automatically. Run `git stash pop` manually.
+```
+and continue without the stash pop.
+
 ### 1. Fetch latest changes
 
 Run a non-blocking fetch to update remote tracking refs without modifying the working tree. Also capture branch and file status in one call to reuse in step 2:
