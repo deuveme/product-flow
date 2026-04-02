@@ -74,7 +74,7 @@ summarize the rest in an overflow note at the end of the report.
 #### A — Task Completion
 
 - Compare `[x]`/`[X]` tasks vs total tasks in `tasks.md`.
-- Flag if majority of tasks are incomplete.
+- Flag as **CRITICAL** if more than 20% of tasks remain incomplete (i.e., fewer than 80% are marked done). A single incomplete task out of many is not a blocker.
 
 #### B — File Existence
 

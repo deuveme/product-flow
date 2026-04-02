@@ -31,19 +31,29 @@ Run /product-flow:continue to generate the plan first.
 
 ### 3. Detect progress and decide entry point
 
-Check the PR body and feature directory:
+First, verify the feature directory exists:
+
+```bash
+ls specs/<feature-dir>/ 2>/dev/null
+```
+
+If the directory does not exist: ERROR "No feature directory found at specs/<feature-dir>/. Did you run /product-flow:start to initialize this feature?"
+
+**STOP.**
+
+Then check the PR body and feature directory:
 - Tasks done? → `- [x] Tasks generated` is marked
 - Checklist done? → `specs/<feature-dir>/checklists/` directory exists and is non-empty
 - Code done? → `- [x] Code generated` is marked
 - Verify-tasks done? → `specs/<feature-dir>/verify-tasks-report.md` exists
 
-**Re-entry shortcut**: If code is already generated (`- [x] Code generated`)
-but `verify-tasks-report.md` does NOT exist in FEATURE_DIR, the user chose
-option B ("open a new session") from the verify-tasks proposal. In this case:
-**skip directly to step 6b (verify-tasks)** without re-running tasks, checklist,
-or implement.
+Determine entry point using these mutually exclusive cases (check in order):
 
-Otherwise, build the pending steps list based on what is NOT yet done and show:
+1. **All done** — code is generated AND `verify-tasks-report.md` exists: skip all work and go directly to the final report.
+
+2. **Re-entry shortcut** — code is generated AND `verify-tasks-report.md` does NOT exist: the user chose option B ("open a new session") from the verify-tasks proposal. **Skip directly to step 6b** without re-running tasks, checklist, or implement.
+
+3. **Normal flow** — code is NOT yet generated: build the pending steps list based on what is NOT yet done and show:
 
 ```
 📍 Current status: Plan generated · Ready to build
@@ -116,6 +126,10 @@ Otherwise, invoke `/product-flow:implement`.
 If it produces an ERROR: propagate and stop.
 
 ### 6b. Verify-tasks (re-entry from new session)
+
+**Entry condition** (must match exactly — both required):
+- `- [x] Code generated` is marked in the PR body, AND
+- `verify-tasks-report.md` does NOT exist in FEATURE_DIR
 
 This step runs only when the re-entry shortcut was triggered in step 3:
 code is already generated AND `verify-tasks-report.md` does NOT exist.

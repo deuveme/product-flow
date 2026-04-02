@@ -66,15 +66,18 @@ Set:
 
 The script output (JSON) is the **authoritative source** for `BRANCH_NAME` and `SPEC_FILE`. Always read these values from the JSON output and update `BRANCH_NAME` and `SPEC_PATH` accordingly.
 
+**Validate the JSON before proceeding**: if the script exits with a non-zero code, or its output is empty, or it cannot be parsed with `jq`, or the parsed result is missing `BRANCH_NAME` or `SPEC_FILE` — ERROR "create-new-feature.sh failed or returned invalid output. Check the script and try again." and stop.
+
 > **Invariant**: `BRANCH_NAME` and the spec folder name (`specs/$BRANCH_NAME/`) must always be identical. Never create the PR (step 2e) until `BRANCH_NAME` is confirmed from the script output.
 
 Derive the human-readable PR title from `BRANCH_NAME`:
 ```
 BRANCH_NUMBER=${BRANCH_NAME%%-*}
 BRANCH_SLUG=${BRANCH_NAME#*-}
-PR_TITLE="$BRANCH_NUMBER: ${BRANCH_SLUG//-/ }"
+BRANCH_SLUG_SPACES=${BRANCH_SLUG//-/ }
+PR_TITLE="$BRANCH_NUMBER: <capitalize first letter of BRANCH_SLUG_SPACES>"
 ```
-Example: `001-user-auth` → `001: User auth`.
+Example: `001-user-auth` → `001: User auth`. Capitalize only the first letter of the slug; leave all other words as-is (do not title-case every word).
 
 #### 2d. Push the branch
 

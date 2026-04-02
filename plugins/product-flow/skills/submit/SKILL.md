@@ -68,7 +68,9 @@ Invoke `/product-flow:speckit.verify`.
 git status --porcelain
 ```
 
-If there are no changes: ERROR "There are no new changes to save."
+- If there are changes: continue normally.
+- If there are **no changes** AND `.claude/.workflow-submit-active` **exists**: a previous push attempt failed after the commit succeeded. Skip steps 4 and 5a (nothing to commit) and go directly to the push in step 5b.
+- If there are **no changes** AND `.claude/.workflow-submit-active` **does NOT exist**: ERROR "There are no new changes to save."
 
 ### 4. Show change summary
 
@@ -81,16 +83,24 @@ Show the user which files are going to be saved (including untracked files that 
 
 ### 5. Commit and push
 
+#### 5a. Commit (skip if re-entering after a failed push — see step 3)
+
 ```bash
 mkdir -p .claude && touch .claude/.workflow-submit-active
 git add -A
-git commit -m "feat(<branch-name>): <brief-summary-of-changes>" && \
-git push origin HEAD && \
-rm -f .claude/.workflow-submit-active || \
-{ rm -f .claude/.workflow-submit-active; exit 1; }
+git commit -m "feat(<branch-name>): <brief-summary-of-changes>"
 ```
 
-The marker file is always removed — whether the push succeeds or fails — so that subsequent sessions are not left in an inconsistent state.
+#### 5b. Push (marker removed only on success)
+
+```bash
+git push origin HEAD && rm -f .claude/.workflow-submit-active || {
+  echo "⚠️  Push failed. Run /product-flow:submit again to retry."
+  exit 1
+}
+```
+
+**Important**: The marker file is removed **only after a successful push**. If the push fails, the marker remains — this allows re-running `/product-flow:submit` to retry the push directly (step 3 detects this condition and skips the commit).
 
 ### 6. Take the PR out of draft (first time only)
 

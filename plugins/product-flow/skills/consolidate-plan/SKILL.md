@@ -67,7 +67,17 @@ After applying corrections, verify:
 - `contracts/` reflect any entity or field changes
 - No `[NEEDS CLARIFICATION]` markers remain in plan artifacts
 
-If inconsistencies are found: resolve them before committing.
+If inconsistencies are found, resolve them before committing using these rules:
+
+| Inconsistency type | Resolution |
+|--------------------|------------|
+| Entity field in `data-model.md` not reflected in `contracts/` | Add or update the field in the affected contract file to match the data model |
+| Contract endpoint references an entity not in `data-model.md` | Add the missing entity to `data-model.md`, or remove it from the contract if it was a mistake |
+| `[NEEDS CLARIFICATION]` marker in `plan.md` or `research.md` | Apply the team's answer from the PR comment, or make the most reasonable technical decision and document it |
+| Field renamed in one artifact but not in others | Apply the rename consistently across all affected artifacts (plan, data-model, contracts) |
+| Conflicting cardinality (e.g., one-to-many vs many-to-many) | Use the team feedback's direction; if absent, use the data-model as the source of truth |
+
+If an inconsistency cannot be resolved without PM input, stop and surface it as a non-technical question before committing.
 
 ### 5. Commit and push
 

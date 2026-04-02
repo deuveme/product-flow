@@ -54,21 +54,32 @@ check_branch_name() {
   fi
 }
 
+# Strip surrounding single or double quotes from a branch name extracted by grep.
+strip_quotes() {
+  local s="$1"
+  s="${s#\"}" ; s="${s%\"}"
+  s="${s#\'}" ; s="${s%\'}"
+  echo "$s"
+}
+
 # git branch <name> [start-point]
 if echo "$cmd" | grep -qE '\bgit[[:space:]]+branch[[:space:]]+[^-]'; then
-  name=$(echo "$cmd" | grep -oE 'git[[:space:]]+branch[[:space:]]+[^[:space:]]+' | awk '{print $NF}')
+  raw=$(echo "$cmd" | grep -oE 'git[[:space:]]+branch[[:space:]]+[^[:space:]]+' | awk '{print $NF}')
+  name=$(strip_quotes "$raw")
   check_branch_name "$name"
 fi
 
 # git checkout -b <name>  or  git checkout -B <name>
 if echo "$cmd" | grep -qE '\bgit[[:space:]]+checkout[[:space:]].*-[bB][[:space:]]'; then
-  name=$(echo "$cmd" | grep -oE '\-[bB][[:space:]]+[^[:space:]]+' | awk '{print $NF}')
+  raw=$(echo "$cmd" | grep -oE '\-[bB][[:space:]]+[^[:space:]]+' | awk '{print $NF}')
+  name=$(strip_quotes "$raw")
   check_branch_name "$name"
 fi
 
 # git switch -c <name>  or  git switch -C <name>
 if echo "$cmd" | grep -qE '\bgit[[:space:]]+switch[[:space:]].*-[cC][[:space:]]'; then
-  name=$(echo "$cmd" | grep -oE '\-[cC][[:space:]]+[^[:space:]]+' | awk '{print $NF}')
+  raw=$(echo "$cmd" | grep -oE '\-[cC][[:space:]]+[^[:space:]]+' | awk '{print $NF}')
+  name=$(strip_quotes "$raw")
   check_branch_name "$name"
 fi
 

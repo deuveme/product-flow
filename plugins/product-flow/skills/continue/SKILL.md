@@ -125,7 +125,7 @@ Starting...
 Invoke `/product-flow:consolidate-spec`.
 Wait for it to finish. If ERROR: propagate and stop.
 
-Then continue automatically to `PLAN_PENDING` transition below.
+Then **within this same invocation**, proceed immediately to the `PLAN_PENDING` transition below — do not stop and wait for a new user command.
 
 #### `PLAN_PENDING` (auto-generate)
 

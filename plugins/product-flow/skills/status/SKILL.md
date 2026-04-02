@@ -179,10 +179,10 @@ git branch --format="%(refname:short)" | grep -v "^main$" | grep -v "^master$" |
 Only if the numeric prefixes are **not** in simple ascending order, run the per-branch date check to confirm:
 
 ```bash
-git log --reverse --format="%ci" origin/<branch_name> ^origin/main 2>/dev/null | head -1
+git log --reverse --format="%ct" origin/<branch_name> ^origin/main 2>/dev/null | head -1
 ```
 
-Sort all numbered branches by this date (ascending). The branch with the oldest first commit must have the lowest number.
+Use `%ct` (Unix epoch seconds) for comparison — this avoids timezone ambiguity. Sort all numbered branches by this timestamp (ascending). The branch with the oldest first commit must have the lowest number.
 
 If the numbers are out of chronological order, record a **sequence mismatch** for each affected branch (e.g., `002-user-auth` was created before `001-checkout`).
 

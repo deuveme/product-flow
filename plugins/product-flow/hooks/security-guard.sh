@@ -98,8 +98,9 @@ case "$TOOL_NAME" in
     [[ -z "$cmd" ]] && exit 0
 
     # Extract all absolute paths found in a string.
+    # Uses printf to avoid echo misinterpreting metacharacters.
     abs_paths() {
-      echo "$1" | grep -oE '(/[^[:space:];&|<>\\"\x27]+)' || true
+      printf '%s\n' "$1" | grep -oE '(/[^[:space:];&|<>\\"\x27]+)' || true
     }
 
     # Check all absolute paths and block if any are outside the project.
@@ -134,11 +135,20 @@ case "$TOOL_NAME" in
     # truncate / shred
     echo "$cmd" | grep -qE '\b(truncate|shred)\b' && check_all_paths "truncate/shred"
 
-    # Shell output redirections (> or >>) pointing to an absolute path
+    # Shell output redirections (> or >>) pointing to an absolute path.
+    # Handles unquoted paths (/abs/path) and double-quoted paths ("/abs/path with spaces").
+    _redir_paths() {
+      # Unquoted absolute paths
+      printf '%s\n' "$1" | grep -oE '>{1,2}[[:space:]]*/[^[:space:];&|"]+' \
+        | grep -oE '/[^[:space:];&|"]+' || true
+      # Double-quoted absolute paths (may contain spaces)
+      printf '%s\n' "$1" | grep -oE '>{1,2}[[:space:]]*"/[^"]*"' \
+        | grep -oE '"/[^"]*"' | tr -d '"' || true
+    }
     while IFS= read -r p; do
       [[ -n "$p" ]] && ! in_project "$p" && \
         block "Shell output redirection to a path outside the project repository is not allowed." "$p"
-    done < <(echo "$cmd" | grep -oE '>{1,2}\s*/[^[:space:];&|]+' | grep -oE '/[^[:space:];&|]+' || true)
+    done < <(_redir_paths "$cmd")
 
     # ── Bash: soft checks (ask user) ─────────────────────────────────────────
 

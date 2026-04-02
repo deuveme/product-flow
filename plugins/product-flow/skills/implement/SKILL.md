@@ -124,6 +124,8 @@ If it returns a **Blocked** status: do not show the final report until the user 
 
 ### 10. Propose verify-tasks
 
+> **Entry condition for this step**: runs after `speckit.implement.withTDD` completes normally (not skipped).
+
 After the retro completes, propose:
 
 ```

@@ -145,8 +145,7 @@ Create remediation tasks to close the drift. This is the most critical step.
 - `[Reconcile]` tag is always appended for traceability.
 
 **Rules**:
-1. **Increment IDs**: find the highest `T###` in `tasks.md`, start new tasks
-   from `max + 1`. Never reuse or renumber existing IDs.
+1. **Increment IDs**: find the highest `T###` in `tasks.md`, start new tasks from `max + 1`. Never reuse or renumber existing IDs. Before appending, scan for ID gaps (e.g., T003 missing between T002 and T004) and log a warning in the Sync Impact Report: `⚠️ Gap detected in task IDs: T003 is missing. IDs are not sequential.` Do not renumber existing tasks — gaps are preserved for audit traceability.
 2. **Phase placement**: put new tasks under the relevant user story phase. If
    none fits, create a `## Remediation: Gaps` section at the end.
 3. **Exact paths**: every task MUST include the exact file path where the change

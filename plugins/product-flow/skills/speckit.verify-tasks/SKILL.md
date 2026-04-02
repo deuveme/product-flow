@@ -108,7 +108,7 @@ Search referenced files for the expected symbols. Adapt by artifact type:
 | CI/CD (`Dockerfile`, `Makefile`, `.github/` YAML) | Plain text match |
 
 Only search files confirmed present by Layer 1. For unlisted types, fall back
-to plain text match.
+to **word-boundary plain text match** (require the symbol to appear as a whole word, not as a substring of another identifier). For example, search for `\bsymbolName\b` rather than a bare string match to avoid false positives from comments, partial matches, or unrelated identifiers.
 
 Result: `positive` (all symbols found) · `negative` (some missing) ·
 `not_applicable` (no code references in task).

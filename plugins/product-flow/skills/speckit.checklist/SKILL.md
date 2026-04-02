@@ -94,7 +94,7 @@ You **MUST** consider the user input before proceeding (if not empty).
      - Format: `[domain].md`
    - File handling behavior:
      - If file does NOT exist: Create new file and number items starting from CHK001
-     - If file exists: Append new items to existing file, continuing from the last CHK ID (e.g., if last item is CHK015, start new items at CHK016)
+     - If file exists: Before appending, compare the focus areas of the existing items against the current invocation's focus areas. If the existing items already cover the same scope, warn the user and ask whether to append or skip — do not silently duplicate. If the scopes differ, append new items continuing from the last CHK ID (e.g., if last item is CHK015, start new items at CHK016).
    - Never delete or replace existing checklist content - always preserve and append
 
    **CORE PRINCIPLE - Test the Requirements, Not the Implementation**:

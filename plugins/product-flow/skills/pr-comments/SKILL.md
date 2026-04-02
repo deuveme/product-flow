@@ -21,6 +21,8 @@ Question <N> - Correction: [text]    ← dash separator also valid
 ```
 Multiple responses for the same question number are allowed — the **last one chronologically** wins. A single comment may answer multiple questions, one per line.
 
+> **Recommendation**: Use explicit `Answer:` or `Correction:` keywords to avoid ambiguity. A response without a keyword is treated as an Answer; without the `Correction` keyword, intent to override cannot be inferred reliably.
+
 ---
 
 ## Operations
@@ -64,6 +66,8 @@ gh pr view --json comments \
 ```
 
 Add 1 to the result (use 1 if the command returns 0 or fails).
+
+> **Known limitation**: if two separate Claude sessions write comments to the same PR simultaneously, both may compute the same next `<N>` and produce duplicate question IDs. To prevent this, avoid running multiple sessions against the same PR at the same time.
 
 2. Build the user instruction line based on `status`:
    - `ANSWERED`: `> 💬 To change this decision, add a new comment: \`Question <N>. Correction: [letter or answer]\``

@@ -18,10 +18,10 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 2. **Check checklists status** (if FEATURE_DIR/checklists/ exists):
    - Scan all checklist files in the checklists/ directory
-   - For each checklist, count:
-     - Total items: All lines matching `- [ ]` or `- [X]` or `- [x]`
-     - Completed items: Lines matching `- [X]` or `- [x]`
-     - Incomplete items: Lines matching `- [ ]`
+   - For each checklist, count (use case-insensitive matching — `[X]` and `[x]` are both complete):
+     - Total items: All lines matching `- [ ]` or `- [xX]` (case-insensitive checkbox)
+     - Completed items: Lines matching `- [xX]` (case-insensitive — `[X]` and `[x]` both count)
+     - Incomplete items: Lines matching `- [ ]` (only empty checkbox; trim surrounding whitespace before matching)
    - Create a status table:
 
      ```text

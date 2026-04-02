@@ -43,7 +43,7 @@ Given that feature description, do this:
 
 2. **Check for existing branches before creating new one**:
 
-   **FIRST**: Run `git branch --show-current`. If the current branch already matches the feature branch pattern `[0-9]+-*` (e.g., `001-user-auth`, `042-fix-payments`):
+   **FIRST**: Run `git branch --show-current`. If the current branch already matches the feature branch pattern `^[0-9]+-[a-z]` (e.g., `001-user-auth`, `042-fix-payments`):
    - Set `BRANCH_NAME` = current branch name
    - Set `SPEC_FILE` = `specs/$BRANCH_NAME/spec.md`
    - **Skip steps 2a–2d entirely** and go directly to step 3.
@@ -70,6 +70,8 @@ Given that feature description, do this:
    d. Run the script `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS"` with the calculated number and short-name:
       - Pass `--number NNN` (zero-padded, e.g. `005`) and `--short-name "your-short-name"` along with the feature description
       - Example: `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" --number 005 --short-name "user-auth"`
+      - If the script exits with a non-zero code, output is empty, or the output cannot be parsed as valid JSON with `jq`, stop immediately with: ERROR "create-new-feature.sh failed or returned invalid output: <error details>. Check the script and try again."
+      - Validate the parsed JSON contains both `BRANCH_NAME` and `SPEC_FILE` fields before proceeding.
 
    **IMPORTANT**:
    - Check all three sources (remote branches, local branches, specs directories) to find the highest number
