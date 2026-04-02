@@ -322,7 +322,7 @@ Print a clean summary:
 
 Next steps:
 - Continue current feature:  /product-flow:continue
-- Start extracted feature:   git checkout $NEW_BRANCH && /product-flow:continue
+- Start extracted feature:   /product-flow:status  (switch to $NEW_BRANCH)
 ```
 
 ## Key rules
