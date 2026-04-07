@@ -5,8 +5,7 @@
 # RULES
 #   1. Branch names must follow NNN-kebab-name (e.g. 001-user-auth)
 #      Blocks: git branch, git checkout -b, git switch -c with non-conforming names.
-#   2. No direct commits — on main/master always blocked; on feature branches
-#      only allowed when /product-flow:submit is active (.workflow-submit-active).
+#   2. No direct commits to main/master. Feature branch commits are always allowed.
 #   3. No direct push to main/master (from main or with explicit main/master target).
 #      Use /product-flow:deploy-to-stage instead.
 #   4. No git merge into main/master.
@@ -83,24 +82,15 @@ if echo "$cmd" | grep -qE '\bgit[[:space:]]+switch[[:space:]].*-[cC][[:space:]]'
   check_branch_name "$name"
 fi
 
-# ── Rule 2: No direct commits (main or feature branches) ─────────────────────
-# On main/master: always blocked.
-# On feature branches (NNN-kebab-name): allowed only when /product-flow:submit
-#   is active, signalled by the presence of .claude/.workflow-submit-active.
+# ── Rule 2: No direct commits to main/master ─────────────────────────────────
+# Feature branch commits are allowed at any workflow step.
+# Only main/master is protected.
 
 if echo "$cmd" | grep -qE '\bgit[[:space:]]+commit\b'; then
   branch=$(current_branch)
   if [[ "$branch" == "main" || "$branch" == "master" ]]; then
     block "Direct commits to '$branch' are not allowed.
   Use /product-flow:deploy-to-stage to publish a feature to main."
-  fi
-  if echo "$branch" | grep -qE "$BRANCH_PATTERN"; then
-    project_root=$(git rev-parse --show-toplevel 2>/dev/null || echo "")
-    marker="${project_root}/.claude/.workflow-submit-active"
-    if [[ -n "$project_root" && ! -f "$marker" ]]; then
-      block "Direct commits to feature branches are not allowed.
-  Use /product-flow:submit to save and push your changes (includes the quality gate)."
-    fi
   fi
 fi
 
