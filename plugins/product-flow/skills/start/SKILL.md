@@ -177,7 +177,7 @@ If it produces an ERROR: propagate and stop.
 
 Update the PR body to reflect spec completion:
 
-Read the current PR body to extract the existing Dev Checklist block (between `<!-- dev-checklist -->` and `<!-- /dev-checklist -->`), then replace the Spec line with the actual spec details.
+Read the current PR body to extract the existing checklist block (between `<!-- dev-checklist -->` and `<!-- /dev-checklist -->`), then replace the Spec line with the actual spec details.
 
 Count the number of user stories in `$SPEC_PATH` (lines matching `## User Story` or similar) to populate `<N> user stories`.
 

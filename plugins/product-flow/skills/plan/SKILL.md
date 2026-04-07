@@ -39,7 +39,7 @@ Apply it, then show:
 
 After all answers are processed, show: `✅ <N> answer(s) applied.` (or `No new answers found.` if none).
 
-After applying, invoke `/product-flow:pr-comments mark-processed` with the commentIds of all applied answers.
+After applying, invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers (e.g. `1 3`).
 
 Invoke `/product-flow:pr-comments pending`. If it returns pending comments that require a response:
 
@@ -177,7 +177,7 @@ Add row:
 | Plan generated | YYYY-MM-DD | research.md + data-model.md |
 ```
 
-Update the Dev Checklist block: replace the `<!-- dev-checklist -->` ... `<!-- /dev-checklist -->` section with the Plan line filled in. Extract tech stack, main libraries, and architecture from `research.md`. List which artifacts were generated (research.md, data-model.md, contracts/ if present).
+Update the checklist block: replace the `<!-- dev-checklist -->` ... `<!-- /dev-checklist -->` section with the Plan line filled in. Extract tech stack, main libraries, and architecture from `research.md`. List which artifacts were generated (research.md, data-model.md, contracts/ if present).
 
 Example Plan line:
 ```

@@ -241,7 +241,7 @@ All bot comments are written via `/product-flow:pr-comments write`, which handle
 
 **`implement` skill:**
 1. Calls `/product-flow:praxis.bdd-with-approvals` → writes approval fixtures (executable specs) *(TS/JS only)*
-2. Calls `/product-flow:speckit.implement.withTDD` → implements with Red-Green-Refactor TDD + ZOMBIES. After each task, `praxis.code-simplifier` is invoked on the touched files. As each task is completed, its status in the PR Dev Checklist is updated to `DONE`
+2. Calls `/product-flow:speckit.implement.withTDD` → implements with Red-Green-Refactor TDD + ZOMBIES. After each task, `praxis.code-simplifier` is invoked on the touched files. As each task is completed, its status in the PR checklist section is updated to `DONE`
 3. Calls `/product-flow:praxis.test-desiderata` → validates test quality against Kent Beck's 12 properties
 4. Calls `/product-flow:speckit.retro` → phase retrospective and artifact sync
 5. Proposes `/product-flow:speckit.verify-tasks` → user chooses: run now, open new session, or skip
@@ -264,7 +264,7 @@ All bot comments are written via `/product-flow:pr-comments write`, which handle
 
 **`tasks` skill:**
 1. Calls `/product-flow:speckit.tasks` → generates `tasks.md` ordered by dependencies
-2. Updates the PR body with a Dev Checklist section listing all tasks grouped by phase, each with `TO DO` status
+2. Updates the PR body with a task checklist table inside `## For Developers`, listing all tasks grouped by phase, each with `TO DO` status
 
 ### Automatic quality gates
 

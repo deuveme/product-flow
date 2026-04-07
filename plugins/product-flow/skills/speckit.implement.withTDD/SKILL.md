@@ -153,7 +153,7 @@ If any are found, set `REDESIGN_MODE = true` and apply these rules throughout im
 
    1. Mark `[X]` in `tasks.md` for this task.
 
-   2. Update the Dev Checklist block in the PR body: find the row for this task in the table and change its Status from `TO DO` to `DONE`. Replace the entire `<!-- dev-checklist -->` ... `<!-- /dev-checklist -->` block with the updated content.
+   2. Update the checklist block in the PR body: find the row for this task in the table and change its Status from `TO DO` to `DONE`. Replace the entire `<!-- dev-checklist -->` ... `<!-- /dev-checklist -->` block with the updated content.
 
       ```bash
       gh pr edit --body "<updated-body>"
@@ -176,7 +176,7 @@ If any are found, set `REDESIGN_MODE = true` and apply these rules throughout im
 
 9. Update PR — mark implementation complete
 
-   Count total tasks from `tasks.md`. Update the Dev Checklist block in the PR body: replace the Implementation line with the completed count and mark it checked.
+   Count total tasks from `tasks.md`. Update the checklist block in the PR body: replace the Implementation line with the completed count and mark it checked.
 
    ```
    - [x] **Implementation** — <N>/<N> tasks complete

@@ -115,7 +115,7 @@ Add row:
 | Tasks generated | YYYY-MM-DD | tasks.md created |
 ```
 
-Update the Dev Checklist block: replace the `<!-- dev-checklist -->` ... `<!-- /dev-checklist -->` section with the Tasks line filled in, followed by the full task table grouped by phase. Each task starts with status `TO DO`.
+Update the checklist block: replace the `<!-- dev-checklist -->` ... `<!-- /dev-checklist -->` section with the Tasks line filled in, followed by the full task table grouped by phase. Each task starts with status `TO DO`.
 
 Example:
 ```
