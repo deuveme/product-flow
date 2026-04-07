@@ -191,7 +191,7 @@ Skip this step if `collaborative-design.md` was loaded in step 3.8 — in that c
          - The choice significantly impacts feature scope or user experience
          - Multiple reasonable interpretations exist with different implications
          - No reasonable default exists
-       - **LIMIT: Maximum 3 [NEEDS CLARIFICATION] markers total**
+       - Ask every question that genuinely needs asking — do not guess to avoid asking. The filter is quality, not quantity.
        - Prioritize clarifications by impact: scope > security/privacy > user experience > technical details
     4. Fill User Scenarios & Testing section
        If no clear user flow: ERROR "Cannot determine user scenarios"
@@ -264,13 +264,12 @@ Skip this step if `collaborative-design.md` was loaded in step 3.8 — in that c
 
       - **If [NEEDS CLARIFICATION] markers remain**:
         1. Extract all [NEEDS CLARIFICATION: ...] markers from the spec
-        2. **LIMIT CHECK**: If more than 3 markers exist, keep only the 3 most critical (by scope/security/UX impact) and make informed guesses for the rest
-        3. **Classify each marker** as Technical or Product:
+        2. **Classify each marker** as Technical or Product:
            - **Technical** (authentication, authorisation, security, compliance, data retention, integration patterns, infrastructure): resolve autonomously using project context, `.agents/rules/base.md`, and industry standards. For each, invoke `/product-flow:pr-comments write`:
              - Resolved: `type: technical`, `status: ANSWERED`, body with chosen answer and reasoning.
              - Unresolved: `type: technical`, `status: UNANSWERED`, body with possible options.
              - Do NOT include technical markers in the AskUserQuestion call.
-           - **Product** (business intent, functional scope, user flows, terminology, acceptance criteria): collect these (max 3) and present via **AskUserQuestion** in a single call:
+           - **Product** (business intent, functional scope, user flows, terminology, acceptance criteria): collect all of them and present via **AskUserQuestion** in a single call:
              - `question`: the specific question from the marker, with brief context prepended if needed. Must end with "?"
              - `header`: short topic label max 12 chars (e.g. "Scope", "User roles", "Auth")
              - `options`: 2–4 suggested answers. Place the best-practice default **first** and append `" (Recommended)"` to its label. Each option's `description` = implications for the feature.
@@ -305,10 +304,11 @@ When creating this spec from a user prompt:
 
 1. **Make informed guesses**: Use context, industry standards, and common patterns to fill gaps
 2. **Document assumptions**: Record reasonable defaults in the Assumptions section
-3. **Limit clarifications**: Maximum 3 [NEEDS CLARIFICATION] markers - use only for critical decisions that:
-   - Significantly impact feature scope or user experience
-   - Have multiple reasonable interpretations with different implications
-   - Lack any reasonable default
+3. **Ask what genuinely needs asking**: Use [NEEDS CLARIFICATION] for any decision that:
+   - Significantly impacts feature scope or user experience
+   - Has multiple reasonable interpretations with different implications
+   - Lacks any reasonable default
+   Do not guess to avoid asking — ask every question that would change the spec if answered differently.
 4. **Prioritize clarifications**: scope > security/privacy > user experience > technical details
 5. **Think like a tester**: Every vague requirement should fail the "testable and unambiguous" checklist item
 6. **Common areas needing clarification** (only if no reasonable default exists):
