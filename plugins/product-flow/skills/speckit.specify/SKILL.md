@@ -138,9 +138,22 @@ For each such term found that is **central to the feature** (drives logic, condi
 
 If no ambiguous terms are found: proceed without asking.
 
-3.7. **Confirm understanding before writing**:
+3.7. **Fill gaps and confirm understanding before writing**:
 
-Before writing anything, show the user a one-paragraph summary of what you understood and what you are going to do. Format:
+First, assess whether the description contains the three essential elements:
+- **Actor**: who performs the action (user, admin, system…)
+- **Action**: what they want to do
+- **Outcome**: why — what value or result it produces
+
+If any element is missing or too vague to infer, ask for it directly before continuing. Use **AskUserQuestion**, one question per missing element (max 3), all in a single call:
+- `question`: ask specifically for the missing element with a brief example.
+- `header`: "Actor", "Action", or "Outcome"
+- `options`: 2–3 plausible answers as starting points, plus a "Let me describe it" option last.
+- `multiSelect`: false
+
+Wait for the user's answers before continuing.
+
+Then, show a one-paragraph summary of what you understood:
 
 ```
 📋 Here's what I understood:
@@ -148,15 +161,13 @@ Before writing anything, show the user a one-paragraph summary of what you under
 **Goal:** <functional intent in one sentence — who does what and why>
 <if technical details were extracted:>
 **Technical details:** set aside for the planning phase (saved to technical-context.md)
-<if business terms need clarification:>
-**Terms to clarify:** [list] — I'll ask before writing
 
 Does this look right? (yes to continue / correct me if something is off)
 ```
 
 Wait for the user's response:
 - If **yes** or equivalent: proceed to step 4.
-- If the user corrects something: update your understanding and show the summary again. Repeat until the user confirms.
+- If the user corrects something: update your understanding and show the summary again. Repeat until confirmed.
 
 Skip this step if `collaborative-design.md` was loaded in step 3.8 — in that case the intent has already been validated through the design session.
 
