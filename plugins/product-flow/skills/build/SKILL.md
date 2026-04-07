@@ -16,8 +16,12 @@ gh pr view --json number,state,url,body
 
 ### 2. Gate: plan generated
 
-Verify in the PR body:
-- `- [x] Plan generated` ✓
+Read `specs/<branch>/status.json` and verify that `plan_generated` is present:
+
+```bash
+BRANCH=$(git branch --show-current)
+cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.plan_generated' > /dev/null
+```
 
 If not marked:
 
@@ -41,10 +45,17 @@ If the directory does not exist: ERROR "No feature directory found at specs/<fea
 
 **STOP.**
 
-Then check the PR body and feature directory:
-- Tasks done? → `- [x] Tasks generated` is marked
-- Checklist done? → `specs/<feature-dir>/checklists/` directory exists and is non-empty
-- Code done? → `- [x] Code generated` is marked
+Then read `specs/<branch>/status.json` and the feature directory:
+
+```bash
+BRANCH=$(git branch --show-current)
+cat "specs/$BRANCH/status.json" 2>/dev/null || echo "{}"
+```
+
+- Tasks done? → `tasks_generated` is set in `status.json`
+- Checklist done? → `checklist_done` is set in `status.json`
+- Code written? → `code_written` is set in `status.json`
+- Code verified? → `code_verified` is set in `status.json`
 - Verify-tasks done? → `specs/<feature-dir>/verify-tasks-report.md` exists
 
 Also check for uncommitted changes:
@@ -55,11 +66,17 @@ git status --porcelain
 
 Determine entry point using these mutually exclusive cases (check in order):
 
-1. **All done** — code is generated AND `verify-tasks-report.md` exists: skip all work and go directly to the final report.
+1. **All done** — `code_verified` is set in `status.json` AND `verify-tasks-report.md` exists: skip all work and go directly to the final report.
 
-2. **Re-entry shortcut** — code is generated AND `verify-tasks-report.md` does NOT exist: the user chose option B ("open a new session") from the verify-tasks proposal. **Skip directly to step 6b** without re-running tasks, checklist, or implement.
+2. **Re-entry shortcut** — `code_written` is set in `status.json` AND `code_verified` is NOT set AND `verify-tasks-report.md` does NOT exist: the user chose option B ("open a new session") from the verify-tasks proposal. **Skip directly to step 6b** without re-running tasks, checklist, or implement.
 
-2.5. **Partial implementation** — code is NOT marked as generated AND uncommitted changes exist AND tasks are generated: this is a previous interrupted implementation run. Show:
+2.5. **Partial implementation** — `code_written` is NOT set in `status.json` AND uncommitted changes exist in files **outside** `specs/` (i.e., source code or test files): this is a previous interrupted implementation run.
+
+To detect this, run:
+```bash
+git status --porcelain | grep -v "^.. specs/"
+```
+If the output is non-empty, this case applies. Show:
 
 ```
 ⚠️  Uncommitted code detected from a previous interrupted run.
@@ -76,7 +93,30 @@ Your choice:
   git add -A
   git commit -m "feat(<branch-name>): generate feature code"
   ```
-  Then mark `- [x] Code generated` in the PR body and add a History row `| Code generated | YYYY-MM-DD | recovered from interrupted run |`. Skip directly to step 6b.
+  If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
+  ```
+  🚫 Commit failed — GPG signing is blocking automatic commits.
+
+  To fix it, run in your terminal:
+    git config commit.gpgsign false
+
+  Then run /product-flow:build again.
+  ```
+  **STOP.**
+
+  Then write `code_written` to `status.json`:
+  ```bash
+  BRANCH=$(git branch --show-current)
+  STATUS_FILE="specs/$BRANCH/status.json"
+  EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+  echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"code_written": $ts}' > "$STATUS_FILE"
+  git add "$STATUS_FILE"
+  git commit -m "chore: record code_written in status.json"
+  git push origin HEAD
+  ```
+  If this commit also fails with a GPG error: same fix as above. **STOP.**
+
+  Add a History row `| Code written | YYYY-MM-DD | recovered from interrupted run |` to the PR body. Skip directly to step 6b.
 
 - **B** → run:
   ```bash
@@ -84,6 +124,34 @@ Your choice:
   git clean -fd
   ```
   Then continue with Normal flow (step 6).
+
+2.6. **Failed artifact commit** — code is NOT marked as generated AND uncommitted changes exist **only** inside `specs/` (tasks, checklists, or other spec artifacts whose commit was interrupted, e.g. due to GPG): commit the artifacts and continue normally.
+
+To confirm this is the case, verify that:
+```bash
+git status --porcelain | grep -v "^.. specs/"
+```
+produces **no output** (all changes are under `specs/`).
+
+Run:
+```bash
+git add specs/
+git commit -m "docs: recover uncommitted spec artifacts"
+git push origin HEAD
+```
+
+If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
+```
+🚫 Commit failed — GPG signing is blocking automatic commits.
+
+To fix it, run in your terminal:
+  git config commit.gpgsign false
+
+Then run /product-flow:build again.
+```
+**STOP.**
+
+Then re-read `specs/<branch>/status.json` and continue with the appropriate remaining step (step 4, 5, or 6) based on what fields are not yet set.
 
 3. **Normal flow** — code is NOT yet generated (and no uncommitted changes): build the pending steps list based on what is NOT yet done and show:
 
@@ -105,7 +173,7 @@ If all steps (including verify-tasks) are already done, skip to the final report
 
 ### 4. Generate tasks
 
-Skip this step if `- [x] Tasks generated` is already marked in the PR body.
+Skip this step if `tasks_generated` is already set in `status.json`.
 
 Otherwise, show:
 ```
@@ -156,7 +224,7 @@ Questions have been posted on the PR. Once resolved, run /product-flow:build aga
 
 ### 6. Implement
 
-Skip this step if `- [x] Code generated` is already marked in the PR body.
+Skip this step if `code_written` is already set in `status.json`.
 
 Otherwise, show:
 ```
@@ -171,7 +239,7 @@ If it produces an ERROR: propagate and stop.
 ### 6b. Verify-tasks (re-entry from new session)
 
 **Entry condition** (must match exactly — both required):
-- `- [x] Code generated` is marked in the PR body, AND
+- `code_written` is set in `status.json` AND `code_verified` is NOT set, AND
 - `verify-tasks-report.md` does NOT exist in FEATURE_DIR
 
 This step runs only when the re-entry shortcut was triggered in step 3:
@@ -188,6 +256,43 @@ Invoke `/product-flow:speckit.verify-tasks`.
   walkthrough and wait for the user to resolve each item.
 - When the walkthrough finishes (or if no items are flagged): continue to
   step 7.
+
+### 6c. Mark code as verified
+
+Runs after step 6 or step 6b completes successfully (verify-tasks passed or no flagged items).
+
+Write `code_verified` to `specs/<branch>/status.json` and check `- [x] Code generated` in the PR body:
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"code_verified": $ts}' > "$STATUS_FILE"
+git add "$STATUS_FILE"
+git commit -m "chore: record code_verified in status.json"
+git push origin HEAD
+```
+
+If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
+```
+🚫 Commit failed — GPG signing is blocking automatic commits.
+
+To fix it, run in your terminal:
+  git config commit.gpgsign false
+
+Then run /product-flow:build again.
+```
+**STOP.**
+
+Mark `- [x] Code generated` in the PR body and add a History row:
+
+```
+| Code generated | YYYY-MM-DD | verify-tasks passed |
+```
+
+```bash
+gh pr edit --body "<updated-body>"
+```
 
 ### 7. Final report
 

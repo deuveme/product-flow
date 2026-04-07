@@ -1,6 +1,6 @@
 {
   "name": "product-flow",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "description": "Product Flow - PM commands for spec-driven development workflow.",
   "author": { "name": "David Valero" },
   "license": "MIT",
