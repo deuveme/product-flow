@@ -67,6 +67,17 @@ git commit -m "docs: update spec with team feedback"
 git push origin HEAD
 ```
 
+If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
+```
+🚫 Commit failed — GPG signing is blocking automatic commits.
+
+To fix it, run in your terminal:
+  git config commit.gpgsign false
+
+Then run /product-flow:continue again.
+```
+**STOP.**
+
 ### 7. Resolve processed comments
 
 Invoke `/product-flow:pr-comments resolve` passing the IDs of all bot comments that had `UNANSWERED` status and have now been addressed.

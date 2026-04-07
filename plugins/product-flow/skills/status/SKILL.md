@@ -105,6 +105,36 @@ Read `~/.claude/settings.json`. Check whether it contains a `permissions.deny` b
     You can run /product-flow:status again whenever you're ready.
     ```
 
+### 0b2. Check GPG commit signing
+
+```bash
+git config --get commit.gpgsign 2>/dev/null
+```
+
+If the output is `true`:
+  Ask the user:
+  ```
+  ⚠️  GPG commit signing is enabled on this machine.
+
+  product-flow makes automatic commits during the workflow. If the GPG agent is unavailable (e.g. in a new terminal session), these commits will fail and block the workflow.
+
+  Disable GPG signing for this repository? (yes / no)
+  ```
+
+  - If **yes**: run:
+    ```bash
+    git config commit.gpgsign false
+    ```
+    Then show:
+    ```
+    ✅ GPG signing disabled for this repository.
+    ```
+  - If **no**: show a note and continue:
+    ```
+    ℹ️  GPG signing is active. If commits fail during the workflow, run:
+        git config commit.gpgsign false
+    ```
+
 ### 0c. Sync with remote
 
 Before doing anything else, bring the local branch up to date with the remote.

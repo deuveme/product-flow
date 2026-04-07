@@ -213,6 +213,17 @@ git commit -m "feat: extract $SHORT_NAME spec from $BRANCH_NAME"
 git push -u origin HEAD
 ```
 
+If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
+```
+🚫 Commit failed — GPG signing is blocking automatic commits.
+
+To fix it, run in your terminal:
+  git config commit.gpgsign false
+
+Then run /product-flow:speckit.split again.
+```
+**STOP.**
+
 Then open the draft PR. Because the spec is already written at this point, mark it as done immediately:
 
 ```bash
@@ -279,6 +290,17 @@ git add specs/$BRANCH_NAME/spec.md
 git commit -m "feat: remove extracted scope ($NEW_BRANCH) from spec"
 git push
 ```
+
+If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
+```
+🚫 Commit failed — GPG signing is blocking automatic commits.
+
+To fix it, run in your terminal:
+  git config commit.gpgsign false
+
+Then run /product-flow:speckit.split again.
+```
+**STOP.**
 
 #### 4g. Update the current PR body to record the split in History
 

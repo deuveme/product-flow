@@ -95,6 +95,17 @@ git add -A
 git commit -m "feat(<branch-name>): <brief-summary-of-changes>"
 ```
 
+If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
+```
+🚫 Commit failed — GPG signing is blocking automatic commits.
+
+To fix it, run in your terminal:
+  git config commit.gpgsign false
+
+Then run /product-flow:submit again.
+```
+**STOP.**
+
 #### 5b. Push (marker removed only on success)
 
 ```bash

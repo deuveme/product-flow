@@ -70,6 +70,17 @@ git commit -m "docs: add tasks.md"
 git push origin HEAD
 ```
 
+If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
+```
+🚫 Commit failed — GPG signing is blocking automatic commits.
+
+To fix it, run in your terminal:
+  git config commit.gpgsign false
+
+Then run /product-flow:build again.
+```
+**STOP.**
+
 ### 6. Update PR status
 
 Mark: `- [x] Tasks generated`
