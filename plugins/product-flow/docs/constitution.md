@@ -205,4 +205,4 @@ When making breaking changes, use the **expand-contract** pattern to maintain ze
 
 *Last updated: 2026-04-07*
 *Owner: Tech Lead*
-*Version: 1.6.4*
+*Version: 1.7.2*

@@ -47,12 +47,20 @@ You **MUST** consider the user input before proceeding (if not empty).
      - Display the table showing all checklists passed
      - Automatically proceed to step 3
 
+2b. **Detect redesign mode**: Scan FEATURE_DIR/spec.md for visual or UX redesign signals. Keywords: "redesign", "rediseño", "new look", "new design", "visual overhaul", "UI revamp", "rework the UI", "rework the UX", "visual refresh", "new interface", "change the look", "change the UI", "new layout".
+
+If any are found, set `REDESIGN_MODE = true` and apply these rules throughout implementation:
+
+- **Existing code is the baseline, not the deliverable.** If a component or function already exists, that does NOT mean the task is done — it means the current implementation must be evaluated against the target spec and modified or replaced if it doesn't match.
+- **Do not skip tasks because the functionality exists.** Each task must be evaluated against the TARGET state described in the spec, not the current state of the code.
+- When modifying existing code, treat the changes as intentional rewrites, not accidental overwrites.
+
 3. Load and analyze the implementation context:
    - **REQUIRED**: Read tasks.md for the complete task list and execution plan
    - **REQUIRED**: Read plan.md for tech stack, architecture, and file structure
    - **IF EXISTS**: Read data-model.md for entities and relationships
    - **IF EXISTS**: Read contracts/ for API specifications and test requirements
-   - **IF EXISTS**: Read research.md for technical decisions and constraints
+   - **IF EXISTS**: Read research.md for technical decisions and constraints. If `REDESIGN_MODE = true`, pay special attention to the `## Redesign Baseline` section — it defines the current vs target state delta that must be implemented.
    - **IF EXISTS**: Read quickstart.md for integration scenarios
 
 4. **Project Setup Verification**:
