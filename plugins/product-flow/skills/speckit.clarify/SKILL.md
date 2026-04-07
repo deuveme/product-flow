@@ -34,6 +34,50 @@ Execution steps:
    - If JSON parsing fails, abort and instruct user to re-run `/product-flow:speckit.specify` or verify feature branch environment.
    - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
+1b. **Terminology validation** — runs before the main scan.
+
+Load the spec and extract all domain-specific business terms: nouns that carry industry, company, or product-specific meaning and could be interpreted differently outside this context. Examples: financial instruments, process names, role names, product-specific states, business events.
+
+For each extracted term:
+- Derive the most reasonable definition based on the spec context and general domain knowledge.
+- Skip terms that are self-evident from the spec text or are standard technical terms with no ambiguity.
+
+For each term that needs confirmation, ask the PM via a **single `AskUserQuestion` call** grouping all terms:
+- One entry per term:
+  - `question`: "**[Term]** — [AI-proposed definition in one sentence]"
+  - `header`: the term (max 12 chars)
+  - `options`:
+    - `A. Correct` — the definition is accurate for this context
+    - `B. Incorrect` — the definition is wrong (free-text field for correction)
+    - `C. I don't know` — the team needs to define this
+  - `multiSelect`: false
+
+Process each answer:
+- **A (Correct)**: record the confirmed definition in working memory. Add to `## Glossary` section in the spec (create it before `## Clarifications` if missing). Format: `- **[Term]**: [definition]`.
+- **B (Incorrect)**: record the user's correction as the canonical definition. Add to `## Glossary` with the corrected definition. Record any conflicting uses in the spec as flags for step 2.
+- **C (I don't know)**: invoke `/product-flow:pr-comments write` with:
+  - `type`: `product`, `status`: `UNANSWERED`
+  - `body`:
+    ```
+    **Undefined term: "[Term]"**
+
+    This term appears in the spec but its exact meaning in this context is unclear.
+
+    **AI proposed definition:** [proposed definition]
+
+    ⚠️ The team must define this term before the spec can be finalized.
+    ```
+  Mark the term internally as **unresolved** — flag any spec sections that use it as potentially incorrect.
+
+After processing all terms: if any terms are unresolved (C answers), warn:
+```
+⚠️  [N] term(s) left undefined and posted to the PR for team input.
+   Sections using these terms may need revision once defined.
+   Proceeding with the rest of the analysis using the AI-proposed definitions as a placeholder.
+```
+
+If no domain-specific terms are found, skip this step silently.
+
 2. Load the current spec file. Perform a structured ambiguity & coverage scan using this taxonomy. For each category, mark status: Clear / Partial / Missing. Produce an internal coverage map used for prioritization (do not output raw map unless no questions will be asked).
 
    Functional Scope & Behavior:
