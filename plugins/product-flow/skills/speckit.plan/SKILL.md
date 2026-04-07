@@ -30,14 +30,6 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 2. **Load context**: Read FEATURE_SPEC and `.specify/memory/constitution.md`. Load IMPL_PLAN template (already copied).
 
-   Also load technical context if available (extracted from the original feature description when the user provided implementation details):
-
-   ```bash
-   cat $SPECS_DIR/technical-context.md 2>/dev/null
-   ```
-
-   If the file exists, use its contents as a head start for Phase 0 research — it contains technical details the user already specified. Do not copy it verbatim into research.md; incorporate it after validating against the project stack and existing decisions.
-
    Also load event model context if available:
 
    ```bash
