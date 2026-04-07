@@ -247,6 +247,13 @@ It's an optional quality check that confirms every completed task has real code 
 **During `/product-flow:build`, Claude is asking me questions before writing code. Is that normal?**
 Yes. Before generating code, Claude runs a requirements quality check that may ask up to 5 clarification questions to make sure the spec, plan and tasks are clear and complete. Answer them as best you can — they are quick and help prevent implementation mistakes. Once the questions are done, code generation continues automatically.
 
+**How much detail should I give when running `/product-flow:start`?**
+Write whatever you know, in your own words. You don't need to find the right level — Claude adjusts automatically:
+- If your description is **vague or short**, Claude will ask you a few focused questions before writing the spec.
+- If your description is **very detailed or technical**, Claude will extract the technical parts automatically and keep only the business intent for the spec. Nothing gets lost — the technical details are saved separately for the development team.
+
+The only rule: describe **what you want to achieve and for whom**, not how to build it. The rest is handled for you.
+
 **I want to refine the spec before sharing it with the team. How?**
 Run `/product-flow:speckit.clarify` after `/product-flow:start`. Claude will scan the spec, identify the most important ambiguities, and ask you up to 5 targeted questions to sharpen it. The spec is updated in place. You can then share the PR with the team as usual.
 
