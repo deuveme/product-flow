@@ -160,7 +160,43 @@ Mark `- [x] In code review` and add row:
 gh pr edit --body "<updated-body>"
 ```
 
-### 8. Final report
+### 8. Propose ADRs
+
+Read `specs/<branch>/research.md` and `specs/<branch>/decisions.md` (if they exist).
+
+For each decision found, apply this filter before including it:
+
+> Would a dev starting a new feature tomorrow make an inconsistent decision if they didn't know this?
+
+If yes → include. If no → skip.
+
+For each included decision, produce a one-line entry:
+
+```
+- [ ] **<short-title>** — <one sentence: what was decided and why it's not obvious>
+```
+
+If at least one decision passes the filter, insert a `### Proposed ADRs` subsection into the PR body immediately after the `<!-- /dev-checklist -->` marker, within the existing `## For Developers` section:
+
+```markdown
+### Proposed ADRs
+
+> Decisions from this feature that may be worth consolidating as project-level Architecture Decision Records.
+> Review and confirm before running /product-flow:deploy-to-stage.
+
+- [ ] **<short-title>** — <rationale>
+- [ ] **<short-title>** — <rationale>
+```
+
+If the section already exists (re-running submit), replace it entirely with the updated content.
+
+If no decisions pass the filter, skip this step silently — do not add the section.
+
+```bash
+gh pr edit --body "<updated-body>"
+```
+
+### 10. Final report
 
 ```
 ✅ Code saved
@@ -180,6 +216,6 @@ When the dev approves the PR, run:
 ─────────────────────────────────────────
 ```
 
-### Session close
+### 11. Session close
 
 Invoke `/product-flow:context`.

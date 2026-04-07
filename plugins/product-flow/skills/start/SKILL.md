@@ -112,8 +112,10 @@ Spec: $SPEC_PATH
 
 ## Notes
 
-## Dev Checklist
-*Additional information for developers. PMs and designers can ignore this section.*
+## For Developers
+*PMs and designers can ignore this section.*
+
+### Checklist
 
 <!-- dev-checklist -->
 - [ ] **Spec** — pending
@@ -201,8 +203,10 @@ Spec: $SPEC_PATH
 
 ## Notes
 
-## Dev Checklist
-*Additional information for developers. PMs and designers can ignore this section.*
+## For Developers
+*PMs and designers can ignore this section.*
+
+### Checklist
 
 <!-- dev-checklist -->
 - [x] **Spec** — <N> user stories (<US labels>) · $SPEC_PATH
