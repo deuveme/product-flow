@@ -125,6 +125,20 @@ Then **within this same invocation**, proceed immediately to the `PLAN_PENDING` 
 
 #### `PLAN_PENDING` (auto-generate)
 
+Before generating the plan, check for unresolved spec ambiguities:
+
+```
+⏳ Checking spec for ambiguities before planning...
+```
+
+Invoke `/product-flow:speckit.clarify`.
+
+**Wait for `speckit.clarify` to finish before continuing.**
+
+- If it reports **no critical ambiguities** (all categories Clear or Deferred): continue silently.
+- If it resolves ambiguities (technical via PR comments, product via PM questions): continue after answers are applied.
+- If it produces an ERROR: propagate and stop.
+
 ```
 🔜 Generating the technical plan.
 

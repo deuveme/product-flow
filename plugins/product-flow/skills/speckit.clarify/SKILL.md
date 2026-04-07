@@ -1,5 +1,5 @@
 ---
-description: Asks up to 5 clarification questions to resolve ambiguities in the spec.
+description: Resolves ambiguities in the spec — technical ones autonomously, product ones by asking the PM.
 user-invocable: false
 handoffs:
   - label: Build Technical Plan
@@ -90,65 +90,57 @@ Execution steps:
    - Clarification would not materially change implementation or validation strategy
    - Information is better deferred to planning phase (note internally)
 
-3. Generate (internally) a prioritized queue of candidate clarification questions (maximum 5). Do NOT output them all at once. Apply these constraints:
-    - Maximum of 5 total questions across the whole session.
-    - Each question must be answerable with EITHER:
-       - A short multiple‑choice selection (2–5 distinct, mutually exclusive options), OR
-       - A one-word / short‑phrase answer (explicitly constrain: "Answer in <=5 words").
-    - Only include questions whose answers materially impact architecture, data modeling, task decomposition, test design, UX behavior, operational readiness, or compliance validation.
-    - Ensure category coverage balance: attempt to cover the highest impact unresolved categories first; avoid asking two low-impact questions when a single high-impact area (e.g., security posture) is unresolved.
+3. Generate (internally) a prioritized list of candidate clarification questions. Apply these constraints:
+    - Include a question only if its answer would materially change the spec — architecture, data modeling, task decomposition, test design, UX behavior, operational readiness, or compliance validation.
     - Exclude questions already answered, trivial stylistic preferences, or plan-level execution details (unless blocking correctness).
     - Favor clarifications that reduce downstream rework risk or prevent misaligned acceptance tests.
-    - If more than 5 categories remain unresolved, select the top 5 by (Impact * Uncertainty) heuristic.
-    - **Classify each question** as **Technical** or **Product** before queuing:
-      - **Technical**: authentication, authorisation, security, compliance, data retention, integration patterns, infrastructure constraints, performance targets — resolve autonomously.
+    - Ensure category coverage balance: prioritize highest-impact unresolved categories first.
+    - **Classify each question** as **Technical** or **Product**:
+      - **Technical**: authentication, authorisation, security, compliance, data retention, integration patterns, infrastructure constraints, performance targets — resolve autonomously, never ask the PM.
       - **Product**: business intent, priorities, functional scope, user flows, terminology, acceptance criteria — ask the PM.
+    - For product questions: if more than 7 remain after the quality filter, keep the 7 of highest impact (by Impact × Uncertainty). Quality filter is primary; 7 is the safety net.
 
-4. Sequential questioning loop:
-    - Process EXACTLY ONE question at a time.
-    - **If the question is Technical**:
-       - Attempt to resolve it using project context: existing code, `.agents/rules/base.md`, project stack, industry standards.
-       - If resolved: record the decision internally and invoke `/product-flow:pr-comments write` with:
-         - `type`: `technical`, `status`: `ANSWERED`
-         - `body`:
-           ```
-           **Technical question detected:** "[question]"
+4. Resolve all questions:
 
-           **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+    **Step 4a — Technical questions (autonomous, no PM involvement):**
 
-           **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
-           ```
-       - If unresolved: record it internally and invoke `/product-flow:pr-comments write` with:
-         - `type`: `technical`, `status`: `UNANSWERED`
-         - `body`:
-           ```
-           **Technical question detected:** "[question]"
+    For each technical question:
+    - Attempt to resolve using project context: existing code, `.agents/rules/base.md`, project stack, industry standards.
+    - If resolved: invoke `/product-flow:pr-comments write` with:
+      - `type`: `technical`, `status`: `ANSWERED`
+      - `body`:
+        ```
+        **Technical question:** "[question]"
 
-           **Possible answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+        **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
 
-           ⚠️ **Unresolved — requires input from the development team.**
-           ```
-       - Do NOT ask the PM. Move to the next question.
-    - **If the question is Product**: use the **AskUserQuestion** tool.
-       - Determine the best option based on: best practices, common patterns, risk reduction, alignment with spec context.
-       - Call AskUserQuestion with:
-         - `question`: full question text ending with "?"
-         - `header`: short topic label max 12 chars (e.g. "Auth method", "Data scope", "User roles")
-         - `options`: 2–4 choices. Place the recommended option **first** and append `" (Recommended)"` to its label. Each option must have a `description` explaining implications.
-         - `multiSelect`: false
-       - The tool automatically adds an "Other" option — the user can type a custom answer there.
-       - For short‑answer style questions with no meaningful discrete options: model 2–3 common answers as options (with the best practice as first/recommended) and rely on "Other" for free-form input.
-       - After the user answers via the tool:
-         - If they selected "Other", treat the typed text as their answer.
-         - Otherwise use the selected option label as the answer.
-         - If ambiguous, call AskUserQuestion again for that same question (does not count toward the 5-question limit).
-         - Once satisfactory, record it in working memory (do not yet write to disk) and move to the next queued question.
-    - Stop asking further questions when:
-       - All critical ambiguities resolved early (remaining queued items become unnecessary), OR
-       - User signals completion ("done", "good", "no more"), OR
-       - You reach 5 processed questions (technical auto-resolved + product asked).
-    - Never reveal future queued questions in advance.
-    - If no valid questions exist at start, immediately report no critical ambiguities.
+        **Chosen answer:** "[chosen option]" — [brief reasoning]
+        ```
+    - If unresolved: invoke `/product-flow:pr-comments write` with:
+      - `type`: `technical`, `status`: `UNANSWERED`
+      - `body`:
+        ```
+        **Technical question:** "[question]"
+
+        **Possible answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+
+        ⚠️ Unresolved — requires input from the development team.
+        ```
+
+    **Step 4b — Product questions (single grouped call to PM):**
+
+    If there are no product questions: skip to step 5.
+
+    Otherwise, ask all product questions in a **single AskUserQuestion call**:
+    - One entry per question:
+      - `question`: full question text ending with "?"
+      - `header`: short topic label max 12 chars
+      - `options`: 2–4 choices. Place the recommended option **first** with `" (Recommended)"`. Each option has a `description` explaining implications.
+      - `multiSelect`: false
+    - The tool adds "Other" automatically for free-form answers.
+    - Wait for all answers before continuing.
+    - If any answer is ambiguous, ask a follow-up for that question only (does not count toward the 7-question limit).
+    - Record all answers in working memory before writing to disk.
 
 5. Integration after EACH accepted answer (incremental update approach):
     - Maintain in-memory representation of the spec (loaded once at start) plus the raw file contents.
@@ -170,7 +162,7 @@ Execution steps:
 
 6. Validation (performed after EACH write plus final pass):
    - Clarifications session contains exactly one bullet per accepted answer (no duplicates).
-   - Total asked (accepted) questions ≤ 5.
+   - Product questions asked ≤ 7 (safety net cap).
    - Updated sections contain no lingering vague placeholders the new answer was meant to resolve.
    - No contradictory earlier statement remains (scan for now-invalid alternative choices removed).
    - Markdown structure valid; only allowed new headings: `## Clarifications`, `### Session YYYY-MM-DD`.
@@ -203,10 +195,10 @@ Behavior rules:
 
 - If no meaningful ambiguities found (or all potential questions would be low-impact), respond: "No critical ambiguities detected worth formal clarification." and suggest proceeding.
 - If spec file missing, instruct user to run `/product-flow:speckit.specify` first (do not create a new spec here).
-- Never exceed 5 total asked questions (clarification retries for a single question do not count as new questions).
+- Never ask the PM technical questions — resolve them autonomously and write to PR.
 - Avoid speculative tech stack questions unless the absence blocks functional clarity.
 - Respect user early termination signals ("stop", "done", "proceed").
-- If no questions asked due to full coverage, output a compact coverage summary (all categories Clear) then suggest advancing.
-- If quota reached with unresolved high-impact categories remaining, explicitly flag them under Deferred with rationale.
+- If no product questions exist, output a compact coverage summary (all categories Clear or Deferred to plan) then suggest advancing.
+- If product questions exceed 7 after filtering, keep the 7 highest impact and flag the rest as Deferred with rationale.
 
 Context for prioritization: $ARGUMENTS
