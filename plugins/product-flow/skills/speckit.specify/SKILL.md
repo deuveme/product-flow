@@ -95,7 +95,29 @@ If any are found, set `REDESIGN_MODE = true` and apply these rules for the rest 
 - Success criteria must be UX/visual outcomes (e.g., "users complete the task in X fewer steps", "the interface follows the new design system", "task completion rate improves by X%").
 - Do NOT write a spec that merely restates the current system's behavior.
 
-3.6. **Load collaborative design context (if available)**:
+3.6. **Clarify business terminology**:
+
+Scan the feature description for terms that are central to the feature logic AND whose exact meaning could vary by business context. These include — but are not limited to:
+
+- Financial terms: payment states, debt, interest, fees, balances, amortization schedules, refunds, charges
+- Operational states: approval, rejection, cancellation, expiry, suspension, activation
+- Business-specific statuses or flows that name a concept without defining it (e.g. "mora", "vencimiento", "liquidación", "anticipo")
+- Any term that appears to be an internal company concept (proper nouns, acronyms, compound nouns not found in general dictionaries)
+
+For each such term found that is **central to the feature** (drives logic, conditions, or data):
+
+1. Do NOT assume you know the definition — even if the term exists in general language, the business meaning may differ.
+2. Collect all ambiguous terms (max 3, prioritised by how central they are to the feature logic).
+3. Ask the user via **AskUserQuestion** — one question per term, all in a single call:
+   - `question`: "What does '[term]' mean in your context?" with a brief explanation of why it matters for the spec.
+   - `header`: the term itself (max 12 chars)
+   - `options`: 2–3 plausible interpretations as starting points, with a "None of these / I'll describe it" option last.
+   - `multiSelect`: false
+4. Wait for answers. Use them as authoritative definitions when writing the spec — do not reinterpret or override them.
+
+If no ambiguous terms are found: proceed without asking.
+
+3.7. **Load collaborative design context (if available)**:
 
    ```bash
    cat specs/$BRANCH_NAME/collaborative-design.md 2>/dev/null
