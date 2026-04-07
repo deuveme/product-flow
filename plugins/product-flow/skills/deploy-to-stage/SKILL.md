@@ -91,11 +91,9 @@ If any runs appear, show them so the user can confirm that the pipeline triggere
 ### 7. Final report
 
 ```
-✅ Published to main
+✅ Feature published
 
-🌿 Merged: <BRANCH> → main (squash)
-🗑️  Branch deleted
-🚀 Published — check your deployment pipeline for progress
+🚀 Live — check your deployment pipeline for progress
 
 ─────────────────────────────────────────
 This feature is complete.

@@ -118,6 +118,13 @@ Add row:
 | Plan generated | YYYY-MM-DD | research.md + data-model.md |
 ```
 
+Update the Dev Checklist block: replace the `<!-- dev-checklist -->` ... `<!-- /dev-checklist -->` section with the Plan line filled in. Extract tech stack, main libraries, and architecture from `research.md`. List which artifacts were generated (research.md, data-model.md, contracts/ if present).
+
+Example Plan line:
+```
+- [x] **Plan** — TypeScript · PostgreSQL · Hexagonal architecture · research.md · data-model.md · contracts/
+```
+
 ```bash
 gh pr edit --body "<updated-body>"
 ```
@@ -132,13 +139,9 @@ If it returns a **Blocked** status: do not show the final report until the user 
 ### 11. Final report
 
 ```
-✅ Technical plan generated
+✅ Technical plan ready
 
-📁 Artifacts:
-   specs/<directory>/plan.md
-   specs/<directory>/research.md
-   specs/<directory>/data-model.md
-   specs/<directory>/contracts/  (if applicable)
+Run /product-flow:continue to move to the next step.
 ```
 
 ### Session close

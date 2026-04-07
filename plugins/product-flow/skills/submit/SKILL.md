@@ -48,12 +48,16 @@ Invoke `/product-flow:speckit.verify`.
     `/product-flow:speckit.verify` once more. If it still shows CRITICAL issues,
     stop and repeat this decision. If it passes, continue to step 3.
 
-- If it reports only **HIGH / MEDIUM / LOW** issues → show the findings summary
-  and ask:
+- If it reports only **HIGH / MEDIUM / LOW** issues → for each issue found:
+  1. Attempt to resolve it.
+  2. Invoke `/product-flow:pr-comments write` following the technical decision format — ANSWERED if resolved, UNANSWERED if not.
+
+  Then ask:
 
   ```
-  ⚠️  Verification found warnings (no blockers). Do you want to proceed with
-  submit anyway, or fix them first? (yes to proceed / no to stop)
+  ⚠️  The code review found some minor issues. They have been posted on the PR for the team to review.
+
+  Do you want to proceed anyway, or fix them first? (yes to proceed / no to stop)
   ```
 
   Wait for the user's response:

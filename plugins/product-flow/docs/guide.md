@@ -35,7 +35,7 @@ plugins/product-flow/
         ├── [Spec-Kit engines]
         │   ├── speckit.specify, speckit.clarify, speckit.plan, speckit.tasks
         │   ├── speckit.implement.withTDD
-        │   ├── speckit.taskstoissues, speckit.retro, speckit.checklist
+        │   ├── speckit.retro, speckit.checklist
         │   ├── speckit.verify, speckit.verify-tasks, speckit.reconcile
         │   ├── speckit.split                          (optional pre-tasks: split over-scoped specs)
         │
@@ -90,13 +90,13 @@ gh auth status
 gh pr list
 ```
 
-The `speckit.taskstoissues` skill (called by `/product-flow:build`) requires the **GitHub MCP server** to create issues. Install it via Claude Code:
+The GitHub MCP server is required by `/product-flow:build` to interact with GitHub. Install it via Claude Code:
 
 ```
 /mcp add github
 ```
 
-Without it, task generation still works but GitHub issues will not be created.
+Without it, PR interactions (comments, status updates) will not work.
 
 ### Install in a project
 
@@ -240,14 +240,14 @@ All bot comments are written via `/product-flow:pr-comments write`, which handle
 
 **`implement` skill:**
 1. Calls `/product-flow:praxis.bdd-with-approvals` → writes approval fixtures (executable specs) *(TS/JS only)*
-2. Calls `/product-flow:speckit.implement.withTDD` → implements with Red-Green-Refactor TDD + ZOMBIES. After each task, `praxis.code-simplifier` is invoked on the touched files. As each task is completed, its GitHub issue (linked via `#N` in `tasks.md`) is closed automatically
+2. Calls `/product-flow:speckit.implement.withTDD` → implements with Red-Green-Refactor TDD + ZOMBIES. After each task, `praxis.code-simplifier` is invoked on the touched files. As each task is completed, its status in the PR Dev Checklist is updated to `DONE`
 3. Calls `/product-flow:praxis.test-desiderata` → validates test quality against Kent Beck's 12 properties
 4. Calls `/product-flow:speckit.retro` → phase retrospective and artifact sync
 5. Proposes `/product-flow:speckit.verify-tasks` → user chooses: run now, open new session, or skip
 
 **`tasks` skill:**
 1. Calls `/product-flow:speckit.tasks` → generates `tasks.md` ordered by dependencies
-2. Calls `/product-flow:speckit.taskstoissues` → creates one GitHub issue per task; writes the issue number `(#N)` back into each task line in `tasks.md`; adds `Closes #N` references to the PR body so GitHub auto-closes linked issues on merge
+2. Updates the PR body with a Dev Checklist section listing all tasks grouped by phase, each with `TO DO` status
 
 ### Automatic quality gates
 

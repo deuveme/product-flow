@@ -139,21 +139,17 @@ You **MUST** consider the user input before proceeding (if not empty).
    11. Run tests after each refactoring step
    12. Commit: every green + refactored state = one commit
 
-   ### c. Mark task complete and close issue
+   ### c. Mark task complete and update PR
 
    After all tests for a task pass:
 
    1. Mark `[X]` in `tasks.md` for this task.
 
-   2. Check if the task line contains a `(#N)` annotation (added by
-      `speckit.taskstoissues`). If it does, close the corresponding GitHub issue:
+   2. Update the Dev Checklist block in the PR body: find the row for this task in the table and change its Status from `TO DO` to `DONE`. Replace the entire `<!-- dev-checklist -->` ... `<!-- /dev-checklist -->` block with the updated content.
 
       ```bash
-      gh issue close N --comment "Implemented in this PR. Closing as part of the feature build."
+      gh pr edit --body "<updated-body>"
       ```
-
-      If the task has no `(#N)` annotation (issues were not created, or the task
-      was added after issue creation), skip the close step silently.
 
 7. Implementation execution rules:
    - **Setup first**: Initialize project structure, dependencies, configuration
@@ -163,14 +159,26 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Polish and validation**: Final review pass using `/product-flow:praxis.code-simplifier`
 
 8. Progress tracking and error handling:
-   - Report progress after each completed task
+   - Report progress after each completed task using a PM-friendly message: "✅ Step X of Y complete" — no file paths, task IDs, or technical detail in the chat
    - Halt execution if any non-parallel task fails
    - For parallel tasks [P], continue with successful tasks, report failed ones
    - Provide clear error messages with context for debugging
    - Suggest next steps if implementation cannot proceed
    - **IMPORTANT** For completed tasks, make sure to mark the task off as [X] in the tasks file.
 
-9. Completion validation:
+9. Update PR — mark implementation complete
+
+   Count total tasks from `tasks.md`. Update the Dev Checklist block in the PR body: replace the Implementation line with the completed count and mark it checked.
+
+   ```
+   - [x] **Implementation** — <N>/<N> tasks complete
+   ```
+
+   ```bash
+   gh pr edit --body "<updated-body>"
+   ```
+
+10. Completion validation:
    - Verify all required tasks are completed
    - Check that implemented features match the original specification
    - Validate that tests pass and coverage meets requirements

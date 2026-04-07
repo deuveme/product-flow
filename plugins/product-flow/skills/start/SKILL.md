@@ -111,6 +111,16 @@ Spec: $SPEC_PATH
 | PR created | $(date +%Y-%m-%d) | Feature started |
 
 ## Notes
+
+## Dev Checklist
+*Additional information for developers. PMs and designers can ignore this section.*
+
+<!-- dev-checklist -->
+- [ ] **Spec** — pending
+- [ ] **Plan** — pending
+- [ ] **Tasks** — pending
+- [ ] **Implementation** — pending
+<!-- /dev-checklist -->
 EOF
 )"
 ```
@@ -148,6 +158,10 @@ If it produces an ERROR: propagate and stop.
 
 Update the PR body to reflect spec completion:
 
+Read the current PR body to extract the existing Dev Checklist block (between `<!-- dev-checklist -->` and `<!-- /dev-checklist -->`), then replace the Spec line with the actual spec details.
+
+Count the number of user stories in `$SPEC_PATH` (lines matching `## User Story` or similar) to populate `<N> user stories`.
+
 ```bash
 gh pr edit $PR_NUMBER --body "$(cat <<EOF
 ## Feature
@@ -169,6 +183,16 @@ Spec: $SPEC_PATH
 | Spec created | $(date +%Y-%m-%d) | Spec written |
 
 ## Notes
+
+## Dev Checklist
+*Additional information for developers. PMs and designers can ignore this section.*
+
+<!-- dev-checklist -->
+- [x] **Spec** — <N> user stories (<US labels>) · $SPEC_PATH
+- [ ] **Plan** — pending
+- [ ] **Tasks** — pending
+- [ ] **Implementation** — pending
+<!-- /dev-checklist -->
 EOF
 )"
 ```

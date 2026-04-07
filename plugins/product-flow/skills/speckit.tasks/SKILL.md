@@ -60,12 +60,9 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Parallel execution examples per story
    - Implementation strategy section (MVP first, incremental delivery)
 
-6. **Report**: Output path to generated tasks.md and summary:
+6. **Report**: Output a brief summary:
    - Total task count
-   - Task count per user story
-   - Parallel opportunities identified
-   - Independent test criteria for each story
-   - Suggested MVP scope (typically just User Story 1)
+   - Number of phases
    - Format validation: Confirm ALL tasks follow the checklist format (checkbox, ID, labels, file paths)
 
 Context for task generation: $ARGUMENTS

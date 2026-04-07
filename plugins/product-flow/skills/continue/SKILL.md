@@ -97,18 +97,15 @@ Always show the active state before doing anything:
 Examples:
 
 ```
-📍 State: SPEC_REVIEW
-   The team has left feedback on the spec. Consolidating before proceeding.
+📍 The team has left feedback on the spec. Integrating before proceeding.
 ```
 
 ```
-📍 State: PLAN_PENDING
-   Spec is ready. Generating the technical plan.
+📍 Spec is ready. Generating the technical plan.
 ```
 
 ```
-📍 State: BUILD_READY
-   The plan is ready. /product-flow:continue has no further transitions.
+📍 The plan is ready.
 ```
 
 ### 4. Execute state transition
@@ -116,8 +113,7 @@ Examples:
 #### `SPEC_REVIEW`
 
 ```
-🔜 Transition: SPEC_REVIEW → PLAN_PENDING
-   Integrating team feedback into the spec.
+🔜 Integrating team feedback into the spec.
 
 Starting...
 ```
@@ -130,8 +126,7 @@ Then **within this same invocation**, proceed immediately to the `PLAN_PENDING` 
 #### `PLAN_PENDING` (auto-generate)
 
 ```
-🔜 Transition: PLAN_PENDING → BUILD_READY
-   Generating technical plan from the spec.
+🔜 Generating the technical plan.
 
 Starting...
 ```
@@ -155,8 +150,7 @@ or add comments on the PR first if changes are needed.
 #### `PLAN_REVIEW`
 
 ```
-🔜 Transition: PLAN_REVIEW → BUILD_READY
-   Integrating team feedback into the plan and related artifacts.
+🔜 Integrating team feedback into the plan.
 
 Starting...
 ```
@@ -169,8 +163,7 @@ Then continue automatically to `BUILD_READY`.
 #### `BUILD_READY`
 
 ```
-📍 State: BUILD_READY
-   The plan is ready. /product-flow:continue has no further transitions.
+📍 The plan is ready.
 
 ─────────────────────────────────────────
 ➡️  NEXT STEP

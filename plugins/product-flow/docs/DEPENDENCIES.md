@@ -50,8 +50,7 @@ plan
   └─ speckit.retro
 
 tasks
-  ├─ speckit.tasks
-  └─ speckit.taskstoissues
+  └─ speckit.tasks
 
 implement
   ├─ pr-comments read-answers

@@ -79,7 +79,6 @@ Otherwise, invoke `/product-flow:tasks`.
 
 `/product-flow:tasks` takes care of:
 - Generating `tasks.md` with tasks ordered by dependencies
-- Creating the issues on GitHub
 - Recording technical decisions in the PR
 
 **Wait for `/product-flow:tasks` to finish completely before continuing.**
@@ -98,14 +97,20 @@ Otherwise, invoke `/product-flow:checklist`.
 **Wait for `/product-flow:checklist` to finish completely before continuing.**
 If it produces an ERROR: propagate and stop.
 
-If the checklist reveals CRITICAL issues (gaps, conflicts, or ambiguities that would break implementation), stop and inform the PM:
+If the checklist reveals CRITICAL issues (gaps, conflicts, or ambiguities that would break implementation):
+
+For each critical issue found:
+1. Attempt to resolve it using available context (spec, plan, existing artifacts).
+2. Invoke `/product-flow:pr-comments write` following the technical decision format — ANSWERED if resolved, UNANSWERED if not.
+
+If all issues were resolved: continue to step 6.
+
+If any issue remains unresolved:
 
 ```
-🚫 The checklist found critical issues that must be resolved before implementing.
+🚫 There are open questions that need team input before building.
 
-Review: specs/<dir>/checklists/<domain>.md
-
-Fix the issues and run /product-flow:build again.
+Questions have been posted on the PR. Once resolved, run /product-flow:build again.
 ```
 
 **STOP.**

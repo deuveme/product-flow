@@ -1,5 +1,5 @@
 ---
-description: "Breaks the plan into tasks and creates GitHub issues."
+description: "Breaks the plan into tasks."
 user-invocable: false
 ---
 
@@ -56,25 +56,13 @@ Invoke `/product-flow:speckit.tasks`, applying the following technical decision 
 **Wait for `speckit.tasks` to finish completely before continuing.**
 If it produces an ERROR: propagate and stop.
 
-### 4. Delegate to speckit.taskstoissues
-
-Invoke `/product-flow:speckit.taskstoissues`.
-
-`speckit.taskstoissues` takes care of:
-- Reading `tasks.md`
-- Creating one GitHub issue per task
-- Linking the issues to the PR
-
-**Wait for `speckit.taskstoissues` to finish completely before continuing.**
-If it produces an ERROR: propagate and stop.
-
-### 5. Record technical decisions in the PR
+### 4. Record technical decisions in the PR
 
 For each technical decision made, invoke `/product-flow:pr-comments write`
 following the technical decision format (ANSWERED/UNANSWERED).
 Skip if no technical decisions were made.
 
-### 6. Commit the tasks
+### 5. Commit the tasks
 
 ```bash
 git add specs/
@@ -82,35 +70,57 @@ git commit -m "docs: add tasks.md"
 git push origin HEAD
 ```
 
-### 7. Update PR status
+### 6. Update PR status
 
 Mark: `- [x] Tasks generated`
 
 Add row:
 ```
-| Tasks generated | YYYY-MM-DD | tasks.md + issues created |
+| Tasks generated | YYYY-MM-DD | tasks.md created |
+```
+
+Update the Dev Checklist block: replace the `<!-- dev-checklist -->` ... `<!-- /dev-checklist -->` section with the Tasks line filled in, followed by the full task table grouped by phase. Each task starts with status `TO DO`.
+
+Example:
+```
+- [x] **Tasks** — <N> tasks · <M> phases
+
+  **Phase 1 — Setup**
+  | Task | Description | Status |
+  |------|-------------|--------|
+  | T001 | <description> | TO DO |
+
+  **Phase 2 — Foundational**
+  | Task | Description | Status |
+  |------|-------------|--------|
+  | T002 | <description> | TO DO |
+
+  **Phase 3 — <US label>: <story name>**
+  | Task | Description | Status |
+  |------|-------------|--------|
+  | T003 | <description> | TO DO |
 ```
 
 ```bash
 gh pr edit --body "<updated-body>"
 ```
 
-### 8. Phase retro
+### 7. Phase retro
 
 Invoke `/product-flow:speckit.retro` with context: "after tasks phase".
 
 **Wait for `speckit.retro` to finish before continuing.**
 If it returns a **Blocked** status: do not show the final report until the user resolves the blockers.
 
-### 9. Final report
+### 8. Final report
 
 ```
-✅ Tasks generated
+✅ Feature broken down into tasks
 
-📋 tasks.md created
-🎫 Issues created on GitHub
+The work has been organized and is ready to be built.
+Run /product-flow:build to start the implementation.
 ```
 
-### Session close
+### 9. Session close
 
 Invoke `/product-flow:context`.

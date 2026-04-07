@@ -129,16 +129,14 @@ If it returns a **Blocked** status: do not show the final report until the user 
 After the retro completes, propose:
 
 ```
-🔍 Detect phantom completions?
+🔍 Final quality check
 
-speckit.verify-tasks checks that every task marked [X] has real code behind it
-— not stubs, empty bodies, or TODOs.
+This verifies that all tasks have been fully implemented with no placeholders left.
 
-⚠️  For maximum reliability this should run in a NEW session (the current
-session has context from the implementation that may bias the check).
+⚠️  For best results, run this in a new session.
 
-  A. Run now in this session (faster, slight bias risk)
-  B. I'll open a new session — remind me to run verify-tasks there
+  A. Run it now
+  B. I'll open a new Claude Code session and run /product-flow:build again there
   C. Skip
 
 Your choice:

@@ -87,7 +87,7 @@ Close the terminal and reopen Claude Code.
 - `jq` installed
 - Repo access with push permissions
 - [SpecKit](https://github.com/github/spec-kit) installed in the project (required by `/product-flow:start` for spec templates and branch creation scripts)
-- [GitHub MCP server](https://github.com/github/github-mcp-server) configured (required by `/product-flow:build` to create GitHub issues)
+- [GitHub MCP server](https://github.com/github/github-mcp-server) configured (required by `/product-flow:build` to interact with GitHub)
 
 ---
 
