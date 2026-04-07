@@ -35,7 +35,77 @@ Then run /product-flow:status again.
 
 Do not check `gh auth status` — authentication will be validated implicitly when `gh pr list` runs in step 2. If it fails due to auth, surface the error then.
 
-### 0b. Sync with remote (git pull)
+### 0b. Check Claude Code permissions
+
+Read `~/.claude/settings.json`. Check whether it contains a `permissions.deny` block with `"Bash(git push * main)"` and a `permissions.allow` block with `"Read"`.
+
+- If both are present: continue.
+- If the file doesn't exist or the permissions are missing:
+  - Ask the user:
+    ```
+    ⚠️  Claude Code permissions are not configured on this machine.
+
+    Do you want to set them up now? (yes / no)
+    ```
+  - If **yes**: run the following and stop execution:
+    ```bash
+    mkdir -p "$HOME/.claude"
+    [ -f "$HOME/.claude/settings.json" ] && cp "$HOME/.claude/settings.json" "$HOME/.claude/settings.json.backup"
+    cat > "$HOME/.claude/settings.json" << 'EOF'
+    {
+      "permissions": {
+        "deny": [
+          "Bash(git push * main)",
+          "Bash(git push *:main)",
+          "Bash(git push *:refs/heads/main)",
+          "Bash(git merge * main)",
+          "Bash(git checkout main)"
+        ],
+        "allow": [
+          "Read",
+          "Glob",
+          "Grep",
+          "Bash(ls *)",
+          "Bash(ls)",
+          "Bash(find *)",
+          "Bash(cat *)",
+          "Bash(head *)",
+          "Bash(tail *)",
+          "Bash(git status *)",
+          "Bash(git status)",
+          "Bash(git log *)",
+          "Bash(git log)",
+          "Bash(git diff *)",
+          "Bash(git diff)",
+          "Bash(git show *)",
+          "Bash(git branch *)",
+          "Bash(git branch)",
+          "Bash(git remote *)",
+          "Bash(git remote)",
+          "Edit",
+          "Write",
+          "NotebookEdit",
+          "Bash(git add *)",
+          "Bash(git add)",
+          "Bash(git commit *)",
+          "Bash(git push *)",
+          "Bash(git checkout *)",
+          "Bash(git switch *)"
+        ]
+      }
+    }
+    EOF
+    ```
+    Then show:
+    ```
+    ✅ Permissions configured. Restart Claude Code for the changes to take effect.
+    ```
+  - If **no**: stop execution and show:
+    ```
+    You can run /product-flow:status again whenever you're ready.
+    ```
+
+### 0c. Sync with remote
 
 Before doing anything else, bring the local branch up to date with the remote.
 

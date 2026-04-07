@@ -17,7 +17,7 @@ the review. Otherwise, infer the current phase from available artifacts.
 
 There are two retro modes. Run the appropriate one based on context:
 
-- **Micro-retro** — after completing a single task (during `/product-flow:speckit.implement`)
+- **Micro-retro** — after completing a single task (during `/product-flow:speckit.implement.withTDD`)
 - **Phase retro** — after completing a full SpecKit phase (specify, plan, tasks,
   implement, or a user story block)
 
