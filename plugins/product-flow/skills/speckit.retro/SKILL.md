@@ -117,7 +117,7 @@ For each artifact that needs a change, classify the decision type and handle acc
 
 #### Product decisions (`spec.md` — requirements, user stories, acceptance criteria)
 
-Use the **AskUserQuestion** tool to present all product findings to the PM before making any changes. Batch up to 4 questions per call (make multiple calls if there are more than 4 items). For each finding:
+Use the **AskUserQuestion** tool to present all product findings to the PM in a **single call** before making any changes. For each finding:
 
 - `question`: describe the issue and ask what to do, ending with "?"
 - `header`: short topic label max 12 chars (e.g. "Spec scope", "User flow")

@@ -38,7 +38,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - All file paths must be absolute.
    - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
-2. **Clarify intent (dynamic)**: Derive up to THREE initial contextual clarifying questions (no pre-baked catalog). They MUST:
+2. **Clarify intent (dynamic)**: Generate contextual clarifying questions about checklist scope. They MUST:
    - Be generated from the user's phrasing + extracted signals from spec/plan/tasks
    - Only ask about information that materially changes checklist content
    - Be skipped individually if already unambiguous in `$ARGUMENTS`
@@ -57,18 +57,26 @@ You **MUST** consider the user input before proceeding (if not empty).
       - Boundary exclusion (e.g., "Should we explicitly exclude performance tuning items this round?")
       - Scenario class gap (e.g., "No recovery flows detected—are rollback / partial failure paths in scope?")
 
-   Question formatting rules:
-   - If presenting options, generate a compact table with columns: Option | Candidate | Why It Matters
-   - Limit to A–E options maximum; omit table if a free-form answer is clearer
-   - Never ask the user to restate what they already said
-   - Avoid speculative categories (no hallucination). If uncertain, ask explicitly: "Confirm whether X belongs in scope."
+   Ask all questions in a **single AskUserQuestion call**:
+   - One entry per question:
+     - `question`: full question text ending with "?"
+     - `header`: short topic label max 12 chars
+     - `options`: 2–4 choices. Place the recommended option **first** with `" (Recommended)"`. Each option has a `description` explaining implications.
+     - `multiSelect`: false
+   - The tool adds "Other" automatically for free-form answers.
+   - Skip this step entirely if `$ARGUMENTS` already makes all scope dimensions unambiguous.
 
-   Defaults when interaction impossible:
-   - Depth: Standard
-   - Audience: Reviewer (PR) if code-related; Author otherwise
-   - Focus: Top 2 relevance clusters
+   After receiving answers, record each one as a PR comment using `/product-flow:pr-comments write`:
+   - `type`: `product`
+   - `status`: `ANSWERED`
+   - `body`:
+     ```
+     **Checklist scope decision:** "[question asked]"
 
-   Output the questions (label Q1/Q2/Q3). After answers: if ≥2 scenario classes (Alternate / Exception / Recovery / Non-Functional domain) remain unclear, you MAY ask up to TWO more targeted follow‑ups (Q4/Q5) with a one-line justification each (e.g., "Unresolved recovery path risk"). Do not exceed five total questions. Skip escalation if user explicitly declines more.
+     **Answer:** [the user's answer]
+
+     **Applied:** [how this shaped the checklist scope]
+     ```
 
 3. **Understand user request**: Combine `$ARGUMENTS` + clarifying answers:
    - Derive checklist theme (e.g., security, review, deploy, ux)
