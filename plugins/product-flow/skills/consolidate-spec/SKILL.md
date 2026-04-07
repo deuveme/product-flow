@@ -47,7 +47,7 @@ Record both the pending comments and the user responses internally — they will
 
 After applying in step 4, for each answer applied show:
 ```
-  ✅ Question <N> — applied to <section/artifact>.
+  ✅ Question <N> — applied to <artifact>.
 ```
 
 Then invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers (e.g. `1 3`).

@@ -226,7 +226,7 @@ Bot comments are tracked via invisible HTML markers on the first line:
 - `<!-- id:q<N> type:technical|product status:UNANSWERED -->` — pending, will be processed by `/product-flow:continue`
 - `<!-- id:q<N> type:technical|product status:ANSWERED -->` — processed, will be ignored in future runs
 
-All bot comments are written via `/product-flow:pr-comments write`, which handles numbering automatically. `/product-flow:pr-comments pending` returns all `UNANSWERED` comments. `/product-flow:pr-comments resolve` rewrites them to `ANSWERED` after processing. `/product-flow:pr-comments read-answers` reads all user responses (`Answer:`) and returns the last one per question number — used by `plan`, `implement`, and `consolidate-*` before applying changes.
+All bot comments are written via `/product-flow:pr-comments write`, which handles numbering automatically and appends the question to `specs/<branch>/decisions.md` — a durable local log that persists even if the PR is deleted. `/product-flow:pr-comments pending` returns all `UNANSWERED` comments. `/product-flow:pr-comments resolve` rewrites them to `ANSWERED` after processing. `/product-flow:pr-comments read-answers` reads all user responses (`Answer:`) and returns the last one per question number — used by `plan`, `tasks`, `implement`, `build`, and `consolidate-*` before applying changes. Once answers are applied, `/product-flow:pr-comments mark-processed` records the question numbers in `status.json` (to prevent re-processing), appends the responses to `decisions.md`, and adds a 👍 reaction to the user's answer comment on GitHub.
 
 ### Key workflow steps
 
@@ -245,6 +245,22 @@ All bot comments are written via `/product-flow:pr-comments write`, which handle
 3. Calls `/product-flow:praxis.test-desiderata` → validates test quality against Kent Beck's 12 properties
 4. Calls `/product-flow:speckit.retro` → phase retrospective and artifact sync
 5. Proposes `/product-flow:speckit.verify-tasks` → user chooses: run now, open new session, or skip
+
+**`consolidate-spec` skill:**
+1. Reads pending PR comments and user answers via `pr-comments pending` + `pr-comments read-answers`
+2. Classifies each comment: non-technical (surfaces to PM, stops) / technical (resolves autonomously)
+3. Delegates to `speckit.clarify` with the feedback as context → updates `spec.md`
+4. Posts each technical decision as a PR comment via `pr-comments write`
+5. Calls `pr-comments mark-processed` and `pr-comments resolve`
+6. Calls `speckit.retro`
+
+**`consolidate-plan` skill:**
+1. Reads pending PR comments and user answers via `pr-comments pending` + `pr-comments read-answers`
+2. Classifies each comment: non-technical (surfaces to PM, stops) / technical (applies autonomously)
+3. Updates `research.md`, `data-model.md`, and `contracts/` with the feedback
+4. Posts each applied change as a PR comment via `pr-comments write` for traceability
+5. Calls `pr-comments mark-processed` and `pr-comments resolve`
+6. Calls `speckit.retro`
 
 **`tasks` skill:**
 1. Calls `/product-flow:speckit.tasks` → generates `tasks.md` ordered by dependencies

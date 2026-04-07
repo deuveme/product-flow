@@ -120,7 +120,7 @@ Every PR must include:
 
 - Public skills (PM commands) must have a clear description in their `SKILL.md` frontmatter.
 - Non-obvious architecture decisions must be documented in `docs/`.
-- The `README.md` must always reflect how to install the plugin after any structural change.
+- Non-structural changes (new skills, updated workflows) must be reflected in `docs/guide.md`. Installation changes must be reflected in `docs/onboarding.md`.
 
 ---
 

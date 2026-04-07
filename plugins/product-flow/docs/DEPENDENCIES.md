@@ -20,6 +20,9 @@ continue
   └─ [PLAN_REVIEW]  → consolidate-plan → (then auto-proceeds to BUILD_READY)
 
 build
+  ├─ pr-comments pending           (pre-build: block if UNANSWERED comments exist)
+  ├─ pr-comments read-answers      (pre-build: apply pending user answers)
+  ├─ pr-comments mark-processed    (record applied answers + react on GitHub)
   ├─ tasks            (if tasks not yet generated)
   ├─ checklist        (if checklists not yet generated)
   ├─ implement        (if code not yet generated)
@@ -43,6 +46,8 @@ status
 
 ```
 plan
+  ├─ pr-comments read-answers      (apply pending user answers before planning)
+  ├─ pr-comments mark-processed    (record applied answers + react on GitHub)
   ├─ praxis.event-modeling         (if event-driven signals detected)
   ├─ speckit.plan
   ├─ praxis.complexity-review
@@ -52,10 +57,13 @@ plan
   └─ speckit.retro
 
 tasks
+  ├─ pr-comments read-answers      (apply pending user answers before generating tasks)
+  ├─ pr-comments mark-processed    (record applied answers + react on GitHub)
   └─ speckit.tasks
 
 implement
   ├─ pr-comments read-answers
+  ├─ pr-comments mark-processed    (record applied answers + react on GitHub)
   ├─ pr-comments pending
   ├─ praxis.bdd-with-approvals     (TypeScript/JavaScript only)
   ├─ speckit.implement.withTDD
@@ -70,6 +78,7 @@ checklist
 consolidate-spec
   ├─ pr-comments pending
   ├─ pr-comments read-answers
+  ├─ pr-comments mark-processed    (record applied answers + react on GitHub)
   ├─ speckit.clarify               (if [NEEDS CLARIFICATION] markers remain)
   ├─ pr-comments write
   ├─ pr-comments resolve
@@ -78,6 +87,7 @@ consolidate-spec
 consolidate-plan
   ├─ pr-comments pending
   ├─ pr-comments read-answers
+  ├─ pr-comments mark-processed    (record applied answers + react on GitHub)
   ├─ pr-comments write
   ├─ pr-comments resolve
   └─ speckit.retro
