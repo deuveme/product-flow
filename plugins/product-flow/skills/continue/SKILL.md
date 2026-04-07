@@ -88,7 +88,10 @@ Map to state using `spec_created` and `plan_generated` fields:
 | ✓ | ✓ | ✓ | `PLAN_REVIEW` |
 | ✓ | ✓ | ✗ | `BUILD_READY` |
 
-For `has_comments`: invoke `/product-flow:pr-comments pending`. If it returns `NO_PENDING_COMMENTS`, `has_comments = false`. Otherwise `has_comments = true`.
+For `has_comments`: invoke `/product-flow:pr-comments pending` and `/product-flow:pr-comments read-answers` in parallel.
+- If `pending` returns non-empty UNANSWERED comments → `has_comments = true`.
+- If `read-answers` returns any new unprocessed answers → `has_comments = true`.
+- If both return empty/`NO_USER_RESPONSES` → `has_comments = false`.
 
 ### 3. Display current state
 

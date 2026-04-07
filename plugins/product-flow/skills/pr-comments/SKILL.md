@@ -180,6 +180,54 @@ gh pr view --json comments \
 
 4. Group all matches by question number `N`. For each group, keep only the **last** entry (highest `createdAt`, then last line within the same comment).
 
-5. Return a map of: `{ qN: { text: "<response text>", commentId: "<id>" } }`
+4b. Load already-processed answer IDs from `status.json`:
 
-6. If no matches found: return `NO_USER_RESPONSES`.
+```bash
+BRANCH=$(git branch --show-current)
+cat "specs/$BRANCH/status.json" 2>/dev/null | jq -r '.processed_answers // [] | .[]'
+```
+
+Filter out any entries from step 4 whose `commentId` appears in this list. These have already been applied in a previous run.
+
+5. Return a map of: `{ qN: { text: "<response text>", commentId: "<id>" } }` — containing only new, unprocessed answers.
+
+6. If no new answers found: return `NO_USER_RESPONSES`.
+
+---
+
+### `mark-processed`
+
+Records user answer comment IDs as processed so `read-answers` skips them in future runs.
+
+**Used by:** every skill that applies `read-answers` results, immediately after applying them.
+
+**Input (`$ARGUMENTS`):** Space-separated or JSON list of comment IDs to mark as processed.
+
+#### Execution
+
+1. Read current `status.json`:
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+```
+
+2. Append the new IDs to `processed_answers` (deduplicated):
+
+```bash
+echo "$EXISTING" | jq --argjson ids '<JSON array of IDs>' \
+  '.processed_answers = ((.processed_answers // []) + $ids | unique)' > "$STATUS_FILE"
+```
+
+3. Commit silently (no push needed — local state is sufficient until next explicit commit):
+
+```bash
+git add "$STATUS_FILE"
+git commit -m "chore: mark answers as processed"
+git push origin HEAD
+```
+
+If the commit fails with a GPG or signing error: show the standard GPG fix message and **STOP**.
+
+4. Output: number of IDs recorded.

@@ -27,6 +27,8 @@ cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.spec_created' > /dev/null
 Invoke `/product-flow:pr-comments read-answers`. If it returns responses, apply them before delegating to `speckit.plan`:
 - `Question <N>. Answer:` responses → apply to `spec.md` or incorporate as context in the delegation, depending on what the original question was about. Use the last response per question number.
 
+After applying, invoke `/product-flow:pr-comments mark-processed` with the commentIds of all applied answers.
+
 Invoke `/product-flow:pr-comments pending`. If it returns pending comments that require a response:
 
 ```

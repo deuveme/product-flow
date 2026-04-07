@@ -68,6 +68,8 @@ For each piece of technical feedback, update the relevant artifact:
 
 Do NOT modify `tasks.md` here — if plan changes invalidate tasks, note it in the commit message so `/product-flow:tasks` can be re-run.
 
+After applying all answers, invoke `/product-flow:pr-comments mark-processed` with the commentIds of all applied answers.
+
 ### 4. Validate consistency
 
 After applying corrections, verify:
