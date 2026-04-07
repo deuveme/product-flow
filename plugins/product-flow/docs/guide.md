@@ -190,7 +190,7 @@ When `/product-flow:continue` processes comments on the PR, it classifies each o
 
 **Autonomously chosen answer:** We chose "..." because "..."
 
-> 💬 To change this decision, add a new comment: `Question 3. Correction: [letter or answer]`
+> 💬 To change this decision, add a new comment: `Question 3. Answer: [letter or answer]`
 ```
 
 **For unresolved technical questions** (insufficient project context), Claude posts:
@@ -226,7 +226,7 @@ Bot comments are tracked via invisible HTML markers on the first line:
 - `<!-- id:q<N> type:technical|product status:UNANSWERED -->` — pending, will be processed by `/product-flow:continue`
 - `<!-- id:q<N> type:technical|product status:ANSWERED -->` — processed, will be ignored in future runs
 
-All bot comments are written via `/product-flow:pr-comments write`, which handles numbering automatically. `/product-flow:pr-comments pending` returns all `UNANSWERED` comments. `/product-flow:pr-comments resolve` rewrites them to `ANSWERED` after processing. `/product-flow:pr-comments read-answers` reads all user responses (`Answer:` / `Correction:`) and returns the last one per question number — used by `plan`, `implement`, and `consolidate-*` before applying changes.
+All bot comments are written via `/product-flow:pr-comments write`, which handles numbering automatically. `/product-flow:pr-comments pending` returns all `UNANSWERED` comments. `/product-flow:pr-comments resolve` rewrites them to `ANSWERED` after processing. `/product-flow:pr-comments read-answers` reads all user responses (`Answer:`) and returns the last one per question number — used by `plan`, `implement`, and `consolidate-*` before applying changes.
 
 ### Key workflow steps
 

@@ -12,16 +12,13 @@ Single source of truth for comment processing state. Any skill that reads or res
 - `type` — `technical` or `product`
 - `status` — `UNANSWERED` or `ANSWERED`
 
-**User response format:** To answer or correct a bot comment, the user adds a **new top-level comment** to the PR referencing the question number. The format is flexible:
+**User response format:** To answer or override a bot comment, the user adds a **new top-level comment** to the PR referencing the question number. The format is flexible:
 ```
 Question <N>. Answer: [letter or text]
-Question <N>. Correction: [letter or text with explanation]
-Q<N>: [text]                         ← shorthand, treated as Answer
-Question <N> - Correction: [text]    ← dash separator also valid
+Q<N>: [text]                         ← shorthand
+Question <N> - Answer: [text]        ← dash separator also valid
 ```
 Multiple responses for the same question number are allowed — the **last one chronologically** wins. A single comment may answer multiple questions, one per line.
-
-> **Recommendation**: Use explicit `Answer:` or `Correction:` keywords to avoid ambiguity. A response without a keyword is treated as an Answer; without the `Correction` keyword, intent to override cannot be inferred reliably.
 
 ---
 
@@ -70,7 +67,7 @@ Add 1 to the result (use 1 if the command returns 0 or fails).
 > **Known limitation**: if two separate Claude sessions write comments to the same PR simultaneously, both may compute the same next `<N>` and produce duplicate question IDs. To prevent this, avoid running multiple sessions against the same PR at the same time.
 
 2. Build the user instruction line based on `status`:
-   - `ANSWERED`: `> 💬 To change this decision, add a new comment: \`Question <N>. Correction: [letter or answer]\``
+   - `ANSWERED`: `> 💬 To change this decision, add a new comment: \`Question <N>. Answer: [letter or answer]\``
    - `UNANSWERED`: `> 💬 To answer, add a new comment: \`Question <N>. Answer: [letter or answer]\``
 
 3. Post the comment:
@@ -145,7 +142,7 @@ gh api repos/{owner}/{repo}/issues/comments/{comment_id} \
 
 Reads all user responses to bot comments and returns the last answer per question number.
 
-**Used by:** any skill that needs to apply `Answer:` or `Correction:` responses before proceeding.
+**Used by:** any skill that needs to apply `Answer:` responses before proceeding.
 
 #### Execution
 
@@ -159,33 +156,30 @@ gh pr view --json comments \
 2. For each comment, scan the body for lines matching this flexible pattern (case-insensitive):
 
    ```
-   (Question|Q)\s*<N>[.:\s-]+(Answer|Correction|Fix|Resp(uesta)?)?[.:\s-]*<text>
+   (Question|Q)\s*<N>[.:\s-]+(Answer|Resp(uesta)?)?[.:\s-]*<text>
    ```
 
    Concretely, a line is a match if it:
    - Starts with `Question` or `Q` (case-insensitive)
    - Followed by one or more digits (the question number N)
    - Followed by any separator: `.` `:` `-` or whitespace (one or more)
-   - Optionally followed by a keyword (`Answer`, `Correction`, `Fix`, `Respuesta`, `Resp`) and another separator
+   - Optionally followed by a keyword (`Answer`, `Respuesta`, `Resp`) and another separator
    - Followed by the response text
 
    Examples that all match as valid responses to question 1:
    ```
    Question 1. Answer: B
-   Question 1. Correction: use option A instead
    question 1: b
    Q1 - answer: go with B
    Question 1. B
-   Q1: Correction use A, it fits better
    ```
 
-   If the keyword is `Correction`, `Fix`, or a synonym → type = `Correction`.
-   If the keyword is `Answer`, `Respuesta`, `Resp` or absent → type = `Answer`.
+   All matches are treated as type `Answer` regardless of keyword.
 
 3. A single comment may contain responses to multiple questions (one per line). Extract all of them.
 
 4. Group all matches by question number `N`. For each group, keep only the **last** entry (highest `createdAt`, then last line within the same comment).
 
-5. Return a map of: `{ qN: { type: "Answer"|"Correction", text: "<response text>", commentId: "<id>" } }`
+5. Return a map of: `{ qN: { text: "<response text>", commentId: "<id>" } }`
 
 6. If no matches found: return `NO_USER_RESPONSES`.

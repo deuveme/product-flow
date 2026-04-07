@@ -71,7 +71,7 @@ Based on what was learned in Step 2, identify whether earlier artifacts need upd
 
 - **`tasks.md`** (internal): Apply changes directly. Log in `lessons-learned.md`.
 - **`spec.md`** (product): Present a questionnaire to the PM listing the proposed changes. Wait for their answers before editing.
-- **`plan.md`** / technical artifacts (technical): Post a PR comment with the proposed change and reasoning. Apply immediately; the team can correct via `Correction:` comment.
+- **`plan.md`** / technical artifacts (technical): Post a PR comment with the proposed change and reasoning. Apply immediately; the team can override via `Answer:` comment.
 
 ---
 

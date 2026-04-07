@@ -32,7 +32,7 @@ Invoke `/product-flow:pr-comments pending`.
 
 If it returns `NO_PENDING_COMMENTS`: ERROR "There are no pending comments on the PR. Share the PR with the team and wait for their feedback."
 
-Also invoke `/product-flow:pr-comments read-answers`. Record both the pending comments and the user responses internally — they will be used as context in step 4. User responses follow the format `Question <N>. Correction:` or `Question <N>. Answer:` — for each question, only the last response counts.
+Also invoke `/product-flow:pr-comments read-answers`. Record both the pending comments and the user responses internally — they will be used as context in step 4. User responses follow the format `Question <N>. Answer:` — for each question, only the last response counts.
 
 ### 4. Delegate to speckit.clarify
 

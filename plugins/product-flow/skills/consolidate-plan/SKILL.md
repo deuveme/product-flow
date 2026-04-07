@@ -63,8 +63,7 @@ If all comments are technical, group them by affected artifact:
 
 For each piece of technical feedback, update the relevant artifact:
 
-- **Corrections** (`Question <N>. Correction: ...`): Override the previous decision with the team's direction. Update the artifact and add a note: `<!-- Updated: <date> — team correction -->`. If multiple corrections exist for the same question number, use the last one.
-- **Answers** (`Question <N>. Answer: ...`): Resolve the open question in research.md. Mark the question as resolved. If multiple answers exist for the same question number, use the last one.
+- **Answers** (`Question <N>. Answer: ...`): Apply to the relevant artifact — override if the comment was an autonomous decision, resolve if it was an open question. Update the artifact and add a note: `<!-- Updated: <date> — team answer -->`. If multiple answers exist for the same question number, use the last one.
 - **General feedback**: Interpret intent, apply changes conservatively, and note what was changed.
 
 Do NOT modify `tasks.md` here — if plan changes invalidate tasks, note it in the commit message so `/product-flow:tasks` can be re-run.
