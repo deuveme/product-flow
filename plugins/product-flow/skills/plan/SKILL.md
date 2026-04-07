@@ -36,7 +36,29 @@ Address them and run /product-flow:continue again.
 
 **STOP.**
 
-### 3. Delegate to speckit.plan
+### 3. Event modeling (conditional)
+
+Read `specs/<feature-dir>/spec.md` and check for event-driven signals:
+- Domain events, commands producing events
+- Async operations, background processing
+- Notifications, webhooks, pub/sub patterns
+- Reactions to external triggers (e.g., "when X happens, do Y")
+
+If event-driven signals are present: invoke `/product-flow:praxis.event-modeling`.
+
+`praxis.event-modeling` takes care of:
+- Decomposing the feature into STATE_CHANGE, STATE_VIEW, and AUTOMATION slices
+- Defining commands, events, aggregates, and Given/When/Then specs
+- Writing the model to `specs/<feature-dir>/event-model.md`
+
+**Wait for `praxis.event-modeling` to finish before continuing.**
+If it produces an ERROR: propagate and stop.
+
+Pass `event-model.md` as additional context when delegating to `speckit.plan` in the next step — it directly informs `data-model.md` and `contracts/` generation.
+
+If no event-driven signals: skip this step.
+
+### 4. Delegate to speckit.plan
 
 Invoke `/product-flow:speckit.plan`, applying the following technical decision management rules:
 
@@ -46,7 +68,7 @@ Invoke `/product-flow:speckit.plan`, applying the following technical decision m
 - Record each AI-made decision internally as **AI-proposed decision**.
 - If an unknown cannot be resolved by research or best practices: record it internally as **Unresolved question** and document it in `research.md` as a pending decision rather than blocking.
 
-Save the list of technical decisions (resolved and unresolved) for step 6.
+Save the list of technical decisions (resolved and unresolved) for step 8.
 
 `speckit.plan` takes care of:
 - Running the plan setup scripts
@@ -58,7 +80,7 @@ Save the list of technical decisions (resolved and unresolved) for step 6.
 **Wait for `speckit.plan` to finish completely before continuing.**
 If it produces an ERROR: propagate and stop.
 
-### 4. Verify generated artifacts
+### 5. Verify generated artifacts
 
 ```bash
 ls specs/<branch-directory>/
@@ -67,7 +89,7 @@ ls specs/<branch-directory>/
 Confirm that these exist: `plan.md`, `research.md`, `data-model.md`.
 If missing: ERROR "speckit.plan did not generate all artifacts. Check the previous errors."
 
-### 5. Challenge plan complexity
+### 6. Challenge plan complexity
 
 Invoke `/product-flow:praxis.complexity-review` passing the contents of `research.md` and `data-model.md` as input.
 
@@ -78,7 +100,7 @@ Invoke `/product-flow:praxis.complexity-review` passing the contents of `researc
 - If it surfaces **critical issues** (e.g., unnecessary microservices, premature event sourcing, unwarranted infrastructure): add one PR comment per issue via `/product-flow:pr-comments write`, surface them to the PM, and **STOP**. Do not proceed to step 6 until the PM acknowledges the issues (via a new run of `/product-flow:continue`).
 - If there are no critical issues: continue silently to step 6.
 
-### 6. Validate architecture
+### 7. Validate architecture
 
 Read `research.md` and `data-model.md` to determine whether the plan involves backend work, frontend work, or both.
 
@@ -95,13 +117,13 @@ Invoke `/product-flow:praxis.frontend-architecture` with the plan as input. It v
 - If either surfaces structural issues: add one PR comment per issue before proceeding.
 - If no issues: continue silently.
 
-### 7. Record technical decisions in the PR
+### 8. Record technical decisions in the PR
 
 For each technical decision made, invoke `/product-flow:pr-comments write`
 following the technical decision format (ANSWERED/UNANSWERED).
 Skip if no technical decisions were made.
 
-### 8. Commit the plan
+### 9. Commit the plan
 
 ```bash
 git add specs/
@@ -109,7 +131,7 @@ git commit -m "docs: add technical plan"
 git push origin HEAD
 ```
 
-### 9. Update PR status
+### 10. Update PR status
 
 Mark: `- [x] Plan generated`
 
@@ -129,14 +151,14 @@ Example Plan line:
 gh pr edit --body "<updated-body>"
 ```
 
-### 10. Phase retro
+### 11. Phase retro
 
 Invoke `/product-flow:speckit.retro` with context: "after plan phase".
 
 **Wait for `speckit.retro` to finish before continuing.**
 If it returns a **Blocked** status: do not show the final report until the user resolves the blockers.
 
-### 11. Final report
+### 12. Final report
 
 ```
 ✅ Technical plan ready

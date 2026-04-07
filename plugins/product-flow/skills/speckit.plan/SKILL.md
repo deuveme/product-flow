@@ -30,6 +30,14 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 2. **Load context**: Read FEATURE_SPEC and `.specify/memory/constitution.md`. Load IMPL_PLAN template (already copied).
 
+   Also load event model context if available:
+
+   ```bash
+   cat $SPECS_DIR/event-model.md 2>/dev/null
+   ```
+
+   If the file exists, read it before starting Phase 0. The event model defines aggregates, commands, events, and Given/When/Then specs already agreed — use it as the authoritative source for `data-model.md` entities and `contracts/` when generating Phase 1 artifacts. Do not redefine what is already modeled there.
+
 3. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
    - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION")
    - Fill Constitution Check section from constitution

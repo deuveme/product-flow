@@ -8,8 +8,9 @@ This document maps which skills call which other skills, the required preconditi
 
 ```
 start
-  └─ speckit.specify
-  └─ pr-comments write       (for technical decisions)
+  ├─ praxis.collaborative-design   (if feature description is vague)
+  ├─ speckit.specify
+  ├─ pr-comments write             (for technical decisions)
   └─ speckit.retro
 
 continue
@@ -42,6 +43,7 @@ status
 
 ```
 plan
+  ├─ praxis.event-modeling         (if event-driven signals detected)
   ├─ speckit.plan
   ├─ praxis.complexity-review
   ├─ praxis.backend-architecture   (if backend work detected)

@@ -127,7 +127,23 @@ EOF
 
 Save the returned PR URL as `PR_URL` and PR number as `PR_NUMBER`.
 
-### 3. Write spec (delegate to speckit.specify)
+### 3. Design exploration (conditional)
+
+Assess the feature description in `$ARGUMENTS`:
+
+- **Skip this step** if the description is detailed and clear (clear actor, action, and expected outcome, typically 15+ words).
+- **Run this step** if the description is vague, very short (< 15 words), or lacks a clear user action or expected outcome.
+
+If running: invoke `/product-flow:praxis.collaborative-design` passing `$ARGUMENTS` as input.
+
+`praxis.collaborative-design` will guide through visual scenario exploration and write its findings to `specs/$BRANCH_NAME/collaborative-design.md`.
+
+**Wait for `praxis.collaborative-design` to finish before continuing.**
+If it produces an ERROR: propagate and stop.
+
+Use `collaborative-design.md` as additional context in the next step.
+
+### 4. Write spec (delegate to speckit.specify)
 
 Invoke `/product-flow:speckit.specify` passing `$ARGUMENTS` as the feature description, applying the following question management rules:
 
@@ -154,7 +170,7 @@ Save the list of technical decisions (resolved and unresolved) internally for st
 **Wait for `speckit.specify` to finish completely before continuing.**
 If it produces an ERROR: propagate and stop.
 
-### 4. Update PR — mark spec created
+### 5. Update PR — mark spec created
 
 Update the PR body to reflect spec completion:
 
@@ -197,20 +213,20 @@ EOF
 )"
 ```
 
-### 5. Record technical decisions in the PR
+### 6. Record technical decisions in the PR
 
 For each technical decision made, invoke `/product-flow:pr-comments write`
 following the technical decision format (ANSWERED/UNANSWERED).
 Skip if no technical decisions were made.
 
-### 6. Phase retro
+### 7. Phase retro
 
 Invoke `/product-flow:speckit.retro` with context: "after specify phase".
 
 **Wait for `speckit.retro` to finish before continuing.**
 If it returns a **Blocked** status: do not show the final report until the user resolves the blockers.
 
-### 7. Final report
+### 8. Final report
 
 ```
 ✅ Feature started

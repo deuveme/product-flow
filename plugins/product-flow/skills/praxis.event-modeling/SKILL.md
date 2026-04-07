@@ -38,7 +38,7 @@ Three types. Every behavior in the system fits one:
 
 Produce markdown. Design for human readability.
 
-Write model artifacts to files. Ask the user where they want them. Update the files as the model evolves.
+Write model artifacts to `specs/<BRANCH_NAME>/event-model.md`. Derive `BRANCH_NAME` from `git branch --show-current`. Update the file as the model evolves.
 
 **High-level model:**
 
@@ -98,6 +98,23 @@ Then: Owner Registered
 - All fields mandatory: firstName, lastName, address, city, telephone
 - Telephone must be numeric, max 10 digits
 ```
+
+## Question Handling
+
+Any time a question or decision arises during this session, classify it before acting:
+
+**Technical** — architecture, integration patterns, infrastructure, data storage, performance, security:
+1. Resolve using project context: existing code, `.agents/rules/base.md`, detected stack, industry standards.
+2. Post a PR comment via `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED`, including the chosen answer and reasoning.
+3. Continue without asking the user.
+4. If it cannot be resolved with available context: post with `status: UNANSWERED` and continue.
+
+**Product** — business rules, domain terminology, actor responsibilities, slice scope, acceptance criteria:
+1. Ask the user directly in chat. One question at a time.
+2. Once answered, post a PR comment via `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`, recording the question and the user's answer.
+3. Continue with the confirmed decision.
+
+Never ask the user a technical question. Never silently drop a decision without a PR comment.
 
 ## Anti-Patterns
 

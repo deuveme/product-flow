@@ -65,7 +65,7 @@ PM commands delegate to internal engines and only:
 
 | Command | Internal call chain |
 |---|---|
-| `/product-flow:start` | create branch + Draft PR → `speckit.specify` → `speckit.retro` |
+| `/product-flow:start` | create branch + Draft PR → [`praxis.collaborative-design` if vague] → `speckit.specify` → `speckit.retro` |
 | `/product-flow:continue` | state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` (dispatched by state machine) |
 | `/product-flow:build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `speckit.retro`) → proposes `speckit.verify-tasks` |
 | `/product-flow:submit` | `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → git add/commit/push → `gh pr ready` on first run (exits DRAFT) |
@@ -231,12 +231,13 @@ All bot comments are written via `/product-flow:pr-comments write`, which handle
 ### Key workflow steps
 
 **`plan` skill:**
-1. Calls `/product-flow:speckit.plan` → generates `research.md`, `data-model.md`, `contracts/`
-2. Calls `/product-flow:praxis.complexity-review` → challenges design against 30 dimensions
-3. Calls `/product-flow:praxis.backend-architecture` (if backend) → validates hexagonal structure
-4. Calls `/product-flow:praxis.frontend-architecture` (if frontend) → validates feature-based structure
-5. Posts technical decisions as PR comments
-6. Calls `/product-flow:speckit.retro` for quality validation
+1. Calls `/product-flow:praxis.event-modeling` (if event-driven signals detected) → decomposes into STATE_CHANGE / STATE_VIEW / AUTOMATION slices, writes `event-model.md`
+2. Calls `/product-flow:speckit.plan` → generates `research.md`, `data-model.md`, `contracts/`
+3. Calls `/product-flow:praxis.complexity-review` → challenges design against 30 dimensions
+4. Calls `/product-flow:praxis.backend-architecture` (if backend) → validates hexagonal structure
+5. Calls `/product-flow:praxis.frontend-architecture` (if frontend) → validates feature-based structure
+6. Posts technical decisions as PR comments
+7. Calls `/product-flow:speckit.retro` for quality validation
 
 **`implement` skill:**
 1. Calls `/product-flow:praxis.bdd-with-approvals` → writes approval fixtures (executable specs) *(TS/JS only)*
@@ -260,14 +261,21 @@ orchestrators decide when to run them:
 | `speckit.verify-tasks` | `/product-flow:build` (proposed) | Proposed at the end of implement. User chooses: run now, open a new session, or skip |
 | `speckit.reconcile` | `speckit.verify` (user opt-in on CRITICAL) | When verify finds CRITICAL drift, the user is offered two options: fix manually (A) or reconcile (B). Only invoked if the user chooses B and provides a gap description |
 
-### Optional praxis skills (manual invocation)
+### Optional praxis skills
 
-These skills are not called automatically by any workflow step. Invoke them explicitly when the situation calls for it:
+Some are invoked automatically under certain conditions; others require explicit invocation.
+
+**Automatically invoked (conditional):**
+
+| Skill | Condition | Triggered by |
+|---|---|---|
+| `/product-flow:praxis.collaborative-design` | Feature description is vague or short (< 15 words, no clear actor/action) | `/product-flow:start` step 3 |
+| `/product-flow:praxis.event-modeling` | Spec contains event-driven signals (domain events, async, webhooks, background processing) | `/product-flow:plan` step 3 |
+
+**Manual invocation only:**
 
 | Skill | When to use | How to invoke |
 |---|---|---|
-| `/product-flow:praxis.collaborative-design` | Feature is ambiguous — before running `/product-flow:start`, use this to explore the problem space visually with story splitting and vertical slicing | Say: "Let's explore this feature with collaborative design" |
-| `/product-flow:praxis.event-modeling` | Feature involves integrations, automations, or reactive logic — use during planning to decompose into STATE_CHANGE / STATE_VIEW / AUTOMATION slices before `speckit.plan` | Say: "Let's model this with event modeling" |
 | `/product-flow:praxis.expand-contract` | Plan includes breaking changes (rename DB column, change API contract, replace service) — use to define the three migration phases | Say: "Apply expand-contract to this migration" |
 | `/product-flow:speckit.split` | Spec covers too many bounded contexts, user personas, or independent deliverables — use after `speckit.specify`, `speckit.clarify`, or `speckit.plan` and before `speckit.tasks` to extract the excess scope into a new branch with its own draft PR. Also offered automatically as a handoff button at the end of those three skills. | Say: "Analyze if this spec should be split" or use the handoff button |
 

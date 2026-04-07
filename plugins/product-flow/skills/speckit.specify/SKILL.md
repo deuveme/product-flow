@@ -84,6 +84,14 @@ Given that feature description, do this:
 
 3. Load `.specify/templates/spec-template.md` to understand required sections.
 
+3.5. **Load collaborative design context (if available)**:
+
+   ```bash
+   cat specs/$BRANCH_NAME/collaborative-design.md 2>/dev/null
+   ```
+
+   If the file exists, read it and use its content (scenarios, decisions, vertical slices) as primary context when writing the spec. The collaborative design captures decisions already agreed with the user — do not contradict or re-ask about them.
+
 4. Follow this execution flow:
 
     1. Parse user description from Input

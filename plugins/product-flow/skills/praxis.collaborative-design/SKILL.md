@@ -28,9 +28,53 @@ Problem → Research → Timeline → Scenarios → Decisions → Validation
    - UI: screen states and transitions
    - Pipelines: input → output
    - Workflows: steps with arrows
-5. **Options** — Present several options with tradeoffs. Don't decide alone. Wait for input before proceeding.
+5. **Options** — Present several options with tradeoffs. Apply the question handling rules below before waiting for input.
 6. **Validate** — POC for risky assumptions. Visual test cases. Document findings.
 7. **Document** — Track what was decided and why. Update as design evolves.
+
+   At the end of the session, write all design artifacts (scenarios, options, decisions, slices) to a single file:
+
+   ```bash
+   git branch --show-current  # → BRANCH_NAME
+   # Output file: specs/<BRANCH_NAME>/collaborative-design.md
+   ```
+
+   Structure of `collaborative-design.md`:
+   ```markdown
+   # Collaborative Design: <feature name>
+
+   ## Problem
+   <what we're building and why>
+
+   ## Key Scenarios
+   <visual scenarios explored>
+
+   ## Options Considered
+   <options presented with tradeoffs>
+
+   ## Decisions
+   <what was decided and why>
+
+   ## Vertical Slices
+   <proposed slices if splitting was needed>
+   ```
+
+## Question Handling
+
+Any time a question or decision arises during this session, classify it before acting:
+
+**Technical** — architecture, security, auth, compliance, data retention, integration patterns, infrastructure, performance, scalability:
+1. Try to resolve it using project context: existing code, `.agents/rules/base.md`, detected stack, industry standards.
+2. Post a PR comment via `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED`, including the chosen answer and reasoning.
+3. Continue without asking the user.
+4. If it cannot be resolved with available context: post with `status: UNANSWERED` and continue.
+
+**Product** — business intent, functional scope, user flows, priorities, terminology, acceptance criteria:
+1. Ask the user directly in chat. Be concise — one question at a time.
+2. Once answered, post a PR comment via `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`, recording the question and the user's answer.
+3. Continue with the confirmed decision.
+
+Never ask the user a technical question. Never silently drop a decision without a PR comment.
 
 ## Story Splitting
 
