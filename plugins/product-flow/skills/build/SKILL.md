@@ -107,24 +107,31 @@ If all steps (including verify-tasks) are already done, skip to the final report
 
 Skip this step if `- [x] Tasks generated` is already marked in the PR body.
 
-Otherwise, invoke `/product-flow:tasks`.
+Otherwise, show:
+```
+⏳ Step 1/3 — Breaking down the plan into tasks...
+```
 
-`/product-flow:tasks` takes care of:
-- Generating `tasks.md` with tasks ordered by dependencies
-- Recording technical decisions in the PR
+Invoke `/product-flow:tasks`.
 
 **Wait for `/product-flow:tasks` to finish completely before continuing.**
 If it produces an ERROR: propagate and stop.
+
+Then show:
+```
+✅ Step 1/3 — Tasks ready.
+```
 
 ### 5. Validate requirements quality
 
 Skip this step if `specs/<feature-dir>/checklists/` already exists and contains at least one file other than `requirements.md`.
 
-Otherwise, invoke `/product-flow:checklist`.
+Otherwise, show:
+```
+⏳ Step 2/3 — Validating requirements quality...
+```
 
-`/product-flow:checklist` takes care of:
-- Validating that spec, plan and tasks are complete, unambiguous and consistent
-- Generating `specs/<dir>/checklists/<domain>.md`
+Invoke `/product-flow:checklist`.
 
 **Wait for `/product-flow:checklist` to finish completely before continuing.**
 If it produces an ERROR: propagate and stop.
@@ -135,7 +142,7 @@ For each critical issue found:
 1. Attempt to resolve it using available context (spec, plan, existing artifacts).
 2. Invoke `/product-flow:pr-comments write` following the technical decision format — ANSWERED if resolved, UNANSWERED if not.
 
-If all issues were resolved: continue to step 6.
+If all issues were resolved: show `✅ Step 2/3 — Requirements validated.` and continue to step 6.
 
 If any issue remains unresolved:
 
@@ -151,13 +158,12 @@ Questions have been posted on the PR. Once resolved, run /product-flow:build aga
 
 Skip this step if `- [x] Code generated` is already marked in the PR body.
 
-Otherwise, invoke `/product-flow:implement`.
+Otherwise, show:
+```
+⏳ Step 3/3 — Generating feature code... (this may take several minutes)
+```
 
-`/product-flow:implement` takes care of:
-- Reading spec, plan, data-model, contracts and tasks
-- Implementing the tasks in the correct order
-- Respecting the dependencies defined in tasks.md
-- Proposing `speckit.verify-tasks` at the end (step 10 of implement)
+Invoke `/product-flow:implement`.
 
 **Wait for `/product-flow:implement` to finish completely before continuing.**
 If it produces an ERROR: propagate and stop.
