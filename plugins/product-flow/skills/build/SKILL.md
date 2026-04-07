@@ -47,13 +47,45 @@ Then check the PR body and feature directory:
 - Code done? → `- [x] Code generated` is marked
 - Verify-tasks done? → `specs/<feature-dir>/verify-tasks-report.md` exists
 
+Also check for uncommitted changes:
+
+```bash
+git status --porcelain
+```
+
 Determine entry point using these mutually exclusive cases (check in order):
 
 1. **All done** — code is generated AND `verify-tasks-report.md` exists: skip all work and go directly to the final report.
 
 2. **Re-entry shortcut** — code is generated AND `verify-tasks-report.md` does NOT exist: the user chose option B ("open a new session") from the verify-tasks proposal. **Skip directly to step 6b** without re-running tasks, checklist, or implement.
 
-3. **Normal flow** — code is NOT yet generated: build the pending steps list based on what is NOT yet done and show:
+2.5. **Partial implementation** — code is NOT marked as generated AND uncommitted changes exist AND tasks are generated: this is a previous interrupted implementation run. Show:
+
+```
+⚠️  Uncommitted code detected from a previous interrupted run.
+
+  A. Save these changes and mark the code as generated
+     (use this if the implementation looks complete or you want to keep the work)
+  B. Discard all changes and restart the implementation from scratch
+
+Your choice:
+```
+
+- **A** → run:
+  ```bash
+  git add -A
+  git commit -m "feat(<branch-name>): generate feature code"
+  ```
+  Then mark `- [x] Code generated` in the PR body and add a History row `| Code generated | YYYY-MM-DD | recovered from interrupted run |`. Skip directly to step 6b.
+
+- **B** → run:
+  ```bash
+  git checkout -- .
+  git clean -fd
+  ```
+  Then continue with Normal flow (step 6).
+
+3. **Normal flow** — code is NOT yet generated (and no uncommitted changes): build the pending steps list based on what is NOT yet done and show:
 
 ```
 📍 Current status: Plan generated · Ready to build

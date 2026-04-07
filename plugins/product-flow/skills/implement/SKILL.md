@@ -58,7 +58,14 @@ Add a new comment to the PR for each:
 git status --porcelain
 ```
 
-If there are uncommitted changes: ERROR "There are unsaved changes. Commit them before implementing."
+If there are uncommitted changes:
+```
+⚠️  There are uncommitted changes.
+
+These may be from a previous interrupted implementation run.
+Run /product-flow:build — it will detect them and offer recovery options.
+```
+**STOP.**
 
 ### 4. Sync with main
 
