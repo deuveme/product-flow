@@ -2,6 +2,8 @@
 description: "Post-implementation quality gate. Validates code against spec, plan and tasks."
 user-invocable: false
 context: fork
+model: sonnet
+effort: medium
 ---
 
 ## User Input

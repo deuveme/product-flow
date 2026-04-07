@@ -1,6 +1,8 @@
 ---
 description: "Integrates team feedback into the technical plan."
 user-invocable: false
+model: sonnet
+effort: medium
 ---
 
 ## Execution

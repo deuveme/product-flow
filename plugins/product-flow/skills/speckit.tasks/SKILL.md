@@ -2,6 +2,8 @@
 description: Generates a dependency-ordered tasks.md from design artifacts.
 user-invocable: false
 context: fork
+model: sonnet
+effort: medium
 handoffs:
   - label: Build Feature
     agent: build

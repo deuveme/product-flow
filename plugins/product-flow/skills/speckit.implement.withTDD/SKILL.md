@@ -2,6 +2,8 @@
 description: "Implements tasks from tasks.md using strict TDD with ZOMBIES ordering."
 user-invocable: false
 context: fork
+model: sonnet
+effort: high
 ---
 
 ## User Input

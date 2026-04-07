@@ -2,6 +2,8 @@
 description: "Decomposes event-driven features into independently testable slices."
 user-invocable: false
 icon: 📊
+model: sonnet
+effort: high
 ---
 
 # Event Modeling

@@ -1,5 +1,7 @@
 ---
 description: "STEP 3 — Generates the feature code. Run when the plan is ready."
+model: sonnet
+effort: medium
 ---
 
 ## Execution

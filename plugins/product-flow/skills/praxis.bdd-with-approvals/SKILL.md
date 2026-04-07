@@ -2,6 +2,8 @@
 description: "BDD tests written in domain language with approval snapshots."
 user-invocable: false
 icon: 📋
+model: haiku
+effort: low
 ---
 
 # BDD with Approval Tests

@@ -1,5 +1,7 @@
 ---
 description: "Shows how much context memory Claude has left in this session."
+model: haiku
+effort: low
 ---
 
 ## Execution

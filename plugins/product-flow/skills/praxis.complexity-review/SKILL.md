@@ -2,6 +2,8 @@
 description: "Challenges a technical proposal against 30 complexity dimensions."
 user-invocable: false
 icon: 📐
+model: opus
+effort: high
 ---
 
 ## User Input

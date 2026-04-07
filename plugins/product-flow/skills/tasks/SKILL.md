@@ -1,6 +1,8 @@
 ---
 description: "Breaks the plan into tasks."
 user-invocable: false
+model: sonnet
+effort: medium
 ---
 
 ## Execution

@@ -2,6 +2,8 @@
 description: "Analyzes test quality using Kent Beck's 12 Test Desiderata properties."
 user-invocable: false
 icon: 🧪
+model: sonnet
+effort: medium
 ---
 
 ## User Input

@@ -1,6 +1,8 @@
 ---
 description: "Analyzes a spec for scope creep, proposes a split, and creates a new branch+PR for the extracted feature."
 user-invocable: false
+model: opus
+effort: high
 handoffs:
   - label: Continue Current Feature
     agent: continue

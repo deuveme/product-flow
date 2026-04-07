@@ -2,6 +2,8 @@
 description: "DDD with hexagonal architecture for backend structure."
 user-invocable: false
 icon: 🏗️
+model: haiku
+effort: low
 ---
 
 # Hexagonal Architecture

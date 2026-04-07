@@ -1,6 +1,8 @@
 ---
 description: "Post-phase retrospective. Reviews learnings and syncs artifacts."
 user-invocable: false
+model: sonnet
+effort: low
 ---
 
 ## User Input

@@ -2,6 +2,8 @@
 description: "Simplifies code for clarity without changing behavior."
 user-invocable: false
 icon: ✂️
+model: sonnet
+effort: medium
 ---
 
 # Code Simplifier

@@ -1,5 +1,7 @@
 ---
 description: "STEP 1 — Starts a new feature. Creates the draft PR and kicks off the specification process."
+model: sonnet
+effort: low
 ---
 
 ## User Input

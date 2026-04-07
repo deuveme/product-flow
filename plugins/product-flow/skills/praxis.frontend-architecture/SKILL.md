@@ -2,6 +2,8 @@
 description: "Feature-based architecture for React frontends."
 user-invocable: false
 icon: 🧩
+model: haiku
+effort: low
 ---
 
 # Frontend Architecture (Feature-Based)

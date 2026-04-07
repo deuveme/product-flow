@@ -1,6 +1,8 @@
 ---
 description: Generates a requirements quality checklist for the feature.
 user-invocable: false
+model: sonnet
+effort: medium
 ---
 
 ## Checklist Purpose: "Unit Tests for English"

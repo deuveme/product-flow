@@ -1,6 +1,8 @@
 ---
 description: "Reconciles drift between implementation and spec/plan/tasks."
 user-invocable: false
+model: sonnet
+effort: high
 ---
 
 ## User Input

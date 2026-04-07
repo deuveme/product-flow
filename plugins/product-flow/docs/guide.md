@@ -306,6 +306,8 @@ Some are invoked automatically under certain conditions; others require explicit
 description: "Shown in Claude Code autocomplete"
 user-invocable: false        # optional — Claude-only (hides from user /menu)
 context: fork                # optional — runs in isolated subagent
+model: sonnet                # optional — haiku | sonnet | opus (overrides session model)
+effort: medium               # optional — low | medium | high (overrides session effort)
 handoffs:                    # optional — transition buttons to other skills
   - label: "Next Step"
     agent: other-skill

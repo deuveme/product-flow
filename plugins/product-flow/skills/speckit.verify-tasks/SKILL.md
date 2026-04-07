@@ -2,6 +2,8 @@
 description: "Detects phantom completions: tasks marked done with no real implementation."
 user-invocable: false
 context: fork
+model: sonnet
+effort: medium
 ---
 
 ## User Input

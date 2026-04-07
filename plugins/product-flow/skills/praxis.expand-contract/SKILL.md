@@ -2,6 +2,8 @@
 description: "Zero-downtime expand-contract pattern for breaking changes."
 user-invocable: false
 icon: 🔄
+model: haiku
+effort: low
 ---
 
 # Expand-Contract

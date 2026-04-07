@@ -1,6 +1,8 @@
 ---
 description: "Validates requirements quality before implementation starts."
 user-invocable: false
+model: haiku
+effort: medium
 ---
 
 ## Purpose

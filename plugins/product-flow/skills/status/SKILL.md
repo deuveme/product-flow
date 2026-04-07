@@ -1,5 +1,7 @@
 ---
 description: "Shows current workflow position and what the next step is."
+model: haiku
+effort: low
 ---
 
 ## Execution

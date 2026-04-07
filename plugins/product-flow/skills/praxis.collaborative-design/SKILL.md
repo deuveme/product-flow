@@ -2,6 +2,8 @@
 description: "Explores ambiguous features through visual scenarios before the spec."
 user-invocable: false
 icon: 🎨
+model: opus
+effort: high
 ---
 
 # Collaborative Design
