@@ -111,12 +111,30 @@ AskUserQuestion:
 
    Derive `<slug>` from the title in kebab-case (e.g., `jwt-ttl-24h`). Increment the number for each ADR in the same batch.
 
-4. Store the generated file paths and contents in memory — do NOT write them yet. They will be committed after the merge in step 6.
+4. Store the generated file paths and contents in memory — do NOT write them yet. They will be committed after the merge in step 7.
 
-### 5. Squash merge to main
+### 5. Prepare squash commit message
+
+This is the single commit that will appear in `main`'s history — all iteration commits from the feature branch are discarded. It must follow Conventional Commits format.
+
+**Infer the type** from the feature:
+- Read `specs/<branch>/spec.md` — if it describes fixing broken behavior, errors, or regressions → `fix`
+- If the branch slug contains `fix` or `bug` → `fix`
+- If the branch slug contains `refactor` → `refactor`
+- If the branch slug contains `docs` → `docs`
+- Otherwise → `feat`
+
+**Derive scope and description** from `BRANCH_NAME`:
+- Strip the number prefix: `001-user-auth` → slug = `user-auth`
+- Use slug as scope: `user-auth`
+- Derive description from PR title (strip the number prefix and lowercase): `001: User auth` → `user auth`
+
+Set `SQUASH_MSG = "<type>(<scope>): <description>"` and proceed.
+
+### 6. Squash merge to main
 
 ```bash
-gh pr merge --squash --delete-branch
+gh pr merge --squash --delete-branch --subject "$SQUASH_MSG"
 ```
 
 If it fails due to conflicts:
@@ -130,7 +148,7 @@ Resolve the conflicts manually before continuing.
 
 **STOP.**
 
-### 6. Write ADR files (conditional)
+### 7. Write ADR files (conditional)
 
 If the user chose "Yes, write them" in step 4:
 
@@ -159,7 +177,7 @@ Then run /product-flow:deploy-to-stage again.
 
 If the user chose "No, skip": skip this step silently.
 
-### 7. Mark as published
+### 8. Mark as published
 
 Use `$PR_NUMBER` from step 1 (the branch may no longer exist after the merge).
 
@@ -173,7 +191,7 @@ Mark `- [x] Published` in the PR body and add a history row:
 gh pr edit $PR_NUMBER --body "<updated-body>"
 ```
 
-### 8. Check CI/CD status
+### 9. Check CI/CD status
 
 ```bash
 gh run list --limit 3
@@ -181,7 +199,7 @@ gh run list --limit 3
 
 If any runs appear, show them so the user can confirm that the pipeline triggered. If no runs appear, skip silently — the project may use a different CI/CD system.
 
-### 9. Final report
+### 10. Final report
 
 ```
 ✅ Feature published
@@ -193,6 +211,6 @@ This feature is complete.
 ─────────────────────────────────────────
 ```
 
-### 10. Session close
+### 11. Session close
 
 Invoke `/product-flow:context`.
