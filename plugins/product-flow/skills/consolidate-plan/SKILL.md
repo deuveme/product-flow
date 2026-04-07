@@ -61,14 +61,42 @@ If all comments are technical, group them by affected artifact:
 
 ### 3. Apply corrections
 
-For each piece of technical feedback, update the relevant artifact:
+For each piece of technical feedback, show before applying:
+```
+  ⏳ Question <N> — <one-line summary> → applying to <artifact>...
+```
+
+Then update the relevant artifact:
 
 - **Answers** (`Question <N>. Answer: ...`): Apply to the relevant artifact — override if the comment was an autonomous decision, resolve if it was an open question. Update the artifact and add a note: `<!-- Updated: <date> — team answer -->`. If multiple answers exist for the same question number, use the last one.
 - **General feedback**: Interpret intent, apply changes conservatively, and note what was changed.
 
+After applying each item, show:
+```
+  ✅ Question <N> — applied to <artifact>.
+```
+
+After all are processed, show: `✅ <N> item(s) applied.`
+
 Do NOT modify `tasks.md` here — if plan changes invalidate tasks, note it in the commit message so `/product-flow:tasks` can be re-run.
 
 After applying all answers, invoke `/product-flow:pr-comments mark-processed` with the commentIds of all applied answers.
+
+### 3b. Record applied changes in the PR
+
+For each change applied in step 3, invoke `/product-flow:pr-comments write` with:
+- `type`: `technical`
+- `status`: `ANSWERED`
+- `body`:
+  ```
+  **Plan updated:** "[brief description of what changed]"
+
+  **Artifact:** [research.md / data-model.md / contracts/<file>]
+
+  **Change:** [what was modified and why — one sentence]
+  ```
+
+Skip if no changes were applied (no feedback to process).
 
 ### 4. Validate consistency
 

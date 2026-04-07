@@ -24,8 +24,20 @@ BRANCH=$(git branch --show-current)
 cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.spec_created, .plan_generated' > /dev/null
 ```
 
-Invoke `/product-flow:pr-comments read-answers`. If it returns responses, apply them before delegating to `speckit.tasks`:
-- `Question <N>. Answer:` responses → apply to `research.md` or `data-model.md`, or incorporate as context in the delegation, depending on what the original question was about. Use the last response per question number.
+Invoke `/product-flow:pr-comments read-answers`.
+
+Show: `📬 Reading PR answers...`
+
+For each new answer found, show before applying:
+```
+  ⏳ Question <N> — <one-line summary of the question> → applying to <artifact>...
+```
+Apply it, then show:
+```
+  ✅ Question <N> — applied.
+```
+
+After all answers are processed, show: `✅ <N> answer(s) applied.` (or `No new answers found.` if none).
 
 After applying, invoke `/product-flow:pr-comments mark-processed` with the commentIds of all applied answers.
 

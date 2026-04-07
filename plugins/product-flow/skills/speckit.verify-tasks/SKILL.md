@@ -222,3 +222,22 @@ record.
 
 If fixes were applied, suggest re-running `/product-flow:speckit.verify-tasks`
 for a clean re-evaluation.
+
+### 7. Record verification summary in the PR
+
+Invoke `/product-flow:pr-comments write` with:
+- `type`: `technical`
+- `status`: `ANSWERED`
+- `body`:
+  ```
+  **verify-tasks completed**
+
+  **Scope:** [branch / uncommitted / all]
+  **Tasks verified:** [N total — X ✅ VERIFIED · Y 🔍 PARTIAL · Z ❌ NOT_FOUND · W ⏭️ SKIPPED]
+
+  **Walkthrough outcome:** [e.g. "2 flagged items — 1 fixed, 1 skipped" or "No flagged items"]
+
+  Report: specs/<branch>/verify-tasks-report.md
+  ```
+
+Skip this step if the skill was stopped before completing the walkthrough (e.g. user typed `done` early and no items were addressed).

@@ -187,7 +187,7 @@ BRANCH=$(git branch --show-current)
 cat "specs/$BRANCH/status.json" 2>/dev/null | jq -r '.processed_answers // [] | .[]'
 ```
 
-Filter out any entries from step 4 whose `commentId` appears in this list. These have already been applied in a previous run.
+Filter out any entries from step 4 whose question number `N` appears in this list. These have already been applied in a previous run.
 
 5. Return a map of: `{ qN: { text: "<response text>", commentId: "<id>" } }` — containing only new, unprocessed answers.
 
@@ -197,30 +197,46 @@ Filter out any entries from step 4 whose `commentId` appears in this list. These
 
 ### `mark-processed`
 
-Records user answer comment IDs as processed so `read-answers` skips them in future runs.
+Marks processed answers in `status.json` (prevents re-processing in future runs) and adds a 👍 reaction to the user's answer comment on GitHub (visible signal to the team that the answer was applied).
 
 **Used by:** every skill that applies `read-answers` results, immediately after applying them.
 
-**Input (`$ARGUMENTS`):** Space-separated or JSON list of comment IDs to mark as processed.
+**Input (`$ARGUMENTS`):** Space-separated list of question numbers that were applied (e.g. `1 3 5`).
 
 #### Execution
 
-1. Read current `status.json`:
+1. Get repo info:
+
+```bash
+gh pr view --json number,headRepositoryOwner,headRepository \
+  -q '{number: .number, owner: .headRepositoryOwner.login, repo: .headRepository.name}'
+```
+
+2. For each question number N, find the user's answer comment and add a 👍 reaction:
+
+```bash
+# Find the last comment from a non-bot author containing the answer pattern for question N
+gh pr view --json comments \
+  -q '[.comments[] | select(.body | test("(?i)(question|q)\\s*<N>[.:\\s-]"))] | last | .id'
+
+# Add 👍 reaction to that comment
+gh api repos/{owner}/{repo}/issues/comments/{comment_id}/reactions \
+  -X POST -f content="+1"
+```
+
+If no matching comment is found: skip silently.
+
+3. Record processed question numbers in `status.json`:
 
 ```bash
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq --argjson nums '[<N1>, <N2>, ...]' \
+  '.processed_answers = ((.processed_answers // []) + $nums | unique)' > "$STATUS_FILE"
 ```
 
-2. Append the new IDs to `processed_answers` (deduplicated):
-
-```bash
-echo "$EXISTING" | jq --argjson ids '<JSON array of IDs>' \
-  '.processed_answers = ((.processed_answers // []) + $ids | unique)' > "$STATUS_FILE"
-```
-
-3. Commit silently (no push needed — local state is sufficient until next explicit commit):
+4. Commit:
 
 ```bash
 git add "$STATUS_FILE"
@@ -230,4 +246,4 @@ git push origin HEAD
 
 If the commit fails with a GPG or signing error: show the standard GPG fix message and **STOP**.
 
-4. Output: number of IDs recorded.
+5. Output: `✅ Marked <N> answer(s) as applied on the PR.`

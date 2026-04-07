@@ -33,6 +33,53 @@ Run /product-flow:continue to generate the plan first.
 
 **STOP.**
 
+### 2b. Pre-build comment review
+
+This step runs only if the entry point is **Normal flow** (no prior progress detected). Skip if re-entering mid-build (`code_written` already set).
+
+**1. Check for unanswered comments:**
+
+Invoke `/product-flow:pr-comments pending`. If any UNANSWERED comments exist:
+
+```
+🚫 There are unanswered comments on the PR that must be resolved before building.
+
+[list each unanswered comment with its question number and type]
+
+Reply on the PR with `Question <N>. Answer: [text]`, then run /product-flow:build again.
+```
+
+**STOP.**
+
+**2. Check for unprocessed user answers:**
+
+Invoke `/product-flow:pr-comments read-answers`. Show: `📬 Reading PR answers...`
+
+For each new answer found, show before applying:
+```
+  ⏳ Question <N> — <one-line summary> → applying to <artifact>...
+```
+Apply it, then show:
+```
+  ✅ Question <N> — applied.
+```
+
+After all answers are processed, show: `✅ <N> answer(s) applied.` (or `No new answers found.` if none).
+
+Invoke `/product-flow:pr-comments mark-processed` with the applied commentIds.
+
+**3. Reminder to review AI-answered comments:**
+
+```
+💬 Last chance to review decisions before code is written.
+   · Technical decisions: answered autonomously by the AI on your behalf.
+   · Product decisions: taken together with you during spec and planning.
+   If anything looks wrong, stop now and reply with: Question <N>. Answer: [your preference]
+   Link: <PR_URL>
+
+Proceeding... (run /product-flow:continue to make changes instead)
+```
+
 ### 3. Detect progress and decide entry point
 
 First, verify the feature directory exists:

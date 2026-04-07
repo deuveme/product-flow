@@ -184,6 +184,49 @@ Then continue automatically to `BUILD_READY`.
 
 #### `BUILD_READY`
 
+Before showing the plan, run the pre-build comment review:
+
+**1. Check for unanswered comments:**
+
+Invoke `/product-flow:pr-comments pending`. If any UNANSWERED comments exist:
+
+```
+🚫 There are unanswered comments on the PR that must be resolved before building.
+
+[list each unanswered comment with its question number and type]
+
+Reply on the PR with `Question <N>. Answer: [text]`, then run /product-flow:continue again.
+```
+
+**STOP.**
+
+**2. Check for unprocessed user answers:**
+
+Invoke `/product-flow:pr-comments read-answers`. Show: `📬 Reading PR answers...`
+
+For each new answer found, show before applying:
+```
+  ⏳ Question <N> — <one-line summary> → applying to <artifact>...
+```
+Apply it, then show:
+```
+  ✅ Question <N> — applied.
+```
+
+After all answers are processed, show: `✅ <N> answer(s) applied.` (or `No new answers found.` if none).
+
+Invoke `/product-flow:pr-comments mark-processed` with the applied commentIds.
+
+**3. Show reminder about AI-answered comments:**
+
+```
+💬 REMINDER — Before building, review the decisions recorded on the PR.
+   · Technical decisions: answered autonomously by the AI on your behalf.
+   · Product decisions: taken together with you during spec and planning.
+   If anything looks wrong, reply with: Question <N>. Answer: [your preference]
+   Link: <PR_URL>
+```
+
 Read `specs/<feature-dir>/plan.md` and output its full contents as markdown.
 
 Then output:

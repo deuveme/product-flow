@@ -32,9 +32,25 @@ Invoke `/product-flow:pr-comments pending`.
 
 If it returns `NO_PENDING_COMMENTS`: ERROR "There are no pending comments on the PR. Share the PR with the team and wait for their feedback."
 
-Also invoke `/product-flow:pr-comments read-answers`. Record both the pending comments and the user responses internally — they will be used as context in step 4. User responses follow the format `Question <N>. Answer:` — for each question, only the last response counts.
+Also invoke `/product-flow:pr-comments read-answers`.
 
-After applying in step 4, invoke `/product-flow:pr-comments mark-processed` with the commentIds of all applied answers.
+Show: `📬 Reading PR answers...`
+
+For each new answer found, show:
+```
+  ⏳ Question <N> — <one-line summary of the question>
+```
+
+After all are loaded, show: `✅ <N> answer(s) found — applying in step 4.` (or `No new answers found.` if none).
+
+Record both the pending comments and the user responses internally — they will be used as context in step 4. For each question, only the last response counts.
+
+After applying in step 4, for each answer applied show:
+```
+  ✅ Question <N> — applied to <section/artifact>.
+```
+
+Then invoke `/product-flow:pr-comments mark-processed` with the commentIds of all applied answers.
 
 ### 4. Delegate to speckit.clarify
 
