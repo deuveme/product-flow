@@ -232,7 +232,7 @@ Marks processed answers in `status.json` (prevents re-processing in future runs)
 
 **Used by:** every skill that applies `read-answers` results, immediately after applying them.
 
-**Input (`$ARGUMENTS`):** Space-separated list of question numbers that were applied (e.g. `1 3 5`).
+**Input (`$ARGUMENTS`):** Space-separated list of question numbers that were applied (e.g. `1 3 5`). Duplicates are silently ignored — the `unique` filter in step 3 ensures each question number is recorded only once.
 
 #### Execution
 
