@@ -84,7 +84,18 @@ Given that feature description, do this:
 
 3. Load `.specify/templates/spec-template.md` to understand required sections.
 
-3.5. **Load collaborative design context (if available)**:
+3.5. **Detect redesign intent**:
+
+Scan the feature description for visual or UX redesign signals. Keywords include: "redesign", "rediseño", "new look", "new design", "visual overhaul", "UI revamp", "rework the UI", "rework the UX", "visual refresh", "new interface", "change the look", "change the UI", "new layout".
+
+If any are found, set `REDESIGN_MODE = true` and apply these rules for the rest of this skill:
+- The **goal** is a new target visual/UX state, not new functionality.
+- The fact that functionality already exists is the **starting baseline** — it does NOT reduce scope or mean there is nothing to do.
+- Functional requirements must describe **what changes** in the user experience (interactions, layout, flows, visual outcomes) — not re-describe how the current system behaves.
+- Success criteria must be UX/visual outcomes (e.g., "users complete the task in X fewer steps", "the interface follows the new design system", "task completion rate improves by X%").
+- Do NOT write a spec that merely restates the current system's behavior.
+
+3.6. **Load collaborative design context (if available)**:
 
    ```bash
    cat specs/$BRANCH_NAME/collaborative-design.md 2>/dev/null

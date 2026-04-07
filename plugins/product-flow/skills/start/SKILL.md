@@ -131,7 +131,8 @@ Save the returned PR URL as `PR_URL` and PR number as `PR_NUMBER`.
 
 Assess the feature description in `$ARGUMENTS`:
 
-- **Skip this step** if the description is detailed and clear (clear actor, action, and expected outcome, typically 15+ words).
+- **Always run this step** if the description contains visual or UX redesign intent (keywords: "redesign", "rediseño", "new look", "new design", "visual overhaul", "UI revamp", "rework the UI/UX", "visual refresh", "new interface", "change the look", "new layout") — regardless of description length. Redesigns need visual scenario exploration even when described in detail.
+- **Skip this step** if the description is detailed and clear (clear actor, action, and expected outcome, typically 15+ words) and no redesign intent is detected.
 - **Run this step** if the description is vague, very short (< 15 words), or lacks a clear user action or expected outcome.
 
 If running: invoke `/product-flow:praxis.collaborative-design` passing `$ARGUMENTS` as input.
