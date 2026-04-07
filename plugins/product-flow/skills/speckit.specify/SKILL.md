@@ -95,7 +95,28 @@ If any are found, set `REDESIGN_MODE = true` and apply these rules for the rest 
 - Success criteria must be UX/visual outcomes (e.g., "users complete the task in X fewer steps", "the interface follows the new design system", "task completion rate improves by X%").
 - Do NOT write a spec that merely restates the current system's behavior.
 
-3.6. **Load collaborative design context (if available)**:
+3.6. **Normalize input — separate functional intent from technical detail**:
+
+Scan the feature description for technical implementation signals: framework or library names (React, Django, Postgres, Redis…), method or class names (camelCase, PascalCase), API endpoints (`/api/…`), SQL or data-layer terms (JOIN, migration, schema, foreign key…), architectural patterns (REST, microservices, event sourcing…), infrastructure terms (Docker, Kubernetes, S3…).
+
+If technical signals are detected:
+- Extract the **functional intent**: what the user wants to achieve, for whom, and why.
+- Write the extracted technical details to `specs/$BRANCH_NAME/technical-context.md` in this format:
+  ```markdown
+  # Technical Context
+
+  > Extracted from the original feature description. Use this as a starting point for research.md in the planning phase — do not copy it into the spec.
+
+  ## Details provided by the user
+
+  <bullet list of technical details extracted>
+  ```
+- Use only the functional intent as input for writing the spec from this point forward.
+- Do NOT ask the user to re-explain — infer the functional intent from the description as written.
+
+If no technical signals are detected: proceed normally.
+
+3.7. **Load collaborative design context (if available)**:
 
    ```bash
    cat specs/$BRANCH_NAME/collaborative-design.md 2>/dev/null
