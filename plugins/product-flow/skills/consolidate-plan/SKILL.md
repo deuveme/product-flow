@@ -112,6 +112,17 @@ Invoke `/product-flow:pr-comments resolve` passing the IDs of all bot comments t
 
 **Wait for `/product-flow:pr-comments resolve` to finish before continuing.**
 
+### 6b. Update PR history
+
+Add row to the table:
+```
+| Plan revised | YYYY-MM-DD | Feedback integrated via consolidate-plan |
+```
+
+```bash
+gh pr edit --body "<updated-body>"
+```
+
 ### 7. Phase retro
 
 Invoke `/product-flow:speckit.retro` with context: "after consolidate-plan phase".

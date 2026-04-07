@@ -115,7 +115,7 @@ Claude may post comments on the PR like this:
 >
 > 💬 To change this decision, add a new comment: `Question 3. Answer: [your answer]`
 
-You don't need to act on these unless you want to change the decision. If you do, add a **new comment** to the PR (not a reply) with the question number. For example: `Question 3. Correction: I prefer option A`.
+You don't need to act on these unless you want to change the decision. If you do, add a **new comment** to the PR (not a reply) with the question number. For example: `Question 3. Answer: I prefer option A`.
 
 ### Code review comments (after `/product-flow:submit`)
 
