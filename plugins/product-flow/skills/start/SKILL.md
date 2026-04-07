@@ -214,6 +214,29 @@ EOF
 )"
 ```
 
+### 5b. Update status.json
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"spec_created": $ts}' > "$STATUS_FILE"
+git add "$STATUS_FILE"
+git commit -m "chore: record spec_created in status.json"
+git push origin HEAD
+```
+
+If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
+```
+🚫 Commit failed — GPG signing is blocking automatic commits.
+
+To fix it, run in your terminal:
+  git config commit.gpgsign false
+
+Then run /product-flow:start again.
+```
+**STOP.**
+
 ### 6. Record technical decisions in the PR
 
 For each technical decision made, invoke `/product-flow:pr-comments write`

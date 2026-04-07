@@ -17,10 +17,12 @@ gh pr view --json number,state,url,body
 
 ### 2. Gate: tasks generated and technical corrections applied
 
-Verify in the PR body:
-- `- [x] Spec created` ✓
-- `- [x] Plan generated` ✓
-- `- [x] Tasks generated` ✓
+Read `specs/<branch>/status.json` and verify that `spec_created`, `plan_generated`, and `tasks_generated` are present:
+
+```bash
+BRANCH=$(git branch --show-current)
+cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.spec_created, .plan_generated, .tasks_generated' > /dev/null
+```
 
 Invoke `/product-flow:pr-comments read-answers`. If it returns responses, apply them before delegating to `speckit.implement.withTDD`:
 - `Question <N>. Correction:` responses → apply to `tasks.md` or affected artifacts. Use the last response per question number.
@@ -109,13 +111,35 @@ Invoke `/product-flow:praxis.test-desiderata` pointing to the test files generat
 - If it finds **critical issues** (e.g., tests that don't isolate behavior, brittle assertions, missing coverage of boundary cases): fix them before proceeding.
 - If there are no critical issues: continue silently.
 
-### 8. Update PR status
+### 8. Update status.json
 
-Mark: `- [x] Code generated`
+Write `code_written` to `specs/<branch>/status.json`:
 
-Add row:
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"code_written": $ts}' > "$STATUS_FILE"
+git add "$STATUS_FILE"
+git commit -m "chore: record code_written in status.json"
+git push origin HEAD
 ```
-| Code generated | YYYY-MM-DD | speckit.implement.withTDD + praxis.test-desiderata completed |
+
+If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
+```
+🚫 Commit failed — GPG signing is blocking automatic commits.
+
+To fix it, run in your terminal:
+  git config commit.gpgsign false
+
+Then run /product-flow:build again.
+```
+**STOP.**
+
+Do **not** check `- [x] Code generated` in the PR body — that is set by `/product-flow:build` after verify-tasks passes. Add a history row only:
+
+```
+| Code written | YYYY-MM-DD | speckit.implement.withTDD + praxis.test-desiderata completed |
 ```
 
 ```bash

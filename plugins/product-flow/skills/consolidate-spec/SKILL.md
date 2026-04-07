@@ -17,9 +17,14 @@ gh pr view --json number,state,url,body
 
 ### 2. Gate: spec created
 
-Verify in the PR body: `- [x] Spec created`
+Read `specs/<branch>/status.json`:
 
-If not marked: ERROR "The spec does not exist yet. Run /product-flow:start first."
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+```
+
+Verify that `spec_created` is present. If missing: ERROR "The spec does not exist yet. Run /product-flow:start first."
 
 ### 3. Collect pending comments
 

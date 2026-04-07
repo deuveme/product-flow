@@ -72,9 +72,14 @@ gh pr view --json number,state,url,body
 
 ### 2. Determine current state
 
-Use the PR body already fetched in step 1 to check which boxes are marked (`- [x]`).
+Read `specs/<branch>/status.json` to check which steps are completed:
 
-Map to state:
+```bash
+BRANCH=$(git branch --show-current)
+cat "specs/$BRANCH/status.json" 2>/dev/null || echo "{}"
+```
+
+Map to state using `spec_created` and `plan_generated` fields:
 
 | spec_created | plan_generated | has_comments | → State |
 |:---:|:---:|:---:|:---|

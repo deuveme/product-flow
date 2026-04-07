@@ -26,9 +26,14 @@ Save the `number` field as `PR_NUMBER` and the `url` field as `PR_URL`. These ar
 
 ### 2. Gate: code delivered
 
-Verify in the PR body: `- [x] In code review`
+Read `specs/<branch>/status.json`:
 
-If not marked: ERROR "The code has not been delivered. Run /product-flow:submit first."
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+```
+
+Verify that `in_review` is present. If missing: ERROR "The code has not been submitted for review. Run /product-flow:submit first."
 
 ### 3. Gate: PR approved
 

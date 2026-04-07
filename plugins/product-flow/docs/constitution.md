@@ -153,9 +153,21 @@ This project uses a spec-driven workflow where PM commands orchestrate internal 
 | `/product-flow:submit` | — | Code generated |
 | `/product-flow:deploy-to-stage` | — | PR approved |
 
-### PR status as source of truth
+### `status.json` as source of truth
 
-The workflow state lives in the PR body checkboxes. Commands read `gh pr view --json body` to determine whether they can be executed. Never use local files as the source of truth for state.
+The workflow state lives in `specs/<branch>/status.json`. Commands read this file to determine whether they can execute. The PR body checkboxes are updated in parallel for human visibility only — never use them as logic gates.
+
+Fields written by each skill:
+
+| Field | Written by |
+|---|---|
+| `spec_created` | `/product-flow:start`, `speckit.split` |
+| `plan_generated` | `/product-flow:plan` |
+| `tasks_generated` | `/product-flow:tasks` |
+| `checklist_done` | `/product-flow:checklist` |
+| `code_written` | `/product-flow:implement` |
+| `code_verified` | `/product-flow:build` (after verify-tasks) |
+| `in_review` | `/product-flow:submit` |
 
 ---
 

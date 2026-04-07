@@ -14,11 +14,16 @@ gh pr view --json number,state,url,body,isDraft
 - If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /product-flow:status."
 - If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
 
-### 2. Gate: code generated
+### 2. Gate: code verified
 
-Verify in the PR body: `- [x] Code generated`
+Read `specs/<branch>/status.json`:
 
-If not marked: ERROR "The code has not been generated yet. Run /product-flow:build first."
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+```
+
+Verify that `code_verified` is present. If missing: ERROR "The code has not been verified yet. Run /product-flow:build first."
 
 ### 2b. Verification gate
 
@@ -121,9 +126,32 @@ If it's already in review: do nothing, the push is sufficient.
 
 ### 7. Update PR status (first time only)
 
-If the PR was in draft, mark: `- [x] In code review`
+If the PR was in draft:
 
-Add row:
+Write `in_review` to `specs/<branch>/status.json`:
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"in_review": $ts}' > "$STATUS_FILE"
+git add "$STATUS_FILE"
+git commit -m "chore: record in_review in status.json"
+git push origin HEAD
+```
+
+If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
+```
+🚫 Commit failed — GPG signing is blocking automatic commits.
+
+To fix it, run in your terminal:
+  git config commit.gpgsign false
+
+Then run /product-flow:submit again.
+```
+**STOP.**
+
+Mark `- [x] In code review` and add row:
 ```
 | In code review | YYYY-MM-DD | PR ready for review |
 ```

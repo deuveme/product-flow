@@ -207,6 +207,13 @@ Still on `NEW_BRANCH`, write `NEW_SPEC_PATH` with the extracted content. Use the
 
 #### 4d. Commit, push, and open a draft PR for the new feature
 
+Write `status.json` for the new feature before committing:
+
+```bash
+STATUS_FILE="specs/$NEW_BRANCH/status.json"
+echo "{}" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"spec_created": $ts}' > "$STATUS_FILE"
+```
+
 ```bash
 git add specs/$NEW_BRANCH/
 git commit -m "feat: extract $SHORT_NAME spec from $BRANCH_NAME"

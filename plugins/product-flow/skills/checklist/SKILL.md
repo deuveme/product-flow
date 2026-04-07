@@ -47,6 +47,15 @@ Invoke `/product-flow:speckit.checklist` with the context of the current phase.
 
 ### 4. Commit the checklist
 
+Write to `specs/<branch>/status.json` before committing:
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"checklist_done": $ts}' > "$STATUS_FILE"
+```
+
 ```bash
 git add specs/
 git commit -m "docs: add requirements checklist"

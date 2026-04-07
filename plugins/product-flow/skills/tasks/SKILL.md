@@ -17,9 +17,12 @@ gh pr view --json number,state,url,body
 
 ### 2. Gate: plan generated and pending comments resolved
 
-Verify in the PR body:
-- `- [x] Spec created` ✓
-- `- [x] Plan generated` ✓
+Read `specs/<branch>/status.json` and verify that `spec_created` and `plan_generated` are present:
+
+```bash
+BRANCH=$(git branch --show-current)
+cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.spec_created, .plan_generated' > /dev/null
+```
 
 Invoke `/product-flow:pr-comments read-answers`. If it returns responses, apply them before delegating to `speckit.tasks`:
 - `Question <N>. Correction:` responses → apply to `research.md` or `data-model.md`. Use the last response per question number.
@@ -63,6 +66,15 @@ following the technical decision format (ANSWERED/UNANSWERED).
 Skip if no technical decisions were made.
 
 ### 5. Commit the tasks
+
+Write to `specs/<branch>/status.json` before committing:
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"tasks_generated": $ts}' > "$STATUS_FILE"
+```
 
 ```bash
 git add specs/

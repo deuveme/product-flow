@@ -59,7 +59,7 @@ PM commands delegate to internal engines and only:
 - Detect progress and optimize re-entry points (e.g. skip already-completed steps)
 - Provide clear next-step instructions
 
-**The PR body is the source of truth** — `gh pr view --json body` determines workflow state, not local files.
+**`status.json` is the source of truth** — `specs/<branch>/status.json` determines workflow state. The PR body is updated in parallel for human visibility only.
 
 ### PM command flow
 
@@ -344,7 +344,7 @@ Invoke `/product-flow:context`.
 - Errors: `🚫 BLOCKED` or `ERROR:`
 - Success: `✅`
 - Next step: always in a `─────` delimited block
-- Gates: read PR with `gh pr view --json body`, never local files
+- Gates: read `specs/<branch>/status.json` for state; never use PR body checkboxes as logic gates
 - Error messages: actionable, explain what failed and why
 
 ---

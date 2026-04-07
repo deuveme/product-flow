@@ -13,7 +13,14 @@ gh pr view --json number,state,url,body
 ```
 
 - If branch is `main` or `master`: ERROR "You are not on a feature branch. Run /product-flow:status."
-- Verify `- [x] Plan generated` is marked. If not: ERROR "Plan has not been generated yet. Run /product-flow:continue first."
+Read `specs/<branch>/status.json`:
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+```
+
+Verify that `plan_generated` is present. If missing: ERROR "Plan has not been generated yet. Run /product-flow:continue first."
 
 ### 2. Collect pending comments
 

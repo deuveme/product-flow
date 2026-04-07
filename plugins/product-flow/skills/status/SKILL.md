@@ -222,10 +222,18 @@ For each branch:
 - Match it to a PR by `headRefName`. If no match → no PR.
 - Check the `ls` output for that branch. If `NO_SPEC` → no spec files.
 
-Inspect spec files to determine the furthest completed step:
-- `spec.md` present → "Spec created" is done
-- `plan.md` present → "Plan generated" is done
-- `tasks.md` present → "Tasks generated" is done
+For each feature with a spec directory, read `specs/<branch>/status.json` if it exists — it is the primary source of truth. Fall back to file existence for branches without `status.json`:
+
+```bash
+cat "specs/$branch/status.json" 2>/dev/null || echo "{}"
+```
+
+- `spec_created` in status.json (or `spec.md` present) → "Spec created" is done
+- `plan_generated` in status.json (or `plan.md` present) → "Plan generated" is done
+- `tasks_generated` in status.json (or `tasks.md` present) → "Tasks generated" is done
+- `code_written` in status.json → implementation in progress (not yet verified)
+- `code_verified` in status.json → "Code generated" is done
+- `in_review` in status.json → "In code review" is done
 
 Track branches with no PR but with at least `spec.md` as **SPEC-only branches**.
 
