@@ -138,7 +138,29 @@ For each such term found that is **central to the feature** (drives logic, condi
 
 If no ambiguous terms are found: proceed without asking.
 
-3.7. **Load collaborative design context (if available)**:
+3.7. **Confirm understanding before writing**:
+
+Before writing anything, show the user a one-paragraph summary of what you understood and what you are going to do. Format:
+
+```
+📋 Here's what I understood:
+
+**Goal:** <functional intent in one sentence — who does what and why>
+<if technical details were extracted:>
+**Technical details:** set aside for the planning phase (saved to technical-context.md)
+<if business terms need clarification:>
+**Terms to clarify:** [list] — I'll ask before writing
+
+Does this look right? (yes to continue / correct me if something is off)
+```
+
+Wait for the user's response:
+- If **yes** or equivalent: proceed to step 4.
+- If the user corrects something: update your understanding and show the summary again. Repeat until the user confirms.
+
+Skip this step if `collaborative-design.md` was loaded in step 3.8 — in that case the intent has already been validated through the design session.
+
+3.8. **Load collaborative design context (if available)**:
 
    ```bash
    cat specs/$BRANCH_NAME/collaborative-design.md 2>/dev/null
