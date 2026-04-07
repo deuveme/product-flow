@@ -1,5 +1,5 @@
 ---
-description: "STEP 6 — Saves the code and leaves it ready for team review. Repeatable to iterate."
+description: "STEP 4 — Saves the code and leaves it ready for team review. Repeatable to iterate."
 ---
 
 ## Execution

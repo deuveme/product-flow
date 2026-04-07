@@ -1,5 +1,5 @@
 ---
-description: "STEP 5 — Generates the feature code. Run when the plan is ready."
+description: "STEP 3 — Generates the feature code. Run when the plan is ready."
 ---
 
 ## Execution

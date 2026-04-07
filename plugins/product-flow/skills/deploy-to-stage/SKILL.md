@@ -1,5 +1,5 @@
 ---
-description: "STEP 7 — Merges to main with squash merge and triggers the deployment pipeline. Requires the PR to be approved."
+description: "STEP 5 — Merges to main with squash merge and triggers the deployment pipeline. Requires the PR to be approved."
 ---
 
 ## Purpose
