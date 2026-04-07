@@ -76,7 +76,8 @@ Close the terminal and reopen Claude Code.
 - **Implementation verification**: Post-implement quality gate (`speckit.verify`) that validates code against spec, plan, tasks, and constitution before submitting for review.
 - **Phantom completion detection**: `speckit.verify-tasks` checks that tasks marked done have real code behind them — not stubs or TODOs — using a 5-layer cascade (file existence, git diff, pattern matching, dead-code detection, semantic assessment).
 - **Drift reconciliation**: `speckit.reconcile` surgically updates spec, plan, and tasks when implementation diverges from the original design.
-- **ADR proposals**: At submit time, the agent analyzes `research.md` and `decisions.md` and proposes which decisions are worth promoting to project-level Architecture Decision Records (`docs/adr/`). Proposals appear in the PR body under `## For Developers` so the team can confirm before deploy.
+- **ADR proposals**: At submit time, the agent analyzes `research.md` and `decisions.md` and proposes which decisions are worth promoting to project-level Architecture Decision Records. Proposals appear in the PR body under `## For Developers` so the team can review them alongside the code.
+- **ADR consolidation**: At deploy time, if the PR has proposed ADRs the agent asks the user whether to write them. If confirmed, each ADR is written to `docs/adr/NNNN-<slug>.md` in standard format (Context / Decision / Consequences) and committed to main alongside the merge.
 - **Scope splitting**: `speckit.split` analyzes a spec for scope creep using scope, size, and language signals. If a split is warranted, it trims the current spec and creates a new branch with a draft PR for the extracted feature — with vertical-slice validation and expand-contract warnings when features share entities.
 
 ---

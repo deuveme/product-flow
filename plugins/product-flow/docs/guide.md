@@ -68,8 +68,8 @@ PM commands delegate to internal engines and only:
 | `/product-flow:start` | create branch + Draft PR → [`praxis.collaborative-design` if vague] → `speckit.specify` → `speckit.retro` |
 | `/product-flow:continue` | state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` (dispatched by state machine) |
 | `/product-flow:build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `speckit.retro`) → proposes `speckit.verify-tasks` |
-| `/product-flow:submit` | `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → git add/commit/push → `gh pr ready` on first run (exits DRAFT) |
-| `/product-flow:deploy-to-stage` | gh pr merge --squash --delete-branch |
+| `/product-flow:submit` | `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → git add/commit/push → `gh pr ready` on first run (exits DRAFT) → proposes ADRs in PR body |
+| `/product-flow:deploy-to-stage` | [ADR consolidation: ask user → generate in memory if yes] → `gh pr merge --squash --delete-branch` → [write ADRs to `docs/adr/` + commit if yes] → mark published |
 
 ---
 
@@ -265,6 +265,26 @@ All bot comments are written via `/product-flow:pr-comments write`, which handle
 **`tasks` skill:**
 1. Calls `/product-flow:speckit.tasks` → generates `tasks.md` ordered by dependencies
 2. Updates the PR body with a task checklist table inside `## For Developers`, listing all tasks grouped by phase, each with `TO DO` status
+
+**`submit` skill:**
+1. Verifies branch and PR exist
+2. Runs `speckit.verify` — CRITICAL blocks; HIGH/MEDIUM/LOW asks the user
+3. Verifies there are uncommitted changes
+4. Shows change summary (`git diff --stat`)
+5. Commits and pushes
+6. Takes PR out of draft on first run (`gh pr ready`)
+7. Updates `status.json` with `in_review` on first run
+8. Proposes ADRs: reads `research.md` and `decisions.md`, filters decisions that would cause future inconsistency, inserts `### Proposed ADRs` inside `## For Developers` in the PR body
+
+**`deploy-to-stage` skill:**
+1. Verifies branch and PR exist
+2. Gate: `in_review` present in `status.json`
+3. Gate: PR approved (`reviewDecision: APPROVED`)
+4. ADR consolidation (conditional): if unchecked ADRs exist in `### Proposed ADRs`, asks the user — if yes, reads `research.md` and generates ADR file contents in memory
+5. Squash merge to main, branch deleted (`gh pr merge --squash --delete-branch`)
+6. Writes ADR files to `docs/adr/NNNN-<slug>.md` and commits to main (only if user confirmed in step 4)
+7. Marks `- [x] Published` in the PR body and adds history row
+8. Checks CI/CD pipeline status
 
 ### Automatic quality gates
 

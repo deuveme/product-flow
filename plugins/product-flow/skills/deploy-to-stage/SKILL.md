@@ -1,7 +1,7 @@
 ---
 description: "STEP 5 — Merges to main with squash merge and triggers the deployment pipeline. Requires the PR to be approved."
-model: haiku
-effort: low
+model: sonnet
+effort: medium
 ---
 
 ## Purpose

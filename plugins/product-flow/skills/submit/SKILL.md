@@ -198,7 +198,7 @@ If no decisions pass the filter, skip this step silently — do not add the sect
 gh pr edit --body "<updated-body>"
 ```
 
-### 10. Final report
+### 9. Final report
 
 ```
 ✅ Code saved
@@ -218,6 +218,6 @@ When the dev approves the PR, run:
 ─────────────────────────────────────────
 ```
 
-### 11. Session close
+### 10. Session close
 
 Invoke `/product-flow:context`.
