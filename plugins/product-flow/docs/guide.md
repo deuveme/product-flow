@@ -152,10 +152,10 @@ Expected: `📍 main  ·  no active feature`
 SPEC_CREATED  ←──── /product-flow:consolidate-spec ←──── SPEC_REVIEW  (team adds comments)
   │ (no comments)
   ▼
-PLAN_PENDING  ──── /product-flow:plan auto-runs ─────────────────────────────────────────┐
-                                                                                         │
-  (team adds comments on plan)                                                            ▼
-PLAN_REVIEW   ←──── /product-flow:consolidate-plan ──────────────────────────────  PLAN_PENDING
+PLAN_PENDING  ──── speckit.clarify runs first (ambiguity check) ──── /product-flow:plan auto-runs ──┐
+                                                                                                    │
+  (team adds comments on plan)                                                                       ▼
+PLAN_REVIEW   ←──── /product-flow:consolidate-plan ───────────────────────────────────────── PLAN_PENDING
   │ (no comments)
   ▼
 BUILD_READY   ──── redirect to /product-flow:build

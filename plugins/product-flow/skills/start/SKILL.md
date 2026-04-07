@@ -153,7 +153,7 @@ Invoke `/product-flow:speckit.specify` passing `$ARGUMENTS` as the feature descr
 **Question classification** — when `speckit.specify` identifies `[NEEDS CLARIFICATION]` markers, classify each one before presenting it:
 
 - **Non-technical** (ask the PM): business intent, priorities, functional scope, user flows, terminology. **NEVER resolve autonomously. Always surface to the PM and wait for their answer.**
-- **Technical** (resolve autonomously): authentication, authorisation, security, compliance, data retention, integration patterns, infrastructure constraints.
+- **Technical** (resolve autonomously): authentication, authorisation, security, compliance, data retention, integration patterns, infrastructure constraints, performance targets, architecture, data model, implementation patterns.
 
 **For technical questions**, do NOT ask the PM. Instead:
 1. Answer them using project context: existing code, `.agents/rules/base.md`, detected project stack, industry standards.

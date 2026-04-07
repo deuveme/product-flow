@@ -50,6 +50,8 @@ The following must be answered by the PM before the plan can be updated:
 Please reply on the PR with your answer. Then run /product-flow:continue again.
 ```
 
+> ℹ️  Any technical feedback in the same batch is not lost — it will be processed automatically on the next run once the product feedback is resolved.
+
 **STOP.**
 
 If all comments are technical, group them by affected artifact:
