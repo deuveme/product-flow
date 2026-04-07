@@ -162,9 +162,23 @@ Then continue automatically to `BUILD_READY`.
 
 #### `BUILD_READY`
 
-```
-📍 The plan is ready.
+Read `specs/<feature-dir>/plan.md` and output its full contents as markdown.
 
+Then output:
+
+```
+📋 Plan ready. You can review it at your own pace in the PR:
+<GitHub URL to specs/<feature-dir>/plan.md on the current branch>
+
+Do you want to start building, or would you like to make adjustments first?
+```
+
+**STOP and wait for the user's response.**
+
+- If the user wants adjustments: apply them to the relevant artifacts (`plan.md`, `research.md`, `data-model.md`), commit, push, and show the updated plan again repeating this block.
+- If the user confirms they want to continue:
+
+```
 ─────────────────────────────────────────
 ➡️  NEXT STEP
 ─────────────────────────────────────────

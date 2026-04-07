@@ -97,8 +97,8 @@ Invoke `/product-flow:praxis.complexity-review` passing the contents of `researc
 
 **Wait for `praxis.complexity-review` to finish before continuing.**
 
-- If it surfaces **critical issues** (e.g., unnecessary microservices, premature event sourcing, unwarranted infrastructure): add one PR comment per issue via `/product-flow:pr-comments write`, surface them to the PM, and **STOP**. Do not proceed to step 6 until the PM acknowledges the issues (via a new run of `/product-flow:continue`).
-- If there are no critical issues: continue silently to step 6.
+- If it surfaces **critical issues** (e.g., unnecessary microservices, premature event sourcing, unwarranted infrastructure): add one PR comment per issue via `/product-flow:pr-comments write`, surface them to the PM, and **STOP**. Do not proceed to step 8 until the PM acknowledges the issues (via a new run of `/product-flow:continue`).
+- If there are no critical issues: continue silently to step 7.
 
 ### 7. Validate architecture
 
