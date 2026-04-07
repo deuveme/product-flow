@@ -66,13 +66,13 @@ If there are unchecked items (`- [ ]`), collect them and ask:
 
 ```
 AskUserQuestion:
-  question: "This feature has proposed Architecture Decision Records. Do you want to write them to docs/adr/ before merging?"
-  header: "ADRs"
+  question: "During this feature, some technical decisions were made that could be useful for the whole project — not just this feature. Do you want to save them so the team can reference them in future work?"
+  header: "Tech decisions"
   options:
-    - label: "Yes, write them"
-      description: "Each proposed ADR will be saved as a separate file in docs/adr/ and committed to main alongside the merge."
+    - label: "Yes, save them"
+      description: "The decisions will be documented and added to the project so the whole team can find them later."
     - label: "No, skip"
-      description: "Proceed with the merge without writing any ADR files."
+      description: "Merge without saving. The decisions stay visible in this PR but won't be added to the project."
 ```
 
 **If the user answers "No, skip":** continue to step 5.
