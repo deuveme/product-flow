@@ -50,7 +50,7 @@ After applying in step 4, for each answer applied show:
   ✅ Question <N> — applied to <section/artifact>.
 ```
 
-Then invoke `/product-flow:pr-comments mark-processed` with the commentIds of all applied answers.
+Then invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers (e.g. `1 3`).
 
 ### 4. Delegate to speckit.clarify
 

@@ -39,7 +39,7 @@ Apply it, then show:
 
 After all answers are processed, show: `✅ <N> answer(s) applied.` (or `No new answers found.` if none).
 
-After applying, invoke `/product-flow:pr-comments mark-processed` with the commentIds of all applied answers.
+After applying, invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers (e.g. `1 3`).
 
 Invoke `/product-flow:pr-comments pending`. If it returns pending comments:
 

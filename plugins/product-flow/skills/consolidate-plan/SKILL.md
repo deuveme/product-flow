@@ -80,7 +80,7 @@ After all are processed, show: `✅ <N> item(s) applied.`
 
 Do NOT modify `tasks.md` here — if plan changes invalidate tasks, note it in the commit message so `/product-flow:tasks` can be re-run.
 
-After applying all answers, invoke `/product-flow:pr-comments mark-processed` with the commentIds of all applied answers.
+After applying all answers, invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers (e.g. `1 3`).
 
 ### 3b. Record applied changes in the PR
 

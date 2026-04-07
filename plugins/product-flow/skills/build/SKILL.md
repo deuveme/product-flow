@@ -66,7 +66,7 @@ Apply it, then show:
 
 After all answers are processed, show: `✅ <N> answer(s) applied.` (or `No new answers found.` if none).
 
-Invoke `/product-flow:pr-comments mark-processed` with the applied commentIds.
+Invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers (e.g. `1 3`).
 
 **3. Reminder to review AI-answered comments:**
 
