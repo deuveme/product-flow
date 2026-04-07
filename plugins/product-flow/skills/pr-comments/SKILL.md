@@ -7,6 +7,8 @@ user-invocable: false
 
 Single source of truth for comment processing state. Any skill that reads or resolves PR comments uses this skill.
 
+**Local decisions log:** Every question posted to the PR is also written to `specs/<branch>/decisions.md`. This file is the durable, offline record of all questions, possible answers, AI decisions, user responses, and current status — it persists even if the PR is deleted.
+
 **Status marker:** Every bot comment embeds `<!-- id:q<N> type:<type> status:<status> -->` as an invisible first-line marker, where:
 - `id:q<N>` — sequential question number, globally unique within the PR (e.g. `q1`, `q2`)
 - `type` — `technical` or `product`
@@ -81,7 +83,23 @@ gh pr comment --body "<!-- id:q<N> type:<type> status:<status> -->
 <user instruction line>"
 ```
 
-4. Output: the comment ID and the `<N>` used.
+4. Append to `specs/<branch>/decisions.md` (create with header `# Decisions Log\n\n` if it does not exist):
+
+```markdown
+<!-- q<N> type:<type> status:<status> -->
+## Question <N> · Type: <type> · Status: <status>
+
+<body>
+
+**User responses:**
+_(none)_
+
+---
+```
+
+Do not commit — the calling skill's `git add specs/` will include this file.
+
+5. Output: the comment ID and the `<N>` used.
 
 ---
 
@@ -134,7 +152,20 @@ gh api repos/{owner}/{repo}/issues/comments/{comment_id} \
   -f body="<updated body with all occurrences of UNANSWERED replaced by ANSWERED>"
 ```
 
-3. Output: number of comments resolved.
+3. For each resolved comment, extract its question number N (from `id:q<N>` in the body) and update `specs/<branch>/decisions.md`:
+   - Change `<!-- q<N> type:<type> status:UNANSWERED -->` → `<!-- q<N> type:<type> status:ANSWERED -->`
+   - Change `## Question <N> · Type: <type> · Status: UNANSWERED` → `## Question <N> · Type: <type> · Status: ANSWERED`
+
+```bash
+BRANCH=$(git branch --show-current)
+git add "specs/$BRANCH/decisions.md"
+git commit -m "chore: mark question(s) as answered in decisions.md"
+git push origin HEAD
+```
+
+If the commit fails with a GPG or signing error: show the standard GPG fix message and **STOP**.
+
+4. Output: number of comments resolved.
 
 ---
 
@@ -226,6 +257,15 @@ gh api repos/{owner}/{repo}/issues/comments/{comment_id}/reactions \
 
 If no matching comment is found: skip silently.
 
+2b. For each question number N, append the user's response to the corresponding entry in `specs/<branch>/decisions.md`. Replace the `_(none)_` placeholder on first response, or append a new numbered line on subsequent responses:
+
+```markdown
+**User responses:**
+1. <ISO timestamp> — "<response text>"
+```
+
+If the entry for question N does not exist in `decisions.md` (e.g. the question was posted before this file existed): skip silently.
+
 3. Record processed question numbers in `status.json`:
 
 ```bash
@@ -239,7 +279,8 @@ echo "$EXISTING" | jq --argjson nums '[<N1>, <N2>, ...]' \
 4. Commit:
 
 ```bash
-git add "$STATUS_FILE"
+DECISIONS_FILE="specs/$BRANCH/decisions.md"
+git add "$STATUS_FILE" "$DECISIONS_FILE"
 git commit -m "chore: mark answers as processed"
 git push origin HEAD
 ```
