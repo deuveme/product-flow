@@ -54,17 +54,18 @@ Run /product-flow:tasks first.
 
 **STOP.**
 
-Invoke `/product-flow:pr-comments pending`. If it returns any `UNANSWERED` comments with no corresponding `Question <N>. Answer:` response from the user:
+Invoke `/product-flow:pr-comments pending`. If it returns any `UNANSWERED` comments:
 
 ```
-🚫 BLOCKED — Unanswered technical decisions
+🚫 There are unanswered questions on the PR that must be resolved before implementing.
 
-The following technical questions must be answered before implementing:
+Please reply on the PR (not in the chat) for each open question:
 
-[list the unanswered questions with their Question number]
+[list each question with its number, type, and a one-line summary]
 
-Add a new comment to the PR for each:
-  Question <N>. Answer: [letter or answer]
+  Question <N>. Answer: [letter or text]
+
+Once all questions are answered, run /product-flow:build again.
 ```
 
 **STOP.**

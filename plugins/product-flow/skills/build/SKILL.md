@@ -16,6 +16,45 @@ gh pr view --json number,state,url,body
 - If the branch is `main` or `master`: ERROR "There is no active feature. Use /product-flow:start to start a new one."
 - If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
 
+### 1b. Inbox
+
+Show: `📬 Checking for new activity...`
+
+**Part A — Answers to bot questions:**
+
+Invoke `/product-flow:pr-comments read-answers`. For each new answer found:
+
+1. Evaluate whether the answer is actionable as-is:
+   - **Clear**: apply directly.
+   - **Ambiguous or incomplete**: clarify before applying:
+     - If the question was `type: technical`: resolve the ambiguity autonomously using project context. Do not ask the PM.
+     - If the question was `type: product`: use **AskUserQuestion** (one entry for this question only) to ask the PM for clarification before applying.
+
+2. Show before applying:
+   ```
+     ⏳ Question <N> — <one-line summary> → applying to <artifact>...
+   ```
+   Apply, then show:
+   ```
+     ✅ Question <N> — applied.
+   ```
+
+Invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers.
+
+**Part B — New user comments:**
+
+Invoke `/product-flow:pr-comments new-comments`. If `NO_NEW_COMMENTS`: continue silently.
+
+For each new comment, classify and resolve:
+
+- **Technical**: resolve autonomously using project context. Invoke `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED` (or `UNANSWERED` if unresolvable). Apply the decision to the relevant artifact.
+- **Product**: use **AskUserQuestion** (single call, one entry per comment). After receiving the PM's answers, apply changes to the relevant artifact. Invoke `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`.
+
+After processing all new comments, invoke `/product-flow:pr-comments mark-comments-processed` with the IDs of all processed comments.
+
+Show: `✅ Inbox processed — <N> answer(s) applied, <M> comment(s) evaluated.`
+(or `✅ Inbox clear.` if nothing to process)
+
 ### 2. Gate: plan generated
 
 Read `specs/<branch>/status.json` and verify that `plan_generated` is present:
@@ -39,19 +78,14 @@ Run /product-flow:continue to generate the plan first.
 
 This step runs only if the entry point is **Normal flow** (no prior progress detected). Skip if re-entering mid-build (`code_written` already set).
 
-**1. Check for unanswered comments:**
+**1. Resolve unanswered comments:**
 
-Invoke `/product-flow:pr-comments pending`. If any UNANSWERED comments exist:
+Invoke `/product-flow:pr-comments pending`. For each UNANSWERED comment:
 
-```
-🚫 There are unanswered comments on the PR that must be resolved before building.
+- `type: technical`: attempt autonomous resolution using project context and industry standards. Invoke `/product-flow:pr-comments write` with `status: ANSWERED` and mark resolved via `/product-flow:pr-comments resolve`.
+- `type: product`: use **AskUserQuestion** to ask the PM in a single call (one entry per comment). After receiving the PM's answers, post a PR comment via `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`.
 
-[list each unanswered comment with its question number and type]
-
-Reply on the PR with `Question <N>. Answer: [text]`, then run /product-flow:build again.
-```
-
-**STOP.**
+Only after all comments are resolved, continue.
 
 **2. Check for unprocessed user answers:**
 
@@ -255,21 +289,34 @@ If it produces an ERROR: propagate and stop.
 
 If the checklist reveals CRITICAL issues (gaps, conflicts, or ambiguities that would break implementation):
 
-For each critical issue found:
-1. Attempt to resolve it using available context (spec, plan, existing artifacts).
-2. Invoke `/product-flow:pr-comments write` following the technical decision format — ANSWERED if resolved, UNANSWERED if not.
+For each critical issue, classify and resolve:
 
-If all issues were resolved: show `✅ Step 2/3 — Requirements validated.` and continue to step 6.
+- **Technical** (architecture, performance, security, data model, infrastructure): resolve autonomously using available context. Invoke `/product-flow:pr-comments write` with:
+  - `type`: `technical`, `status`: `ANSWERED`
+  - `body`:
+    ```
+    **Technical question detected:** "[identified question]"
 
-If any issue remains unresolved:
+    **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
 
-```
-🚫 There are open questions that need team input before building.
+    **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
+    ```
+- **Product** (scope, user flow, acceptance criteria, business rules): use **AskUserQuestion** to ask the PM (single call, one entry per issue). After receiving answers, invoke `/product-flow:pr-comments write` with:
+  - `type`: `product`, `status`: `ANSWERED`
+  - `body`:
+    ```
+    **Checklist issue:** "[the gap or ambiguity found]"
 
-Questions have been posted on the PR. Once resolved, run /product-flow:build again.
-```
+    **Options:** A. "[option A]" B. "[option B]" (... etc)
 
-**STOP.**
+    **PM answer:** "[the answer received]"
+
+    **Change applied:** [what was updated, or "no change — decision recorded"]
+    ```
+
+After all critical issues are resolved via the decision flow, show `✅ Step 2/3 — Requirements validated.` and continue to step 6.
+
+The only case that warrants a **STOP** is if the PM explicitly answers "Other" with a response requiring follow-up before building. In that case, state clearly what is needed and stop.
 
 ### 6. Implement
 

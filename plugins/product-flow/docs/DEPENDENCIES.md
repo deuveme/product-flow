@@ -14,21 +14,33 @@ start
   └─ speckit.retro
 
 continue
-  ├─ pr-comments pending
+  ├─ pr-comments read-answers          (inbox: apply pending answers)
+  ├─ pr-comments mark-processed        (inbox: record applied answers + react 👍)
+  ├─ pr-comments new-comments          (inbox: detect new user comments)
+  ├─ pr-comments mark-comments-processed (inbox: react 👍 + record processed IDs)
+  ├─ pr-comments write                 (inbox: record decisions from new comments)
   ├─ [SPEC_REVIEW]  → consolidate-spec → (then auto-proceeds to PLAN_PENDING)
   ├─ [PLAN_PENDING] → plan
-  └─ [PLAN_REVIEW]  → consolidate-plan → (then auto-proceeds to BUILD_READY)
+  └─ [PLAN_REVIEW]  → consolidate-plan → (then auto-proceeds to READY_TO_BE_BUILT)
 
 build
-  ├─ pr-comments pending           (pre-build: block if UNANSWERED comments exist)
-  ├─ pr-comments read-answers      (pre-build: apply pending user answers)
-  ├─ pr-comments mark-processed    (record applied answers + react on GitHub)
+  ├─ pr-comments read-answers          (inbox: apply pending answers)
+  ├─ pr-comments mark-processed        (inbox: record applied answers + react 👍)
+  ├─ pr-comments new-comments          (inbox: detect new user comments)
+  ├─ pr-comments mark-comments-processed (inbox: react 👍 + record processed IDs)
+  ├─ pr-comments write                 (inbox: record decisions from new comments)
+  ├─ pr-comments pending               (pre-implement gate: resolve UNANSWERED before code)
   ├─ tasks            (if tasks not yet generated)
   ├─ checklist        (if checklists not yet generated)
   ├─ implement        (if code not yet generated)
   └─ speckit.verify-tasks  (re-entry shortcut only)
 
 submit
+  ├─ pr-comments read-answers          (inbox: apply pending answers)
+  ├─ pr-comments mark-processed        (inbox: record applied answers + react 👍)
+  ├─ pr-comments new-comments          (inbox: detect new user comments)
+  ├─ pr-comments mark-comments-processed (inbox: react 👍 + record processed IDs)
+  ├─ pr-comments write                 (inbox: record decisions from new comments)
   ├─ speckit.verify
   └─ speckit.reconcile  (optional, if user chooses option B)
 

@@ -117,32 +117,34 @@ key question:
 
 For each artifact that needs a change, classify the decision type and handle accordingly:
 
-#### Product decisions (`spec.md` — requirements, user stories, acceptance criteria)
+#### Product decisions (`spec.md` — requirements, user stories, acceptance criteria, external dependencies)
+
+This category also covers **external dependency blockers** — anything pending from the team that could affect implementation (e.g., missing design markup, unconfirmed copy, pending PM decisions). Treat them as product questions: ask what to do and record the decision.
 
 Use the **AskUserQuestion** tool to present all product findings to the PM in a **single call** before making any changes. For each finding:
 
 - `question`: describe the issue and ask what to do, ending with "?"
 - `header`: short topic label max 12 chars (e.g. "Spec scope", "User flow")
-- `options`: 2–4 choices. First option = "Accept proposed change" (with the proposed text as description). Last option = "Leave as is". Add alternatives in between if relevant.
+- `options`: 2–4 choices with a `description` explaining the implication of each. Place the recommended option **first** with `" (Recommended)"`. Last option = "Leave as is" or equivalent no-change option.
 - `multiSelect`: false
 
 The tool adds "Other" automatically for custom input.
 
 Wait for the PM's answers before proceeding. Once all answers are received:
 
-1. Update `spec.md` with the agreed changes.
+1. Update the relevant artifact with the agreed changes (or record the decision without changing if "leave as is").
 2. Post **one individual comment** per item to the PR using `/product-flow:pr-comments write` with:
    - `type`: `product`
    - `status`: `ANSWERED`
    - `body`:
      ```
-     **Retro finding:** "[description of issue]"
+     **Retro question:** "[the question asked to the PM]"
 
-     **Question asked to PM:** [what was asked]
+     **Options:** A. "[option A]" B. "[option B]" (... etc)
 
-     **PM answer:** [the answer received]
+     **PM answer:** "[the answer received]"
 
-     **Change applied:** [what was updated in spec.md, or "no change" if left as is]
+     **Change applied:** [what was updated and in which artifact, or "no change — decision recorded"]
      ```
 
 #### Technical decisions (`plan.md`, `data-model.md`, `contracts/`, `constitution.md`)
@@ -154,11 +156,11 @@ If the AI can resolve it, invoke `/product-flow:pr-comments write` with:
 - `status`: `ANSWERED`
 - `body`:
   ```
-  **Retro finding:** "[description of issue]"
+  **Technical question detected:** "[identified question]"
 
-  **Proposed change:** [concrete proposed update]
+  **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
 
-  **Reasoning:** [brief explanation]
+  **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
   ```
 
 If the AI cannot resolve it, invoke `/product-flow:pr-comments write` with:
@@ -166,9 +168,9 @@ If the AI cannot resolve it, invoke `/product-flow:pr-comments write` with:
 - `status`: `UNANSWERED`
 - `body`:
   ```
-  **Retro finding:** "[description of issue]"
+  **Technical question detected:** "[identified question]"
 
-  **Possible approaches:** A. "[option A]" B. "[option B]"
+  **Possible answers:** A. "[option A]" B. "[option B]" C. "[option C]"
 
   ⚠️ **Unresolved — requires input from the development team.**
   ```
@@ -190,12 +192,16 @@ technical decision above). Never self-apply — wait for human approval.
 Confirm before proceeding:
 
 - [ ] lessons-learned.md is up to date (or nothing to add)
-- [ ] All earlier artifacts that need updating have been reviewed with the user
-- [ ] No open blockers that should prevent the next phase from starting
+- [ ] All product findings were resolved via AskUserQuestion and recorded as PR comments
+- [ ] All technical findings were resolved autonomously or posted as UNANSWERED PR comments
+- [ ] No finding was left unclassified or silently dropped
 - [ ] Code simplification applied or deferred with a logged note
 
-If all items are clear, state: "Retro complete — ready for [next phase]."
-If any item is blocked, do not proceed until the user resolves it.
+After the Step 3 decision flow, every finding is either resolved (ANSWERED PR comment) or escalated (UNANSWERED PR comment) — there should be no silent open blockers.
+
+If all items above are clear, state: "Retro complete — ready for [next phase]."
+
+The only case that warrants a **Blocked** return is when a critical piece of information is missing and the PM explicitly answered "Other" with a response that requires follow-up before the next phase can start. In that case, state clearly what is needed and **STOP**.
 
 ### Step 6: Session Hygiene Suggestion
 
@@ -222,7 +228,10 @@ after every task and every phase, regardless of session length.
 Always produce:
 
 1. A brief **Retro Summary** (3-5 bullet points: what happened, what was learned,
-   what changes are proposed)
-2. A clear **Ready / Blocked** status
-3. If blocked: a numbered list of specific actions the user needs to take
-4. If ready: the session hygiene suggestion (Step 6)
+   what decisions were made)
+2. A list of PR comments posted (question number, type, status) — one line each
+3. A clear **Ready / Blocked** status
+   - **Ready**: all findings resolved via the decision flow — proceed to next phase
+   - **Blocked**: only if PM explicitly indicated a critical follow-up is needed before proceeding
+4. If blocked: a numbered list of specific actions the user needs to take
+5. If ready: the session hygiene suggestion (Step 6)

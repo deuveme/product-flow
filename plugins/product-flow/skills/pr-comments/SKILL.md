@@ -11,6 +11,8 @@ Single source of truth for comment processing state. Any skill that reads or res
 
 **Local decisions log:** Every question posted to the PR is also written to `specs/<branch>/decisions.md`. This file is the durable, offline record of all questions, possible answers, AI decisions, user responses, and current status — it persists even if the PR is deleted.
 
+**Enforcement:** All bot PR comments MUST go through the `write` operation — never call `gh pr comment` directly. This guarantees every comment is numbered, marked, and saved to `decisions.md`.
+
 **Status marker:** Every bot comment embeds `<!-- id:q<N> type:<type> status:<status> -->` as an invisible first-line marker, where:
 - `id:q<N>` — sequential question number, globally unique within the PR (e.g. `q1`, `q2`)
 - `type` — `technical` or `product`
@@ -290,3 +292,94 @@ git push origin HEAD
 If the commit fails with a GPG or signing error: show the standard GPG fix message and **STOP**.
 
 5. Output: `✅ Marked <N> answer(s) as applied on the PR.`
+
+---
+
+### `new-comments`
+
+Returns new user PR comments that are not bot-generated and have not been processed yet. Used by public commands to detect unseen feedback (general comments, code review comments, inline review notes).
+
+**Used by:** every public command at startup (`/product-flow:continue`, `/product-flow:build`, `/product-flow:submit`).
+
+#### Execution
+
+1. Fetch all PR comments in chronological order:
+
+```bash
+gh pr view --json comments \
+  -q '[.comments[] | {id: .id, author: .author.login, body: .body, createdAt: .createdAt}] | sort_by(.createdAt)'
+```
+
+Also fetch inline review comments (code-level):
+
+```bash
+gh pr view --json reviews \
+  -q '[.reviews[] | {id: .id, author: .author.login, body: .body, state: .state, submittedAt: .submittedAt}] | sort_by(.submittedAt)'
+```
+
+2. Filter out bot comments: discard any comment whose body contains `<!-- id:q`.
+
+3. Filter out already-processed comments: load processed IDs from `status.json`:
+
+```bash
+BRANCH=$(git branch --show-current)
+cat "specs/$BRANCH/status.json" 2>/dev/null | jq -r '.processed_comment_ids // [] | .[]'
+```
+
+Discard any comment whose `id` appears in this list.
+
+4. If nothing remains: return `NO_NEW_COMMENTS`.
+
+5. Otherwise return the list of new comments: `{ id, author, body, createdAt }` sorted chronologically.
+
+---
+
+### `mark-comments-processed`
+
+Marks general user comments as processed: adds a 👍 reaction to each and records their IDs in `status.json` to prevent re-processing.
+
+**Used by:** public commands after evaluating new user comments via `new-comments`.
+
+**Input (`$ARGUMENTS`):** Space-separated list of comment IDs to mark (e.g. `IC_abc123 IC_def456`).
+
+#### Execution
+
+1. Get repo info:
+
+```bash
+gh pr view --json number,headRepositoryOwner,headRepository \
+  -q '{number: .number, owner: .headRepositoryOwner.login, repo: .headRepository.name}'
+```
+
+2. For each comment ID, add a 👍 reaction:
+
+```bash
+gh api repos/{owner}/{repo}/issues/comments/{comment_id}/reactions \
+  -X POST -f content="+1"
+```
+
+If the comment is a review comment (not an issue comment), use the reviews endpoint instead:
+
+```bash
+gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions \
+  -X POST -f content="+1"
+```
+
+If adding the reaction fails: skip silently.
+
+3. Record processed IDs in `status.json`:
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq --argjson ids '["<id1>", "<id2>", ...]' \
+  '.processed_comment_ids = ((.processed_comment_ids // []) + $ids | unique)' > "$STATUS_FILE"
+git add "$STATUS_FILE"
+git commit -m "chore: mark user comments as processed"
+git push origin HEAD
+```
+
+If the commit fails with a GPG or signing error: show the standard GPG fix message and **STOP**.
+
+4. Output: `✅ Marked <N> comment(s) as processed.`

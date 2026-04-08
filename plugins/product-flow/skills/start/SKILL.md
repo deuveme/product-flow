@@ -158,7 +158,7 @@ Invoke `/product-flow:speckit.specify` passing `$ARGUMENTS` as the feature descr
 
 **Question classification** — when `speckit.specify` identifies `[NEEDS CLARIFICATION]` markers, classify each one before presenting it:
 
-- **Non-technical** (ask the PM): business intent, priorities, functional scope, user flows, terminology. **NEVER resolve autonomously. Always surface to the PM and wait for their answer.**
+- **Product** (ask the PM): business intent, priorities, functional scope, user flows, terminology. **NEVER resolve autonomously. Always surface to the PM via AskUserQuestion.**
 - **Technical** (resolve autonomously): authentication, authorisation, security, compliance, data retention, integration patterns, infrastructure constraints, performance targets, architecture, data model, implementation patterns.
 
 **For technical questions**, do NOT ask the PM. Instead:
@@ -247,8 +247,29 @@ Then run /product-flow:start again.
 
 ### 6. Record technical decisions in the PR
 
-For each technical decision made, invoke `/product-flow:pr-comments write`
-following the technical decision format (ANSWERED/UNANSWERED).
+For each technical decision made, invoke `/product-flow:pr-comments write`:
+
+- If resolved:
+  - `type`: `technical`, `status`: `ANSWERED`
+  - `body`:
+    ```
+    **Technical question detected:** "[identified question]"
+
+    **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+
+    **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
+    ```
+- If unresolved:
+  - `type`: `technical`, `status`: `UNANSWERED`
+  - `body`:
+    ```
+    **Technical question detected:** "[identified question]"
+
+    **Possible answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+
+    ⚠️ **Unresolved — requires input from the development team.**
+    ```
+
 Skip if no technical decisions were made.
 
 ### 7. Phase retro

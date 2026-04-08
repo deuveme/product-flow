@@ -43,17 +43,12 @@ After all answers are processed, show: `✅ <N> answer(s) applied.` (or `No new 
 
 After applying, invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers (e.g. `1 3`).
 
-Invoke `/product-flow:pr-comments pending`. If it returns pending comments that require a response:
+Invoke `/product-flow:pr-comments pending`. If it returns pending comments, resolve them before continuing:
 
-```
-🚫 BLOCKED — Pending comments
+- For `type: technical` comments: attempt autonomous resolution using project context and industry standards. Invoke `/product-flow:pr-comments write` with `status: ANSWERED` and mark resolved via `/product-flow:pr-comments resolve`.
+- For `type: product` comments: use **AskUserQuestion** to ask the PM in a single call (one entry per comment). After receiving the PM's answers, post a PR comment via `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`.
 
-There are unanswered comments on the PR that must be resolved before generating the plan.
-
-Address them and run /product-flow:continue again.
-```
-
-**STOP.**
+Only after all pending comments are resolved, continue.
 
 ### 3. Event modeling (conditional)
 
@@ -138,8 +133,29 @@ Invoke `/product-flow:praxis.frontend-architecture` with the plan as input. It v
 
 ### 8. Record technical decisions in the PR
 
-For each technical decision made, invoke `/product-flow:pr-comments write`
-following the technical decision format (ANSWERED/UNANSWERED).
+For each technical decision made, invoke `/product-flow:pr-comments write`:
+
+- If resolved:
+  - `type`: `technical`, `status`: `ANSWERED`
+  - `body`:
+    ```
+    **Technical question detected:** "[identified question]"
+
+    **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+
+    **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
+    ```
+- If unresolved:
+  - `type`: `technical`, `status`: `UNANSWERED`
+  - `body`:
+    ```
+    **Technical question detected:** "[identified question]"
+
+    **Possible answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+
+    ⚠️ **Unresolved — requires input from the development team.**
+    ```
+
 Skip if no technical decisions were made.
 
 ### 9. Commit the plan

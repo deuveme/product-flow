@@ -60,7 +60,7 @@ Invoke `/product-flow:speckit.clarify` with the context of the PR comments, appl
 
 **Question classification** — before presenting each question, classify it:
 
-- **Non-technical** (ask the PM): business intent, priorities, user flow, terminology, functional scope. **NEVER resolve autonomously. Always surface to the PM and wait for their answer.**
+- **Product** (ask the PM): business intent, priorities, user flow, terminology, functional scope. **NEVER resolve autonomously. Always surface to the PM via AskUserQuestion.**
 - **Technical** (resolve autonomously): architecture, performance, security, integrations, data model, infrastructure constraints, implementation patterns.
 
 **For technical questions**, do NOT ask the PM. Instead:
@@ -80,8 +80,29 @@ If it produces an ERROR: propagate and stop.
 
 ### 5. Record technical decisions in the PR
 
-For each technical decision made, invoke `/product-flow:pr-comments write`
-following the technical decision format (ANSWERED/UNANSWERED).
+For each technical decision made, invoke `/product-flow:pr-comments write`:
+
+- If resolved:
+  - `type`: `technical`, `status`: `ANSWERED`
+  - `body`:
+    ```
+    **Technical question detected:** "[identified question]"
+
+    **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+
+    **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
+    ```
+- If unresolved:
+  - `type`: `technical`, `status`: `UNANSWERED`
+  - `body`:
+    ```
+    **Technical question detected:** "[identified question]"
+
+    **Possible answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+
+    ⚠️ **Unresolved — requires input from the development team.**
+    ```
+
 Skip if no technical decisions were made.
 
 ### 6. Commit the updated spec

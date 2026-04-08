@@ -16,6 +16,45 @@ gh pr view --json number,state,url,body,isDraft
 - If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /product-flow:status."
 - If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
 
+### 1b. Inbox
+
+Show: `📬 Checking for new activity...`
+
+**Part A — Answers to bot questions:**
+
+Invoke `/product-flow:pr-comments read-answers`. For each new answer found:
+
+1. Evaluate whether the answer is actionable as-is:
+   - **Clear**: apply directly.
+   - **Ambiguous or incomplete**: clarify before applying:
+     - If the question was `type: technical`: resolve the ambiguity autonomously using project context. Do not ask the PM.
+     - If the question was `type: product`: use **AskUserQuestion** (one entry for this question only) to ask the PM for clarification before applying.
+
+2. Show before applying:
+   ```
+     ⏳ Question <N> — <one-line summary> → applying to <artifact>...
+   ```
+   Apply, then show:
+   ```
+     ✅ Question <N> — applied.
+   ```
+
+Invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers.
+
+**Part B — New user comments:**
+
+Invoke `/product-flow:pr-comments new-comments`. If `NO_NEW_COMMENTS`: continue silently.
+
+For each new comment, classify and resolve:
+
+- **Technical**: resolve autonomously using project context. Invoke `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED` (or `UNANSWERED` if unresolvable). Apply the decision to the relevant artifact.
+- **Product**: use **AskUserQuestion** (single call, one entry per comment). After receiving the PM's answers, apply changes to the relevant artifact. Invoke `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`.
+
+After processing all new comments, invoke `/product-flow:pr-comments mark-comments-processed` with the IDs of all processed comments.
+
+Show: `✅ Inbox processed — <N> answer(s) applied, <M> comment(s) evaluated.`
+(or `✅ Inbox clear.` if nothing to process)
+
 ### 2. Gate: code verified
 
 Read `specs/<branch>/status.json`:
@@ -56,8 +95,24 @@ Invoke `/product-flow:speckit.verify`.
     stop and repeat this decision. If it passes, continue to step 3.
 
 - If it reports only **HIGH / MEDIUM / LOW** issues → for each issue found:
-  1. Attempt to resolve it.
-  2. Invoke `/product-flow:pr-comments write` following the technical decision format — ANSWERED if resolved, UNANSWERED if not.
+  1. Attempt to resolve it autonomously using project context and industry standards.
+  2. Invoke `/product-flow:pr-comments write`:
+     - If resolved: `type: technical`, `status: ANSWERED`, body:
+       ```
+       **Technical question detected:** "[identified issue]"
+
+       **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+
+       **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
+       ```
+     - If unresolved: `type: technical`, `status: UNANSWERED`, body:
+       ```
+       **Technical question detected:** "[identified issue]"
+
+       **Possible answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+
+       ⚠️ **Unresolved — requires input from the development team.**
+       ```
 
   Then ask:
 

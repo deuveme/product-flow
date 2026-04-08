@@ -88,20 +88,40 @@ constraint. Flag conflicts as CRITICAL and include in Step 2 clarification.
 ### 2. Clarify (Once, Max 5 Questions)
 
 If the gap report is ambiguous (e.g., "the button doesn't work" without
-specifying which button), ask targeted questions.
+specifying which button), classify each ambiguity and resolve it:
 
-Format:
-```markdown
-## Question [N]: [Topic]
-**Context**: [Relevant detail]
-**Decision needed**: [One sentence]
-**Suggested answers**: A. [...] B. [...] C. [...]
+- **Technical** (architecture, API contracts, data model, infrastructure): resolve autonomously using existing artifacts and project context. Invoke `/product-flow:pr-comments write` with:
+  - `type`: `technical`, `status`: `ANSWERED`
+  - `body`:
+    ```
+    **Technical question detected:** "[identified question]"
 
-Your choice: _[wait for user response]_
-```
+    **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+
+    **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
+    ```
+
+- **Product** (scope, user intent, acceptance criteria, UX behaviour): ask the PM via a single **AskUserQuestion** call (one entry per ambiguity, max 5):
+  - `question`: describe the ambiguity and ask what to do, ending with "?"
+  - `header`: short topic label max 12 chars
+  - `options`: 2–4 choices with `description` explaining each. Place the recommended option first with `" (Recommended)"`.
+  - `multiSelect`: false
+
+  After receiving the PM's answers, invoke `/product-flow:pr-comments write` once per answered item with:
+  - `type`: `product`, `status`: `ANSWERED`
+  - `body`:
+    ```
+    **Reconcile question:** "[the question asked to the PM]"
+
+    **Options:** A. "[option A]" B. "[option B]" (... etc)
+
+    **PM answer:** "[the answer received]"
+
+    **Change applied:** [what was updated and in which artifact]
+    ```
 
 Rules:
-- Max 5 questions total.
+- Max 5 product questions total.
 - Max 3 unresolved `[NEEDS CLARIFICATION]` markers in output — beyond that,
   pick a reasonable default and note it in the Sync Impact Report.
 - If the gap report is unambiguous, skip this step entirely.

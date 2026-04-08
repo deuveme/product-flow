@@ -168,6 +168,8 @@ Fields written by each skill:
 | `code_written` | `/product-flow:implement` |
 | `code_verified` | `/product-flow:build` (after verify-tasks) |
 | `in_review` | `/product-flow:submit` |
+| `processed_answers` | `pr-comments mark-processed` — question numbers already applied (prevents re-processing) |
+| `processed_comment_ids` | `pr-comments mark-comments-processed` — IDs of general user comments already evaluated |
 
 ---
 

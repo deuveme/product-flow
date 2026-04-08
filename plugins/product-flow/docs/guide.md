@@ -158,7 +158,7 @@ PLAN_PENDING  ──── speckit.clarify runs first (ambiguity check) ──�
 PLAN_REVIEW   ←──── /product-flow:consolidate-plan ───────────────────────────────────────── PLAN_PENDING
   │ (no comments)
   ▼
-BUILD_READY   ──── redirect to /product-flow:build
+READY_TO_BE_BUILT ──── redirect to /product-flow:build
 ```
 
 ### PR draft lifecycle
@@ -171,12 +171,17 @@ The only approval gate is at `/product-flow:deploy-to-stage`, which requires the
 
 ### PR comment classification
 
-When `/product-flow:continue` processes comments on the PR, it classifies each one before acting on it:
+Every public command (`continue`, `build`, `submit`) runs an **Inbox check** at startup that processes two things in order:
+
+1. **Answers to bot questions** — responses the team left using `Question <N>. Answer: [text]`. If an answer is ambiguous, the skill clarifies before applying: technical ambiguities are resolved autonomously; product ambiguities are re-asked via AskUserQuestion.
+2. **New user comments** — any general or code-review comment not previously seen. Classified and resolved before continuing.
 
 | Type | Criteria | How it's handled |
 |---|---|---|
-| **Non-technical** | Business intent, priorities, user flows, terminology, functional scope | **Always surfaced to the PM. Never resolved autonomously.** |
-| **Technical** | Architecture, security, integrations, data model, infrastructure, implementation patterns | Resolved autonomously using project context |
+| **Product** | Business intent, priorities, user flows, terminology, functional scope | AskUserQuestion → PM answer recorded as PR comment (ANSWERED) |
+| **Technical** | Architecture, security, integrations, data model, infrastructure, implementation patterns | Resolved autonomously → PR comment (ANSWERED or UNANSWERED) |
+
+After processing, a 👍 reaction is added to each handled comment on GitHub, and all IDs are recorded in `status.json` to prevent re-processing.
 
 **For autonomously resolved technical questions**, Claude posts a comment on the PR:
 
@@ -218,15 +223,25 @@ Question 4 - Answer: go with option B because...
 
 Multiple responses for the same question are allowed — the last one wins. A single comment can respond to multiple questions, one per line.
 
-On the next `/product-flow:continue` run, Claude picks up those answers and continues.
+On the next run of any public command (`/product-flow:continue`, `/product-flow:build`, or `/product-flow:submit`), Claude picks up those answers and continues.
 
 ### Comment lifecycle (pr-comments skill)
 
 Bot comments are tracked via invisible HTML markers on the first line:
-- `<!-- id:q<N> type:technical|product status:UNANSWERED -->` — pending, will be processed by `/product-flow:continue`
+- `<!-- id:q<N> type:technical|product status:UNANSWERED -->` — pending, will be processed on the next public command run
 - `<!-- id:q<N> type:technical|product status:ANSWERED -->` — processed, will be ignored in future runs
 
-All bot comments are written via `/product-flow:pr-comments write`, which handles numbering automatically and appends the question to `specs/<branch>/decisions.md` — a durable local log that persists even if the PR is deleted. `/product-flow:pr-comments pending` returns all `UNANSWERED` comments. `/product-flow:pr-comments resolve` rewrites them to `ANSWERED` after processing. `/product-flow:pr-comments read-answers` reads all user responses (`Answer:`) and returns the last one per question number — used by `plan`, `tasks`, `implement`, `build`, and `consolidate-*` before applying changes. Once answers are applied, `/product-flow:pr-comments mark-processed` records the question numbers in `status.json` (to prevent re-processing), appends the responses to `decisions.md`, and adds a 👍 reaction to the user's answer comment on GitHub.
+**All bot PR comments MUST go through `/product-flow:pr-comments write`** — never `gh pr comment` directly. This guarantees every comment is numbered, marked, and appended to `specs/<branch>/decisions.md` — a durable local log that persists even if the PR is deleted.
+
+| Operation | What it does |
+|---|---|
+| `write` | Posts a numbered bot comment to the PR and appends it to `decisions.md` |
+| `pending` | Returns all UNANSWERED bot comments |
+| `resolve` | Rewrites one or more bot comments from UNANSWERED → ANSWERED |
+| `read-answers` | Reads all user `Question <N>. Answer:` responses; returns the last one per question number |
+| `mark-processed` | Records applied answer question numbers in `status.json`, appends responses to `decisions.md`, adds 👍 to the user's comment |
+| `new-comments` | Returns new user comments (general + code review) that are not bot-generated and not yet processed |
+| `mark-comments-processed` | Adds 👍 to each general user comment and records its ID in `status.json` `processed_comment_ids` |
 
 ### Key workflow steps
 
@@ -248,17 +263,17 @@ All bot comments are written via `/product-flow:pr-comments write`, which handle
 
 **`consolidate-spec` skill:**
 1. Reads pending PR comments and user answers via `pr-comments pending` + `pr-comments read-answers`
-2. Classifies each comment: non-technical (surfaces to PM, stops) / technical (resolves autonomously)
+2. Classifies each comment: product (AskUserQuestion → PM answers) / technical (resolves autonomously)
 3. Delegates to `speckit.clarify` with the feedback as context → updates `spec.md`
-4. Posts each technical decision as a PR comment via `pr-comments write`
+4. Posts each decision as a PR comment via `pr-comments write` (ANSWERED or UNANSWERED)
 5. Calls `pr-comments mark-processed` and `pr-comments resolve`
 6. Calls `speckit.retro`
 
 **`consolidate-plan` skill:**
 1. Reads pending PR comments and user answers via `pr-comments pending` + `pr-comments read-answers`
-2. Classifies each comment: non-technical (surfaces to PM, stops) / technical (applies autonomously)
+2. Classifies each comment: product (AskUserQuestion → PM answers) / technical (applies autonomously)
 3. Updates `research.md`, `data-model.md`, and `contracts/` with the feedback
-4. Posts each applied change as a PR comment via `pr-comments write` for traceability
+4. Posts each decision as a PR comment via `pr-comments write` (ANSWERED or UNANSWERED)
 5. Calls `pr-comments mark-processed` and `pr-comments resolve`
 6. Calls `speckit.retro`
 
@@ -268,7 +283,8 @@ All bot comments are written via `/product-flow:pr-comments write`, which handle
 
 **`submit` skill:**
 1. Verifies branch and PR exist
-2. Runs `speckit.verify` — CRITICAL blocks; HIGH/MEDIUM/LOW asks the user
+2. Runs **Inbox check** — processes pending answers and new user comments (same as `continue` and `build`)
+3. Runs `speckit.verify` — CRITICAL blocks; HIGH/MEDIUM/LOW asks the user
 3. Verifies there are uncommitted changes
 4. Shows change summary (`git diff --stat`)
 5. Commits and pushes

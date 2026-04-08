@@ -37,26 +37,30 @@ If both return empty: show a warning and stop:
 
 From the returned comments and answers, classify each one before acting on it:
 
-- **Non-technical** (product feedback): scope changes, priority shifts, business rule clarifications, terminology. **NEVER resolve autonomously.**
-- **Technical** (resolve autonomously): architecture corrections, data model adjustments, API changes, implementation decisions.
+- **Product** (scope changes, priority shifts, business rule clarifications, terminology): resolve via **AskUserQuestion** — never apply product changes autonomously.
+- **Technical** (architecture corrections, data model adjustments, API changes, implementation decisions): resolve autonomously.
 
-If any comment is non-technical, stop immediately and surface it to the PM:
+If there are product comments, use the **AskUserQuestion** tool to ask the PM in a **single call**:
+- One entry per product comment:
+  - `question`: describe the team's feedback and ask what to do, ending with "?"
+  - `header`: short topic label max 12 chars
+  - `options`: 2–4 choices with `description` explaining each. Place the recommended option first with `" (Recommended)"`. Include a "Leave as is" option.
+  - `multiSelect`: false
 
-```
-🚫 Product feedback detected in the PR comments.
+Wait for all PM answers before proceeding. Then for each answered product item, post a PR comment via `/product-flow:pr-comments write` with:
+- `type`: `product`, `status`: `ANSWERED`
+- `body`:
+  ```
+  **Product feedback:** "[the team's original comment]"
 
-The following must be answered by the PM before the plan can be updated:
+  **Options:** A. "[option A]" B. "[option B]" (... etc)
 
-[list each non-technical comment]
+  **PM answer:** "[the answer received]"
 
-Please reply on the PR with your answer. Then run /product-flow:continue again.
-```
+  **Change applied:** [what was updated in the plan, or "no change — decision recorded"]
+  ```
 
-> ℹ️  Any technical feedback in the same batch is not lost — it will be processed automatically on the next run once the product feedback is resolved.
-
-**STOP.**
-
-If all comments are technical, group them by affected artifact:
+Group all comments (technical and product) by affected artifact:
 - `research.md` — architecture decisions, approach changes, technology choices, constraint updates
 - `data-model.md` — entity or relationship corrections
 - `contracts/` — API or interface modifications
@@ -86,16 +90,16 @@ After applying all answers, invoke `/product-flow:pr-comments mark-processed` wi
 
 ### 3b. Record applied changes in the PR
 
-For each change applied in step 3, invoke `/product-flow:pr-comments write` with:
+For each technical change applied in step 3, invoke `/product-flow:pr-comments write` with:
 - `type`: `technical`
 - `status`: `ANSWERED`
 - `body`:
   ```
-  **Plan updated:** "[brief description of what changed]"
+  **Technical question detected:** "[the team's feedback or question]"
 
-  **Artifact:** [research.md / data-model.md / contracts/<file>]
+  **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
 
-  **Change:** [what was modified and why — one sentence]
+  **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
   ```
 
 Skip if no changes were applied (no feedback to process).

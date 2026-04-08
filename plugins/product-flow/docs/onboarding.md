@@ -97,7 +97,9 @@ Tells you, in plain language, where you are in the workflow and what the next st
 
 ### Leaving feedback
 
-You and the team leave feedback by adding comments in the review room on GitHub. When you run `/product-flow:continue`, Claude reads all the comments and classifies each one automatically:
+You and the team leave feedback by adding comments in the review room on GitHub. Every time you run `/product-flow:continue`, `/product-flow:build`, or `/product-flow:submit`, Claude checks for new activity first — answers to existing questions and any new comments — and processes them before doing anything else.
+
+Claude classifies each comment automatically:
 
 **Your comments (product)** — questions about business intent, priorities, user flows, terminology, or functional scope. Claude will **always ask you** before making any decision. It will never resolve these autonomously.
 
@@ -105,7 +107,9 @@ You and the team leave feedback by adding comments in the review room on GitHub.
 
 If Claude cannot resolve a technical question on its own, it posts it in the PR marked as unresolved so the dev team can answer it directly.
 
-### What you might see after running `/product-flow:continue`
+Once a comment is processed, Claude adds a 👍 reaction to it on GitHub as a signal that it was seen and handled.
+
+### What you might see after running any public command
 
 Claude may post comments on the PR like this:
 

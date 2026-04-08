@@ -51,7 +51,7 @@ If a transition requires work that has no dedicated sub-skill, stop and surface 
                                │ (auto-proceed)
                                ▼
             ┌───────────────────────┐
-            │      BUILD_READY      │──── blocked: redirect to /product-flow:build
+            │      READY_TO_BE_BUILT      │──── blocked: redirect to /product-flow:build
             └───────────────────────┘
 ```
 
@@ -72,6 +72,45 @@ gh pr view --json number,state,url,body
 - If the branch is `main` or `master`: ERROR "There is no active feature. Use /product-flow:start to start a new one."
 - If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
 
+### 1b. Inbox
+
+Show: `📬 Checking for new activity...`
+
+**Part A — Answers to bot questions:**
+
+Invoke `/product-flow:pr-comments read-answers`. For each new answer found:
+
+1. Evaluate whether the answer is actionable as-is:
+   - **Clear**: apply directly.
+   - **Ambiguous or incomplete**: clarify before applying:
+     - If the question was `type: technical`: resolve the ambiguity autonomously using project context. Do not ask the PM.
+     - If the question was `type: product`: use **AskUserQuestion** (one entry for this question only) to ask the PM for clarification before applying.
+
+2. Show before applying:
+   ```
+     ⏳ Question <N> — <one-line summary> → applying to <artifact>...
+   ```
+   Apply, then show:
+   ```
+     ✅ Question <N> — applied.
+   ```
+
+Invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers.
+
+**Part B — New user comments:**
+
+Invoke `/product-flow:pr-comments new-comments`. If `NO_NEW_COMMENTS`: continue silently.
+
+For each new comment, classify and resolve:
+
+- **Technical**: resolve autonomously using project context. Invoke `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED` (or `UNANSWERED` if unresolvable). Apply the decision to the relevant artifact.
+- **Product**: use **AskUserQuestion** (single call, one entry per comment). After receiving the PM's answers, apply changes to the relevant artifact. Invoke `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`.
+
+After processing all new comments, invoke `/product-flow:pr-comments mark-comments-processed` with the IDs of all processed comments.
+
+Show: `✅ Inbox processed — <N> answer(s) applied, <M> comment(s) evaluated.`
+(or `✅ Inbox clear.` if nothing to process)
+
 ### 2. Determine current state
 
 Read `specs/<branch>/status.json` to check which steps are completed:
@@ -88,7 +127,7 @@ Map to state using `spec_created` and `plan_generated` fields:
 | ✓ | ✗ | ✓ | `SPEC_REVIEW` |
 | ✓ | ✗ | ✗ | `PLAN_PENDING` → auto-generate plan |
 | ✓ | ✓ | ✓ | `PLAN_REVIEW` |
-| ✓ | ✓ | ✗ | `BUILD_READY` |
+| ✓ | ✓ | ✗ | `READY_TO_BE_BUILT` |
 
 For `has_comments`: invoke `/product-flow:pr-comments pending` and `/product-flow:pr-comments read-answers` in parallel.
 - If `pending` returns non-empty UNANSWERED comments → `has_comments = true`.
@@ -182,25 +221,20 @@ Starting...
 Invoke `/product-flow:consolidate-plan`.
 Wait for it to finish. If ERROR: propagate and stop.
 
-Then continue automatically to `BUILD_READY`.
+Then continue automatically to `READY_TO_BE_BUILT`.
 
-#### `BUILD_READY`
+#### `READY_TO_BE_BUILT`
 
 Before showing the plan, run the pre-build comment review:
 
-**1. Check for unanswered comments:**
+**1. Resolve unanswered comments:**
 
-Invoke `/product-flow:pr-comments pending`. If any UNANSWERED comments exist:
+Invoke `/product-flow:pr-comments pending`. For each UNANSWERED comment:
 
-```
-🚫 There are unanswered comments on the PR that must be resolved before building.
+- `type: technical`: attempt autonomous resolution using project context and industry standards. Invoke `/product-flow:pr-comments write` with `status: ANSWERED` and mark resolved via `/product-flow:pr-comments resolve`.
+- `type: product`: use **AskUserQuestion** to ask the PM in a single call (one entry per comment). After receiving the PM's answers, post a PR comment via `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`.
 
-[list each unanswered comment with its question number and type]
-
-Reply on the PR with `Question <N>. Answer: [text]`, then run /product-flow:continue again.
-```
-
-**STOP.**
+Only after all comments are resolved, continue.
 
 **2. Check for unprocessed user answers:**
 
