@@ -74,6 +74,15 @@ Invoke `/product-flow:speckit.tasks`, applying the following technical decision 
 **Wait for `speckit.tasks` to finish completely before continuing.**
 If it produces an ERROR: propagate and stop.
 
+After `speckit.tasks` completes, verify that `tasks.md` was actually written to disk:
+
+```bash
+BRANCH=$(git branch --show-current)
+ls "specs/$BRANCH/tasks.md"
+```
+
+If the file does not exist: ERROR "tasks.md was not created by speckit.tasks. Re-run /product-flow:build to try again." **STOP.**
+
 ### 4. Record technical decisions in the PR
 
 For each technical decision made, invoke `/product-flow:pr-comments write`
@@ -82,18 +91,23 @@ Skip if no technical decisions were made.
 
 ### 5. Commit the tasks
 
-Write to `specs/<branch>/status.json` before committing:
+Commit first, then update `status.json` only if the commit succeeds:
+
+```bash
+git add specs/
+git commit -m "docs: add tasks.md"
+git push origin HEAD
+```
+
+If the commit and push succeed, write `tasks_generated` to `specs/<branch>/status.json`:
 
 ```bash
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
 echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"tasks_generated": $ts}' > "$STATUS_FILE"
-```
-
-```bash
-git add specs/
-git commit -m "docs: add tasks.md"
+git add "$STATUS_FILE"
+git commit -m "chore: mark tasks_generated in status"
 git push origin HEAD
 ```
 

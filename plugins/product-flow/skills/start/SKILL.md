@@ -62,6 +62,14 @@ Set:
 
 #### 2c. Create the branch
 
+First verify the setup scripts exist:
+
+```bash
+ls .specify/scripts/bash/ 2>/dev/null || echo "NOT_FOUND"
+```
+
+If the output is `NOT_FOUND`: ERROR "`.specify/scripts/bash/` not found. This project must be initialized before running this skill. Ensure `.specify/` is set up in the repo root." **STOP.**
+
 ```bash
 .specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" --number <N> --short-name "<short-name>"
 ```
