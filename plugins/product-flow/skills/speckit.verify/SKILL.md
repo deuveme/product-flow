@@ -23,19 +23,23 @@ explicitly asks.
 
 ### 1. Setup
 
-Run `.specify/scripts/bash/check-prerequisites.sh --json --paths-only` from
-repo root and parse FEATURE_DIR. All paths must be absolute. For single quotes
-in args like "I'm Groot", use escape syntax: e.g `'I'\''m Groot'`.
+Resolve feature paths:
 
-If the script fails or no active feature branch is detected:
-- Scan `specs/*/` to list available features.
-- Ask the user which one to verify before proceeding.
+```bash
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+CURRENT_BRANCH="${SPECIFY_FEATURE:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
+```
+
+If `CURRENT_BRANCH` does not match `^[0-9]{3}-`:
+- Scan `specs/*/` to list available feature directories.
+- Ask the user which feature to verify before proceeding.
 
 Derive absolute paths:
-- `SPEC`   = `FEATURE_DIR/spec.md`
-- `PLAN`   = `FEATURE_DIR/plan.md`
-- `TASKS`  = `FEATURE_DIR/tasks.md`
-- `CONST`  = `.specify/memory/constitution.md`
+- `FEATURE_DIR` = `$REPO_ROOT/specs/$CURRENT_BRANCH`
+- `SPEC`        = `$FEATURE_DIR/spec.md`
+- `PLAN`        = `$FEATURE_DIR/plan.md`
+- `TASKS`       = `$FEATURE_DIR/tasks.md`
+- `CONST`       = `$REPO_ROOT/.specify/memory/constitution.md`
 
 Abort with a clear message if any required file is missing, instructing the
 user which prerequisite command to run.

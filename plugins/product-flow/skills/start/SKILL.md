@@ -62,23 +62,17 @@ Set:
 
 #### 2c. Create the branch
 
-First verify the setup scripts exist:
-
 ```bash
-ls .specify/scripts/bash/ 2>/dev/null || echo "NOT_FOUND"
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+git checkout -b "$BRANCH_NAME" || {
+  echo "ERROR: Failed to create branch $BRANCH_NAME"; exit 1
+}
+FEATURE_DIR="$REPO_ROOT/specs/$BRANCH_NAME"
+mkdir -p "$FEATURE_DIR"
+SPEC_FILE="$FEATURE_DIR/spec.md"
 ```
 
-If the output is `NOT_FOUND`: ERROR "`.specify/scripts/bash/` not found. This project must be initialized before running this skill. Ensure `.specify/` is set up in the repo root." **STOP.**
-
-```bash
-.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" --number <N> --short-name "<short-name>"
-```
-
-The script output (JSON) is the **authoritative source** for `BRANCH_NAME` and `SPEC_FILE`. Always read these values from the JSON output and update `BRANCH_NAME` and `SPEC_PATH` accordingly.
-
-**Validate the JSON before proceeding**: if the script exits with a non-zero code, or its output is empty, or it cannot be parsed with `jq`, or the parsed result is missing `BRANCH_NAME` or `SPEC_FILE` — ERROR "create-new-feature.sh failed or returned invalid output. Check the script and try again." and stop.
-
-> **Invariant**: `BRANCH_NAME` and the spec folder name (`specs/$BRANCH_NAME/`) must always be identical. Never create the PR (step 2e) until `BRANCH_NAME` is confirmed from the script output.
+> **Invariant**: `BRANCH_NAME` and the spec folder name (`specs/$BRANCH_NAME/`) must always be identical. `BRANCH_NAME` is confirmed from steps 2a–2b above.
 
 Derive the human-readable PR title from `BRANCH_NAME`:
 ```

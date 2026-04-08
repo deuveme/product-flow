@@ -36,9 +36,27 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Execution Steps
 
-1. **Setup**: Run `.specify/scripts/bash/check-prerequisites.sh --json` from repo root and parse JSON for FEATURE_DIR and AVAILABLE_DOCS list.
-   - All file paths must be absolute.
-   - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+1. **Setup**: Resolve feature paths and validate prerequisites:
+
+   ```bash
+   REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+   CURRENT_BRANCH="${SPECIFY_FEATURE:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
+   ```
+
+   If `CURRENT_BRANCH` does not match `^[0-9]{3}-`: ERROR "Not on a feature branch. Run /product-flow:start first." and stop.
+
+   Derive paths (all absolute):
+   - `FEATURE_DIR` = `$REPO_ROOT/specs/$CURRENT_BRANCH`
+
+   Validate:
+   - If `FEATURE_DIR` does not exist: ERROR "Feature directory not found. Run /product-flow:speckit.specify first." and stop.
+   - If `$FEATURE_DIR/plan.md` does not exist: ERROR "plan.md not found. Run /product-flow:plan first." and stop.
+
+   Build `AVAILABLE_DOCS` list (optional files present in `FEATURE_DIR`):
+   - `research.md` if it exists
+   - `data-model.md` if it exists
+   - `contracts/` if the directory exists and is non-empty
+   - `quickstart.md` if it exists
 
 2. **Clarify intent (dynamic)**: Generate contextual clarifying questions about checklist scope. They MUST:
    - Be generated from the user's phrasing + extracted signals from spec/plan/tasks
@@ -215,7 +233,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - ✅ "Are [edge cases/scenarios] addressed in requirements?"
    - ✅ "Does the spec define [missing aspect]?"
 
-6. **Structure Reference**: Generate the checklist following the canonical template in `.specify/templates/checklist-template.md` for title, meta section, category headings, and ID formatting. If template is unavailable, use: H1 title, purpose/created meta lines, `##` category sections containing `- [ ] CHK### <requirement item>` lines with globally incrementing IDs starting at CHK001.
+6. **Structure Reference**: Generate the checklist following the canonical template in `$REPO_ROOT/.specify/templates/checklist-template.md` for title, meta section, category headings, and ID formatting. If template is unavailable, use: H1 title, purpose/created meta lines, `##` category sections containing `- [ ] CHK### <requirement item>` lines with globally incrementing IDs starting at CHK001.
 
 7. **Report**: Output full path to checklist file, item count, and summarize whether the run created a new file or appended to an existing one. Summarize:
    - Focus areas selected

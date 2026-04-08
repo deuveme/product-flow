@@ -28,17 +28,34 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Outline
 
-1. **Setup**: First verify the setup scripts exist:
+1. **Setup**: Resolve feature paths:
 
    ```bash
-   ls .specify/scripts/bash/ 2>/dev/null || echo "NOT_FOUND"
+   REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+   CURRENT_BRANCH="${SPECIFY_FEATURE:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
    ```
 
-   If the output is `NOT_FOUND`: ERROR "`.specify/scripts/bash/` not found. This project must be initialized before running this skill. Ensure `.specify/` is set up in the repo root." **STOP.**
+   If `CURRENT_BRANCH` does not match `^[0-9]{3}-`: ERROR "Not on a feature branch. Run /product-flow:start first." **STOP.**
 
-   Run `.specify/scripts/bash/setup-plan.sh --json` from repo root and parse JSON for FEATURE_SPEC, IMPL_PLAN, SPECS_DIR, BRANCH. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+   Derive paths:
+   - `FEATURE_DIR` = `$REPO_ROOT/specs/$CURRENT_BRANCH`
+   - `FEATURE_SPEC` = `$FEATURE_DIR/spec.md`
+   - `IMPL_PLAN`   = `$FEATURE_DIR/plan.md`
+   - `SPECS_DIR`   = `$FEATURE_DIR`
+   - `BRANCH`      = `$CURRENT_BRANCH`
 
-   If the script exits with a non-zero code or returns invalid/empty JSON: ERROR "setup-plan.sh failed. Check the script and try again." **STOP.**
+   Create the feature directory if it does not exist:
+   ```bash
+   mkdir -p "$FEATURE_DIR"
+   ```
+
+   Copy the plan template into `IMPL_PLAN` if a template exists and `IMPL_PLAN` does not yet exist:
+   ```bash
+   PLAN_TEMPLATE="$REPO_ROOT/.specify/templates/plan-template.md"
+   [ -f "$REPO_ROOT/.specify/templates/overrides/plan-template.md" ] && \
+     PLAN_TEMPLATE="$REPO_ROOT/.specify/templates/overrides/plan-template.md"
+   [ ! -f "$IMPL_PLAN" ] && { [ -f "$PLAN_TEMPLATE" ] && cp "$PLAN_TEMPLATE" "$IMPL_PLAN" || touch "$IMPL_PLAN"; }
+   ```
 
 2. **Load context**: Read FEATURE_SPEC and `.specify/memory/constitution.md`. Load IMPL_PLAN template (already copied).
 
@@ -129,11 +146,16 @@ If any are found, set `REDESIGN_MODE = true` and apply these rules for the rest 
    - Skip if project is purely internal (build scripts, one-off tools, etc.)
 
 3. **Agent context update**:
-   - Run `.specify/scripts/bash/update-agent-context.sh claude`
-   - These scripts detect which AI agent is in use
-   - Update the appropriate agent-specific context file
-   - Add only new technology from current plan
-   - Preserve manual additions between markers
+   - Update `CLAUDE.md` at repo root with the tech stack from `plan.md`:
+     1. Read `plan.md` and extract: Language/Version, Primary Dependencies, Storage, Project Type.
+     2. If `CLAUDE.md` does not exist:
+        - Read `.specify/templates/agent-file-template.md` (if present) and substitute placeholders: `[PROJECT NAME]` → basename of repo root, `[DATE]` → today's date, `[EXTRACTED FROM ALL PLAN.MD FILES]` → `- <lang> + <framework> (<branch>)`.
+        - Write the result to `CLAUDE.md`. If the template does not exist, skip silently.
+     3. If `CLAUDE.md` exists:
+        - Under `## Active Technologies`: append `- <lang> + <framework> (<branch>)` if not already present.
+        - Under `## Recent Changes`: prepend `- <branch>: Added <lang> + <framework>`, keeping only the 3 most recent entries.
+        - Update the `Last updated:` date.
+        - Write back to `CLAUDE.md`.
 
 **Output**: data-model.md, /contracts/*, quickstart.md, agent-specific file
 

@@ -69,22 +69,25 @@ Given that feature description, do this:
       - Use N+1 for the new branch number, zero-padded to 3 digits: `printf "%03d" $((N+1))`
       - If no existing branches/directories found, use `001`
 
-   d. Run the script `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS"` with the calculated number and short-name:
-      - Pass `--number NNN` (zero-padded, e.g. `005`) and `--short-name "your-short-name"` along with the feature description
-      - Example: `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" --number 005 --short-name "user-auth"`
-      - If the script exits with a non-zero code, output is empty, or the output cannot be parsed as valid JSON with `jq`, stop immediately with: ERROR "create-new-feature.sh failed or returned invalid output: <error details>. Check the script and try again."
-      - Validate the parsed JSON contains both `BRANCH_NAME` and `SPEC_FILE` fields before proceeding.
+   d. Create the branch and feature directory:
+
+      ```bash
+      REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+      git checkout -b "$BRANCH_NAME" || {
+        echo "ERROR: Failed to create branch $BRANCH_NAME"; exit 1
+      }
+      FEATURE_DIR="$REPO_ROOT/specs/$BRANCH_NAME"
+      mkdir -p "$FEATURE_DIR"
+      SPEC_FILE="$FEATURE_DIR/spec.md"
+      ```
 
    **IMPORTANT**:
    - Check all three sources (remote branches, local branches, specs directories) to find the highest number
    - Only match branches/directories with the exact short-name pattern
    - Branch names always use a zero-padded 3-digit number: `001-user-auth`, `042-fix-payments`
-   - You must only ever run this script once per feature
-   - The JSON is provided in the terminal as output - always refer to it to get the actual content you're looking for
-   - The JSON output will contain BRANCH_NAME and SPEC_FILE paths
-   - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot")
+   - You must only ever create the branch once per feature
 
-3. Load `.specify/templates/spec-template.md` to understand required sections.
+3. Load the spec template to understand required sections. Read `$REPO_ROOT/.specify/templates/spec-template.md` if it exists. If it does not exist, proceed without a template — infer the standard section structure from the Quick Guidelines below.
 
 3.5. **Detect redesign intent**:
 

@@ -33,17 +33,30 @@ as VERIFIED) is a catastrophic failure of this tool. **When in doubt, flag.**
 
 ### 1. Setup
 
-Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks`
-from repo root and parse FEATURE_DIR. All paths must be absolute. For single
-quotes in args like "I'm Groot", use escape syntax: e.g `'I'\''m Groot'`.
+Resolve feature paths and validate prerequisites:
 
-Verify that `FEATURE_DIR/spec.md`, `FEATURE_DIR/plan.md`, and
-`FEATURE_DIR/tasks.md` all exist — if any is missing, stop with:
+```bash
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+CURRENT_BRANCH="${SPECIFY_FEATURE:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
+```
+
+If `CURRENT_BRANCH` does not match `^[0-9]{3}-`: ERROR "Not on a feature branch. Run /product-flow:start first." and stop.
+
+Derive `FEATURE_DIR` = `$REPO_ROOT/specs/$CURRENT_BRANCH`.
+
+Verify that `FEATURE_DIR/spec.md`, `FEATURE_DIR/plan.md`, and `FEATURE_DIR/tasks.md` all exist — if any is missing, stop with:
 
 ```
 ERROR: Missing prerequisite: {file} not found.
 Run the appropriate prerequisite command first.
 ```
+
+Build `AVAILABLE_DOCS` list:
+- `research.md` if it exists
+- `data-model.md` if it exists
+- `contracts/` if the directory exists and is non-empty
+- `quickstart.md` if it exists
+- `tasks.md` (always included when it exists)
 
 ### 2. Task Parsing
 

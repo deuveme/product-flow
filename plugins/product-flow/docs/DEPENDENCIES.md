@@ -113,7 +113,7 @@ pr-comments
 | `checklist` | `spec.md` exists in FEATURE_DIR |
 | `consolidate-spec` | `- [x] Spec created` marked; pending comments exist |
 | `consolidate-plan` | `- [x] Plan generated` marked; pending comments exist |
-| `speckit.specify` | `.specify/scripts/bash/create-new-feature.sh` executable |
+| `speckit.specify` | On a feature branch, or on main with clean working tree |
 | `speckit.plan` | `spec.md` exists in FEATURE_DIR |
 | `speckit.tasks` | `plan.md` and `spec.md` exist in FEATURE_DIR |
 | `speckit.implement.withTDD` | `tasks.md`, `plan.md` exist in FEATURE_DIR |

@@ -88,7 +88,8 @@ Close the terminal and reopen Claude Code.
 - `gh` CLI installed and authenticated
 - `jq` installed
 - Repo access with push permissions
-- [SpecKit](https://github.com/github/spec-kit) installed in the project (required by `/product-flow:start` for spec templates and branch creation scripts)
+- `.specify/templates/` in the project (optional — provides spec, plan and tasks templates; if absent, skills use built-in defaults)
+- `.specify/memory/constitution.md` in the project (optional — project-specific architecture principles read by verification skills)
 - [GitHub MCP server](https://github.com/github/github-mcp-server) configured (required by `/product-flow:build` to interact with GitHub)
 
 ---

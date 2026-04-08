@@ -173,19 +173,23 @@ Run steps 4a through 4g in order. Do not skip any.
   Example: `004-notifications-engine` → `004: Notifications engine`
 - Set NEW_SPEC_PATH = `specs/$NEW_BRANCH/spec.md`
 
-#### 4b. Create the new branch via the standard script
+#### 4b. Create the new branch
 
-Switch to main, pull, then use the authoritative branch-creation script:
+Switch to main, pull, then create the branch and feature directory directly:
 
 ```bash
 git checkout main
 git pull
-.specify/scripts/bash/create-new-feature.sh --json "<one-line goal of the extracted feature>" --number <BRANCH_NUMBER> --short-name "<SHORT_NAME>"
+git checkout -b "$NEW_BRANCH" || {
+  echo "ERROR: Failed to create branch $NEW_BRANCH"; exit 1
+}
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+NEW_FEATURE_DIR="$REPO_ROOT/specs/$NEW_BRANCH"
+mkdir -p "$NEW_FEATURE_DIR"
+NEW_SPEC_PATH="$NEW_FEATURE_DIR/spec.md"
 ```
 
-Use the Feature B goal from the split proposal (e.g. `"Add notification engine for order status changes"`) as the feature description argument.
-
-Parse the JSON output and update `NEW_BRANCH` and `NEW_SPEC_PATH` from it — the script output is the authoritative source. The script creates the branch, checks it out, and initializes the spec directory.
+`NEW_BRANCH` and `NEW_SPEC_PATH` are now confirmed from the steps above.
 
 #### 4c. Write the extracted spec on the new branch
 

@@ -29,12 +29,22 @@ Note: This clarification workflow is expected to run (and be completed) BEFORE i
 
 Execution steps:
 
-1. Run `.specify/scripts/bash/check-prerequisites.sh --json --paths-only` from repo root **once** (combined `--json --paths-only` mode / `-Json -PathsOnly`). Parse minimal JSON payload fields:
-   - `FEATURE_DIR`
-   - `FEATURE_SPEC`
-   - (Optionally capture `IMPL_PLAN`, `TASKS` for future chained flows.)
-   - If JSON parsing fails, abort and instruct user to re-run `/product-flow:speckit.specify` or verify feature branch environment.
-   - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+1. **Setup**: Resolve feature paths:
+
+   ```bash
+   REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+   CURRENT_BRANCH="${SPECIFY_FEATURE:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
+   ```
+
+   If `CURRENT_BRANCH` does not match `^[0-9]{3}-`: ERROR "Not on a feature branch. Run /product-flow:start first." and stop.
+
+   Derive paths:
+   - `FEATURE_DIR`  = `$REPO_ROOT/specs/$CURRENT_BRANCH`
+   - `FEATURE_SPEC` = `$FEATURE_DIR/spec.md`
+   - `IMPL_PLAN`    = `$FEATURE_DIR/plan.md`
+   - `TASKS`        = `$FEATURE_DIR/tasks.md`
+
+   If `FEATURE_SPEC` does not exist: ERROR "spec.md not found. Run /product-flow:speckit.specify first." and stop.
 
 1b. **Terminology validation** — runs before the main scan.
 

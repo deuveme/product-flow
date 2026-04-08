@@ -16,7 +16,27 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Outline
 
-1. Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+1. **Setup**: Resolve feature paths and validate prerequisites:
+
+   ```bash
+   REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+   CURRENT_BRANCH="${SPECIFY_FEATURE:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
+   ```
+
+   If `CURRENT_BRANCH` does not match `^[0-9]{3}-`: ERROR "Not on a feature branch. Run /product-flow:start first." and stop.
+
+   Derive `FEATURE_DIR` = `$REPO_ROOT/specs/$CURRENT_BRANCH`.
+
+   Validate:
+   - If `$FEATURE_DIR/plan.md` does not exist: ERROR "plan.md not found. Run /product-flow:plan first." and stop.
+   - If `$FEATURE_DIR/tasks.md` does not exist: ERROR "tasks.md not found. Run /product-flow:build first." and stop.
+
+   Build `AVAILABLE_DOCS` list (optional files present in `FEATURE_DIR`):
+   - `research.md` if it exists
+   - `data-model.md` if it exists
+   - `contracts/` if the directory exists and is non-empty
+   - `quickstart.md` if it exists
+   - `tasks.md` (always included)
 
 2. **Check checklists status** (if FEATURE_DIR/checklists/ exists):
    - Scan all checklist files in the checklists/ directory

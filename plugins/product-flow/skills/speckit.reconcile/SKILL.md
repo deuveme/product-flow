@@ -38,14 +38,20 @@ FEATURE_DIR.
 
 ### 0. Setup and Context Loading
 
-Run `.specify/scripts/bash/check-prerequisites.sh --json --paths-only --include-tasks`
-from repo root and parse FEATURE_DIR. All paths must be absolute. For single
-quotes in args like "I'm Groot", use escape syntax: e.g `'I'\''m Groot'`.
+Resolve feature paths:
+
+```bash
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+CURRENT_BRANCH="${SPECIFY_FEATURE:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
+```
+
+If `CURRENT_BRANCH` does not match `^[0-9]{3}-`: ERROR "Not on a feature branch. Run /product-flow:start first." and stop.
 
 Derive absolute paths:
-- `FEATURE_SPEC` = `FEATURE_DIR/spec.md`
-- `IMPL_PLAN`    = `FEATURE_DIR/plan.md`
-- `TASKS_FILE`   = `FEATURE_DIR/tasks.md`
+- `FEATURE_DIR`  = `$REPO_ROOT/specs/$CURRENT_BRANCH`
+- `FEATURE_SPEC` = `$FEATURE_DIR/spec.md`
+- `IMPL_PLAN`    = `$FEATURE_DIR/plan.md`
+- `TASKS_FILE`   = `$FEATURE_DIR/tasks.md`
 
 Validate that `spec.md` and `plan.md` exist. If either is missing, stop with:
 > ⚠️ Missing required files in `FEATURE_DIR`. Expected: spec.md, plan.md.
@@ -56,7 +62,7 @@ before appending new tasks.
 
 Read `FEATURE_SPEC`, `IMPL_PLAN`, and `TASKS_FILE`.
 
-If `.specify/memory/constitution.md` exists, read it and extract MUST-level
+If `$REPO_ROOT/.specify/memory/constitution.md` exists, read it and extract MUST-level
 constraints and architecture standards. Any reconciliation item that conflicts
 with a MUST principle is flagged as CRITICAL:
 ```
