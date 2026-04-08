@@ -126,7 +126,7 @@ If an inconsistency cannot be resolved without PM input, stop and surface it as 
 ### 5. Commit and push
 
 ```bash
-git add specs/<feature-dir>/plan.md specs/<feature-dir>/research.md specs/<feature-dir>/data-model.md specs/<feature-dir>/contracts/
+git add specs/<feature-dir>/
 git commit -m "plan: integrate team feedback"
 git push origin HEAD
 ```

@@ -72,6 +72,15 @@ gh pr view --json number,state,url,body
 - If the branch is `main` or `master`: ERROR "There is no active feature. Use /product-flow:start to start a new one."
 - If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
 
+### 1c. Load gathered context
+
+```bash
+BRANCH=$(git branch --show-current)
+cat "specs/$BRANCH/gathered-context.md" 2>/dev/null
+```
+
+If the file exists, load it silently as background context. It contains the full feature description, visual assets, external docs, and product clarifications collected at feature start. Use it to inform any decisions or clarifications that arise during this session — do not re-ask questions already answered there.
+
 ### 1b. Inbox
 
 Show: `📬 Checking for new activity...`

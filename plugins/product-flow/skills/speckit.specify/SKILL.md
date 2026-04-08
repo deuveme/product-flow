@@ -87,7 +87,19 @@ Given that feature description, do this:
    - Branch names always use a zero-padded 3-digit number: `001-user-auth`, `042-fix-payments`
    - You must only ever create the branch once per feature
 
-3. Load the spec template to understand required sections. Read `$REPO_ROOT/.specify/templates/spec-template.md` if it exists. If it does not exist, proceed without a template — infer the standard section structure from the Quick Guidelines below.
+3. **Load gathered context (if available)**:
+
+   ```bash
+   cat specs/$BRANCH_NAME/gathered-context.md 2>/dev/null
+   ```
+
+   If the file exists, load it as `GATHERED_CONTEXT` and apply these rules for the rest of this skill:
+   - Use `GATHERED_CONTEXT` full description, visual assets, external docs, and product clarifications as primary authoritative input.
+   - **Skip step 3.6b** (business terminology clarification) for any term already answered in `GATHERED_CONTEXT.product_clarifications`. Only ask about terms not covered there.
+   - **Skip step 3.7** (fill gaps and confirm understanding) entirely — the description and intent were already validated during information gathering.
+   - When writing the spec, treat `GATHERED_CONTEXT.visual_assets` and `GATHERED_CONTEXT.external_docs` as reference material alongside `collaborative-design.md`.
+
+3.5. Load the spec template to understand required sections. Read `$REPO_ROOT/.specify/templates/spec-template.md` if it exists. If it does not exist, proceed without a template — infer the standard section structure from the Quick Guidelines below.
 
 3.5. **Detect redesign intent**:
 

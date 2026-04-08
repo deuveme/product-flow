@@ -299,7 +299,7 @@ Edit `$FEATURE_DIR/spec.md`:
 #### 4f. Commit and push the trimmed spec
 
 ```bash
-git add specs/$BRANCH_NAME/spec.md
+git add specs/$BRANCH_NAME/
 git commit -m "feat: remove extracted scope ($NEW_BRANCH) from spec"
 git push
 ```
