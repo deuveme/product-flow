@@ -124,7 +124,9 @@ Rules:
 - Max 5 product questions total.
 - Max 3 unresolved `[NEEDS CLARIFICATION]` markers in output — beyond that,
   pick a reasonable default and note it in the Sync Impact Report.
-- If the gap report is unambiguous, skip this step entirely.
+- If the gap report is unambiguous: output the following message to the user and skip this step entirely.
+
+  > "I have no doubts about the gap report. Proceeding to reconcile directly."
 
 ### 3. Impact Map
 

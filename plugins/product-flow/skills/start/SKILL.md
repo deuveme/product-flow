@@ -80,7 +80,13 @@ For each item in the **technical ambiguities list**, resolve it autonomously usi
 
 These will be published as PR comments in step 7b.
 
-#### 2e. Consolidate gathered context
+#### 2e. Notify if no product ambiguities
+
+If the **product ambiguities list** from step 2d was empty (zero questions asked), output this message to the user:
+
+> "I have no doubts about the product requirements. I'll proceed directly to writing the spec."
+
+#### 2f. Consolidate gathered context
 
 Produce a single internal object `GATHERED_CONTEXT` containing:
 - `full_description`: expanded feature description after conversation

@@ -153,7 +153,9 @@ For each such term found that is **central to the feature** (drives logic, condi
    - `multiSelect`: false
 4. Wait for answers. Use them as authoritative definitions when writing the spec — do not reinterpret or override them.
 
-If no ambiguous terms are found: proceed without asking.
+If no ambiguous terms are found: output the following message to the user and proceed.
+
+> "I have no doubts about the business terminology. Proceeding to write the spec."
 
 3.7. **Fill gaps and confirm understanding before writing**:
 
@@ -286,7 +288,11 @@ Skip this step if `collaborative-design.md` was loaded in step 3.8 — in that c
              - Resolved: `type: technical`, `status: ANSWERED`, body with chosen answer and reasoning.
              - Unresolved: `type: technical`, `status: UNANSWERED`, body with possible options.
              - Do NOT include technical markers in the AskUserQuestion call.
-           - **Product** (business intent, functional scope, user flows, terminology, acceptance criteria): collect all of them and present via **AskUserQuestion** in a single call:
+           - **Product** (business intent, functional scope, user flows, terminology, acceptance criteria): if none exist, output the following message to the user and skip the AskUserQuestion call.
+
+             > "I have no product doubts about the spec. Resolving remaining markers autonomously."
+
+             Otherwise, collect all of them and present via **AskUserQuestion** in a single call:
              - `question`: the specific question from the marker, with brief context prepended if needed. Must end with "?"
              - `header`: short topic label max 12 chars (e.g. "Scope", "User roles", "Auth")
              - `options`: 2–4 suggested answers. Place the best-practice default **first** and append `" (Recommended)"` to its label. Each option's `description` = implications for the feature.

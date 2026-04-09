@@ -58,7 +58,11 @@ You **MUST** consider the user input before proceeding (if not empty).
    - `contracts/` if the directory exists and is non-empty
    - `quickstart.md` if it exists
 
-2. **Clarify intent (dynamic)**: Generate contextual clarifying questions about checklist scope. They MUST:
+2. **Clarify intent (dynamic)**: If `$ARGUMENTS` already makes all scope dimensions unambiguous, output the following message to the user and skip this step entirely.
+
+   > "I have no doubts about the checklist scope. Proceeding to generate it directly."
+
+   Otherwise, generate contextual clarifying questions about checklist scope. They MUST:
    - Be generated from the user's phrasing + extracted signals from spec/plan/tasks
    - Only ask about information that materially changes checklist content
    - Be skipped individually if already unambiguous in `$ARGUMENTS`
@@ -84,7 +88,6 @@ You **MUST** consider the user input before proceeding (if not empty).
      - `options`: 2–4 choices. Place the recommended option **first** with `" (Recommended)"`. Each option has a `description` explaining implications.
      - `multiSelect`: false
    - The tool adds "Other" automatically for free-form answers.
-   - Skip this step entirely if `$ARGUMENTS` already makes all scope dimensions unambiguous.
 
    After receiving answers, record each one as a PR comment using `/product-flow:pr-comments write`:
    - `type`: `product`

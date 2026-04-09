@@ -185,7 +185,9 @@ If no domain-specific terms are found, skip this step silently.
 
     **Step 4b — Product questions (single grouped call to PM):**
 
-    If there are no product questions: skip to step 5.
+    If there are no product questions: output the following message to the user and skip to step 5.
+
+    > "I have no product doubts about this spec. Proceeding with autonomous technical resolution."
 
     Otherwise, ask all product questions in a **single AskUserQuestion call**:
     - One entry per question:
