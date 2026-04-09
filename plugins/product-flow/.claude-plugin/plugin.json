@@ -1,10 +1,20 @@
 {
   "name": "product-flow",
-  "version": "1.9.7",
+  "version": "1.9.8",
   "description": "Product Flow - PM commands for spec-driven development workflow.",
   "author": { "name": "David Valero" },
   "license": "MIT",
   "hooks": {
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/permission-request.sh"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write|NotebookEdit|Bash",
