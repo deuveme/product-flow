@@ -45,10 +45,23 @@ Invoke `/product-flow:pr-comments mark-processed` with the question numbers of a
 
 Invoke `/product-flow:pr-comments new-comments`. If `NO_NEW_COMMENTS`: continue silently.
 
-For each new comment, classify and resolve:
+For each new comment, classify it first using these rules:
+
+- **Technical**: architecture, security, performance, data model, infrastructure, integration patterns.
+- **Product**: business intent, scope, user flow, acceptance criteria, terminology.
+- **Ambiguous type**: if the comment could be either — default to **product** and ask the PM. Never resolve autonomously when classification is uncertain.
+- **Incomprehensible**: if the comment has no discernible actionable intent (e.g. `"???"`, stray emoji, link without context, unrelated text) — do not apply any change. Invoke `/product-flow:pr-comments write` with `type: product`, `status: UNANSWERED`, body:
+  ```
+  **Unrecognised comment:** "[original comment text]"
+
+  ⚠️ This comment could not be interpreted. Please clarify what change (if any) you'd like.
+  ```
+  Skip to the next comment.
+
+Then act on the classified comment:
 
 - **Technical**: resolve autonomously using project context. Invoke `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED` (or `UNANSWERED` if unresolvable). Apply the decision to the relevant artifact.
-- **Product**: use **AskUserQuestion** (single call, one entry per comment). After receiving the PM's answers, apply changes to the relevant artifact. Invoke `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`.
+- **Product** (including ambiguous type): use **AskUserQuestion** (single call, one entry per comment). After receiving the PM's answers, apply changes to the relevant artifact. Invoke `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`.
 
 After processing all new comments, invoke `/product-flow:pr-comments mark-comments-processed` with the IDs of all processed comments.
 
@@ -172,18 +185,9 @@ Then run /product-flow:submit again.
 git push origin HEAD
 ```
 
-### 6. Take the PR out of draft (first time only)
-
-If the PR is in draft (`isDraft: true`):
-```bash
-gh pr ready
-```
-
-If it's already in review: do nothing, the push is sufficient.
-
 ### 7. Update PR status (first time only)
 
-If the PR was in draft:
+If `in_review` is not yet present in `specs/<branch>/status.json`:
 
 Write `in_review` to `specs/<branch>/status.json`:
 
@@ -207,6 +211,12 @@ To fix it, run in your terminal:
 Then run /product-flow:submit again.
 ```
 **STOP.**
+
+Also take the PR out of draft if it still is:
+
+```bash
+gh pr view --json isDraft --jq '.isDraft' | grep -q true && gh pr ready
+```
 
 Mark `- [x] In code review` and add row:
 ```

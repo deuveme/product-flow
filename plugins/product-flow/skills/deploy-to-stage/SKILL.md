@@ -137,16 +137,28 @@ Set `SQUASH_MSG = "<type>(<scope>): <description>"` and proceed.
 gh pr merge --squash --delete-branch --subject "$SQUASH_MSG"
 ```
 
-If it fails due to conflicts:
+If the command fails:
 
-```
-🚫 ERROR: There are conflicts when merging with main.
+- If the error output contains `already been merged` or the PR state is `MERGED`:
 
-No changes have been made.
-Resolve the conflicts manually before continuing.
-```
+  ```
+  ℹ️  This PR was already merged. Continuing to post-merge steps.
+  ```
 
-**STOP.**
+  Continue to step 7 — the merge already happened, ADRs and PR body may still need updating.
+
+- If the error output contains `conflict`:
+
+  ```
+  🚫 ERROR: There are conflicts when merging with main.
+
+  No changes have been made.
+  Resolve the conflicts manually before continuing.
+  ```
+
+  **STOP.**
+
+- Any other error: surface the raw error message and **STOP**.
 
 ### 7. Write ADR files (conditional)
 

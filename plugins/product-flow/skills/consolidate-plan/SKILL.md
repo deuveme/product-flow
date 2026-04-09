@@ -60,6 +60,16 @@ Wait for all PM answers before proceeding. Then for each answered product item, 
   **Change applied:** [what was updated in the plan, or "no change — decision recorded"]
   ```
 
+**Detect conflicting comments before acting:**
+
+Scan all collected comments for contradictions: two or more items that affect the same plan artifact or section with incompatible intent (e.g. "switch to event sourcing" vs "keep the current CRUD approach", or a product comment and a technical comment that imply opposite data model shapes).
+
+For each conflict found:
+- Do **not** apply either side autonomously.
+- Include it in the **AskUserQuestion** call as an additional entry, presenting both sides and asking the PM which direction takes precedence.
+
+If no conflicts are detected: continue silently.
+
 Group all comments (technical and product) by affected artifact:
 - `research.md` — architecture decisions, approach changes, technology choices, constraint updates
 - `data-model.md` — entity or relationship corrections

@@ -19,11 +19,12 @@ gh pr view --json number,state,url,body
 
 ### 2. Gate: tasks generated and technical corrections applied
 
-Read `specs/<branch>/status.json` and verify that `spec_created`, `plan_generated`, and `tasks_generated` are present:
+Read `specs/<branch>/status.json` and verify that `spec_created` and `plan_generated` are present. For `tasks_generated`, accept either the flag in status.json OR the existence of `specs/<branch>/tasks.md` on disk (handles the case where tasks.md was committed but the status flag was not yet written):
 
 ```bash
 BRANCH=$(git branch --show-current)
-cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.spec_created, .plan_generated, .tasks_generated' > /dev/null
+cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.spec_created, .plan_generated' > /dev/null
+TASKS_DONE=$(cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.tasks_generated' > /dev/null && echo "true" || ([ -f "specs/$BRANCH/tasks.md" ] && echo "true" || echo "false"))
 ```
 
 Invoke `/product-flow:pr-comments read-answers`.
@@ -43,7 +44,7 @@ After all answers are processed, show: `✅ <N> answer(s) applied.` (or `No new 
 
 After applying, invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers (e.g. `1 3`).
 
-If the tasks have not been generated:
+If `TASKS_DONE` is `false`:
 
 ```
 🚫 BLOCKED

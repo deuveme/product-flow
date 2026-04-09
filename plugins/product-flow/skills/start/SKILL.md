@@ -239,7 +239,15 @@ Save the returned PR URL as `PR_URL` and PR number as `PR_NUMBER`.
 
 ### 4. Design exploration (conditional)
 
-Assess the feature description using `GATHERED_CONTEXT.full_description`. Also check `GATHERED_CONTEXT.visual_assets` — if the user provided designs or Figma links, factor them into the assessment:
+First, check if design exploration was already completed in a previous run:
+
+```bash
+ls "specs/$BRANCH_NAME/collaborative-design.md" 2>/dev/null
+```
+
+If the file exists, load it as `collaborative-design.md` and skip the rest of this step — use its contents as context in step 5.
+
+Otherwise, assess the feature description using `GATHERED_CONTEXT.full_description`. Also check `GATHERED_CONTEXT.visual_assets` — if the user provided designs or Figma links, factor them into the assessment:
 
 - **Always run this step** if the description contains visual or UX redesign intent (keywords: "redesign", "rediseño", "new look", "new design", "visual overhaul", "UI revamp", "rework the UI/UX", "visual refresh", "new interface", "change the look", "new layout") — regardless of description length. Redesigns need visual scenario exploration even when described in detail.
 - **Skip this step** if the description is detailed and clear (clear actor, action, and expected outcome, typically 15+ words) and no redesign intent is detected.

@@ -107,23 +107,20 @@ Skip if no technical decisions were made.
 
 ### 5. Commit the tasks
 
-Commit first, then update `status.json` only if the commit succeeds:
-
-```bash
-git add specs/
-git commit -m "docs: add tasks.md"
-git push origin HEAD
-```
-
-If the commit and push succeed, write `tasks_generated` to `specs/<branch>/status.json`:
+Write `tasks_generated` to `specs/<branch>/status.json` before committing:
 
 ```bash
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
 echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"tasks_generated": $ts}' > "$STATUS_FILE"
-git add "$STATUS_FILE"
-git commit -m "chore: mark tasks_generated in status"
+```
+
+Then commit tasks and the updated status in a single commit:
+
+```bash
+git add specs/
+git commit -m "docs: add tasks.md"
 git push origin HEAD
 ```
 

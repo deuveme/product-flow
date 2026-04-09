@@ -45,10 +45,23 @@ Invoke `/product-flow:pr-comments mark-processed` with the question numbers of a
 
 Invoke `/product-flow:pr-comments new-comments`. If `NO_NEW_COMMENTS`: continue silently.
 
-For each new comment, classify and resolve:
+For each new comment, classify it first using these rules:
+
+- **Technical**: architecture, security, performance, data model, infrastructure, integration patterns.
+- **Product**: business intent, scope, user flow, acceptance criteria, terminology.
+- **Ambiguous type**: if the comment could be either — default to **product** and ask the PM. Never resolve autonomously when classification is uncertain.
+- **Incomprehensible**: if the comment has no discernible actionable intent (e.g. `"???"`, stray emoji, link without context, unrelated text) — do not apply any change. Invoke `/product-flow:pr-comments write` with `type: product`, `status: UNANSWERED`, body:
+  ```
+  **Unrecognised comment:** "[original comment text]"
+
+  ⚠️ This comment could not be interpreted. Please clarify what change (if any) you'd like.
+  ```
+  Skip to the next comment.
+
+Then act on the classified comment:
 
 - **Technical**: resolve autonomously using project context. Invoke `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED` (or `UNANSWERED` if unresolvable). Apply the decision to the relevant artifact.
-- **Product**: use **AskUserQuestion** (single call, one entry per comment). After receiving the PM's answers, apply changes to the relevant artifact. Invoke `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`.
+- **Product** (including ambiguous type): use **AskUserQuestion** (single call, one entry per comment). After receiving the PM's answers, apply changes to the relevant artifact. Invoke `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`.
 
 After processing all new comments, invoke `/product-flow:pr-comments mark-comments-processed` with the IDs of all processed comments.
 
@@ -135,8 +148,8 @@ BRANCH=$(git branch --show-current)
 cat "specs/$BRANCH/status.json" 2>/dev/null || echo "{}"
 ```
 
-- Tasks done? → `tasks_generated` is set in `status.json`
-- Checklist done? → `checklist_done` is set in `status.json`
+- Tasks done? → `tasks_generated` is set in `status.json` OR `specs/<feature-dir>/tasks.md` exists on disk
+- Checklist done? → `checklist_done` is set in `status.json` OR `specs/<feature-dir>/checklists/` exists with at least one file
 - Code written? → `code_written` is set in `status.json`
 - Code verified? → `code_verified` is set in `status.json`
 - Verify-tasks done? → `specs/<feature-dir>/verify-tasks-report.md` exists
@@ -256,7 +269,7 @@ If all steps (including verify-tasks) are already done, skip to the final report
 
 ### 4. Generate tasks
 
-Skip this step if `tasks_generated` is already set in `status.json`.
+Skip this step if `tasks_generated` is already set in `status.json` OR if `specs/<feature-dir>/tasks.md` already exists on disk.
 
 Otherwise, show:
 ```
@@ -275,7 +288,7 @@ Then show:
 
 ### 5. Validate requirements quality
 
-Skip this step if `specs/<feature-dir>/checklists/` already exists and contains at least one file other than `requirements.md`.
+Skip this step if `checklist_done` is set in `status.json` OR if `specs/<feature-dir>/checklists/` already exists and contains at least one file other than `requirements.md`.
 
 Otherwise, show:
 ```
@@ -314,7 +327,30 @@ For each critical issue, classify and resolve:
     **Change applied:** [what was updated, or "no change — decision recorded"]
     ```
 
-After all critical issues are resolved via the decision flow, show `✅ Step 2/3 — Requirements validated.` and continue to step 6.
+After all critical issues are resolved via the decision flow, write `checklist_done` to `specs/<branch>/status.json`:
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"checklist_done": $ts}' > "$STATUS_FILE"
+git add "$STATUS_FILE"
+git commit -m "chore: record checklist_done in status.json"
+git push origin HEAD
+```
+
+If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
+```
+🚫 Commit failed — GPG signing is blocking automatic commits.
+
+To fix it, run in your terminal:
+  git config commit.gpgsign false
+
+Then run /product-flow:build again.
+```
+**STOP.**
+
+Show `✅ Step 2/3 — Requirements validated.` and continue to step 6.
 
 The only case that warrants a **STOP** is if the PM explicitly answers "Other" with a response requiring follow-up before building. In that case, state clearly what is needed and stop.
 

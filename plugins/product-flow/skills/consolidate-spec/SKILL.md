@@ -43,9 +43,31 @@ For each new answer found, show:
   ⏳ Question <N> — <one-line summary of the question>
 ```
 
-After all are loaded, show: `✅ <N> answer(s) found — applying in step 4.` (or `No new answers found.` if none).
+After all are loaded, show: `✅ <N> answer(s) found — evaluating before applying.` (or `No new answers found.` if none).
 
-Record both the pending comments and the user responses internally — they will be used as context in step 4. For each question, only the last response counts.
+**Evaluate each answer for clarity before passing to step 4:**
+
+For each answer, assess whether it is actionable as-is:
+
+- **Clear**: pass directly to step 4.
+- **Ambiguous or incomplete**:
+  - If the original question was `type: technical`: note the ambiguity internally and pass to `speckit.clarify` with a flag to resolve it autonomously using project context.
+  - If the original question was `type: product`: use **AskUserQuestion** (one entry per ambiguous answer) to ask the PM for clarification before continuing. Replace the ambiguous answer with the PM's clarified response before passing to step 4.
+
+**Also handle incomprehensible freeform comments from `pending`:**
+
+For each UNANSWERED comment in `pending` that is a freeform user comment (not a bot question — i.e., its body does not contain `<!-- id:q`):
+
+- **Incomprehensible** (no discernible actionable intent: `"???"`, stray emoji, link without context): invoke `/product-flow:pr-comments write` with `type: product`, `status: UNANSWERED`, body:
+  ```
+  **Unrecognised comment:** "[original comment text]"
+
+  ⚠️ This comment could not be interpreted. Please clarify what change (if any) you'd like.
+  ```
+  Mark it as processed and skip.
+- **Ambiguous type** (could be product or technical): default to **product** and include it in the `AskUserQuestion` call below.
+
+Record all clarified responses together with the remaining pending comments internally — they will be used as context in step 4. For each question, only the last response counts.
 
 After applying in step 4, for each answer applied show:
 ```
@@ -53,6 +75,18 @@ After applying in step 4, for each answer applied show:
 ```
 
 Then invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers (e.g. `1 3`).
+
+### 3b. Detect conflicting comments
+
+Before delegating to `speckit.clarify`, scan all collected comments and answers for contradictions: two or more items that affect the same spec section or requirement with incompatible intent (e.g. "add OAuth login" vs "remove all auth from scope", or two answers to the same question pointing in opposite directions).
+
+For each conflict found:
+- Do **not** apply either side autonomously.
+- Use **AskUserQuestion** (one entry per conflict) to ask the PM which direction takes precedence. Frame the question with both sides clearly stated and a "Recommended" option if one side clearly aligns with the existing spec intent.
+
+Only after all conflicts are resolved, proceed to step 4 with the reconciled set of comments.
+
+If no conflicts are detected: continue silently.
 
 ### 4. Delegate to speckit.clarify
 
