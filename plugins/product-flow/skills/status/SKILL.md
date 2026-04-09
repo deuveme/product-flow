@@ -6,6 +6,74 @@ effort: low
 
 ## Execution
 
+### 0a. Check for plugin updates
+
+Check whether a newer version of product-flow is available on the remote.
+
+```bash
+PLUGIN_DIR="$HOME/.claude/plugins/marketplaces/product-flow"
+if [ -d "$PLUGIN_DIR/.git" ]; then
+  LOCAL_HASH=$(git -C "$PLUGIN_DIR" rev-parse HEAD 2>/dev/null)
+  LOCAL_VER=$(grep '"version"' "$PLUGIN_DIR/plugins/product-flow/.claude-plugin/plugin.json" 2>/dev/null | head -1 | sed 's/.*"version"[^"]*"\([^"]*\)".*/\1/')
+  git -C "$PLUGIN_DIR" fetch --quiet 2>/dev/null
+  REMOTE_HASH=$(git -C "$PLUGIN_DIR" rev-parse FETCH_HEAD 2>/dev/null)
+  REMOTE_VER=$(git -C "$PLUGIN_DIR" show FETCH_HEAD:plugins/product-flow/.claude-plugin/plugin.json 2>/dev/null | grep '"version"' | head -1 | sed 's/.*"version"[^"]*"\([^"]*\)".*/\1/')
+  echo "LOCAL_HASH=$LOCAL_HASH"
+  echo "REMOTE_HASH=$REMOTE_HASH"
+  echo "LOCAL_VER=$LOCAL_VER"
+  echo "REMOTE_VER=$REMOTE_VER"
+else
+  echo "PLUGIN_NOT_INSTALLED"
+fi
+```
+
+**Evaluate the result:**
+
+- If `PLUGIN_NOT_INSTALLED` or any command failed silently: skip this step and continue to step 0.
+- If `LOCAL_HASH` equals `REMOTE_HASH` (or `REMOTE_HASH` is empty due to no network): skip this step and continue to step 0.
+- If `LOCAL_HASH` differs from `REMOTE_HASH`:
+
+Show the user:
+```
+─────────────────────────────────────────
+  🆕 product-flow update available
+
+  Installed: v<LOCAL_VER>  →  Latest: v<REMOTE_VER>
+
+  Update now? (yes / no)
+```
+
+**If "no"**: continue to step 0.
+
+**If "yes"**: run the official plugin update command:
+
+```bash
+/plugin update product-flow@product-flow
+```
+
+After it completes, verify the version actually changed:
+
+```bash
+grep '"version"' "$HOME/.claude/plugins/marketplaces/product-flow/plugins/product-flow/.claude-plugin/plugin.json" 2>/dev/null | head -1 | sed 's/.*"version"[^"]*"\([^"]*\)".*/\1/'
+```
+
+- If the new version matches `REMOTE_VER`: show `✅ Updated to v<REMOTE_VER> — restart Claude Code for the changes to take effect.`
+- If the version is unchanged: the update silently failed. Before surfacing anything to the user, investigate:
+  1. Check network connectivity: `curl -sI https://github.com 2>&1 | head -1`
+  2. Check the git remote is reachable: `git -C "$HOME/.claude/plugins/marketplaces/product-flow" remote -v 2>&1`
+  3. Check if the local repo has uncommitted changes or conflicts blocking the pull: `git -C "$HOME/.claude/plugins/marketplaces/product-flow" status --short 2>&1`
+  4. If a fixable issue is found (e.g. uncommitted changes), resolve it (stash or reset) and retry `/plugin update product-flow@product-flow` once.
+  5. Only if the problem cannot be resolved automatically, show the user a clear diagnosis:
+     ```
+     ⚠️  Could not update product-flow. Diagnosis: <specific reason found>
+
+     To fix manually: <concrete command or action>
+     ```
+
+Then stop execution (do not continue to step 0 — the user should restart after the update).
+
+---
+
 ### 0. Verify dependencies
 
 Check that `gh` is installed:
