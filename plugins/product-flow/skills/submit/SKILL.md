@@ -218,10 +218,9 @@ Also take the PR out of draft if it still is:
 gh pr view --json isDraft --jq '.isDraft' | grep -q true && gh pr ready
 ```
 
-Mark `- [x] In code review` and add row:
-```
-| In code review | YYYY-MM-DD | PR ready for review |
-```
+Read the current PR body first (`gh pr view --json body -q '.body'`), then apply these changes — preserve all other sections intact:
+- Mark `- [x] In code review` in `## Status`
+- Add row to `## History`: `| In code review | YYYY-MM-DD | PR ready for review |`
 
 ```bash
 gh pr edit --body "<updated-body>"
@@ -258,6 +257,8 @@ If at least one decision passes the filter, insert a `### Proposed ADRs` subsect
 If the section already exists (re-running submit), replace it entirely with the updated content.
 
 If no decisions pass the filter, skip this step silently — do not add the section.
+
+Read the current PR body first (`gh pr view --json body -q '.body'`), then insert or replace the `### Proposed ADRs` subsection immediately after `<!-- /dev-checklist -->` — preserve all other sections intact.
 
 ```bash
 gh pr edit --body "<updated-body>"

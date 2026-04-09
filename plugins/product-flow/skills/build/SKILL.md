@@ -416,11 +416,10 @@ Then run /product-flow:build again.
 ```
 **STOP.**
 
-Mark `- [x] Code generated` in the PR body and add a History row:
-
-```
-| Code generated | YYYY-MM-DD | verify-tasks passed |
-```
+Read the current PR body first (`gh pr view --json body -q '.body'`), then apply these changes — preserve all other sections intact:
+- Mark `- [x] Code generated` in `## Status`
+- Add row to `## History`: `| Code generated | YYYY-MM-DD | verify-tasks passed |`
+- Replace the `- [ ] **Implementation** — pending` line inside `<!-- dev-checklist -->` with `- [x] **Implementation** — complete`
 
 ```bash
 gh pr edit --body "<updated-body>"

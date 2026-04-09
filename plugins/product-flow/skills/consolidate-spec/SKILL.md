@@ -166,7 +166,8 @@ Invoke `/product-flow:pr-comments resolve` passing the IDs of all bot comments t
 
 ### 8. Update PR history
 
-Add row to the table:
+Read the current PR body first (`gh pr view --json body -q '.body'`), then add only this row to the `## History` table — preserve all other sections intact:
+
 ```
 | Spec revised | YYYY-MM-DD | Feedback integrated via speckit.clarify |
 ```

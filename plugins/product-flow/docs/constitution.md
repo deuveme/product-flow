@@ -33,7 +33,7 @@ The agent must **stop and escalate** — never decide unilaterally — on:
 
 - Adding a new dependency or library
 - Changing the plugin manifest (`plugin.json`)
-- Modifying any hook (`security-guard.sh`, `workflow-guard.sh`)
+- Modifying any hook (`git-sync.sh`, `intent-router.sh`, `state-notifier.sh`, `permission-request.sh`, `security-guard.sh`, `workflow-guard.sh`)
 - Adding or removing skills from the plugin
 - Changing the command structure that affects the PM workflow
 - Any change that affects more than one skill/module simultaneously
@@ -164,7 +164,7 @@ Fields written by each skill:
 | `spec_created` | `/product-flow:start`, `speckit.split` |
 | `plan_generated` | `/product-flow:plan` |
 | `tasks_generated` | `/product-flow:tasks` |
-| `checklist_done` | `/product-flow:checklist` |
+| `checklist_done` | `/product-flow:checklist` (step 4, after artifact commit) and `/product-flow:build` (step 5, after resolving critical issues) |
 | `code_written` | `/product-flow:implement` |
 | `code_verified` | `/product-flow:build` (after verify-tasks) |
 | `in_review` | `/product-flow:submit` |

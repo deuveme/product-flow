@@ -153,7 +153,9 @@ Then run /product-flow:build again.
 ```
 **STOP.**
 
-Do **not** check `- [x] Code generated` in the PR body — that is set by `/product-flow:build` after verify-tasks passes. Add a history row only:
+Do **not** check `- [x] Code generated` in the PR body — that is set by `/product-flow:build` after verify-tasks passes.
+
+Read the current PR body first (`gh pr view --json body -q '.body'`), then add only this row to `## History` — preserve all other sections intact:
 
 ```
 | Code written | YYYY-MM-DD | speckit.implement.withTDD + praxis.test-desiderata completed |

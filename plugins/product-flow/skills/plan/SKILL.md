@@ -195,9 +195,13 @@ Add row:
 | Plan generated | YYYY-MM-DD | research.md + data-model.md |
 ```
 
-Update the checklist block: replace the `<!-- dev-checklist -->` ... `<!-- /dev-checklist -->` section with the Plan line filled in. Extract tech stack, main libraries, and architecture from `research.md`. List which artifacts were generated (research.md, data-model.md, contracts/ if present).
+Read the current PR body first (`gh pr view --json body -q '.body'`), then apply these changes to it:
+- Mark `- [x] Plan generated` in `## Status`
+- Add the history row to `## History`
+- Inside `<!-- dev-checklist -->` ... `<!-- /dev-checklist -->`: replace **only** the `- [ ] **Plan** — pending` line with the filled-in Plan line. Do not touch any other line in the block.
+- Preserve all other sections intact
 
-Example Plan line:
+Example replacement (only this line changes):
 ```
 - [x] **Plan** — TypeScript · PostgreSQL · Hexagonal architecture · research.md · data-model.md · contracts/
 ```

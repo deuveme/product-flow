@@ -116,15 +116,15 @@ pr-comments
 |-------|----------------------|
 | `start` | Clean working tree; on main/master |
 | `continue` | On a feature branch; PR exists |
-| `build` | PR exists; `- [x] Plan generated` marked; feature directory exists |
-| `submit` | On a feature branch; PR exists; `- [x] Code generated` marked |
-| `deploy-to-stage` | PR approved by team |
-| `plan` | `- [x] Spec created` marked; no pending UNANSWERED comments |
-| `tasks` | `plan.md` and `spec.md` exist in FEATURE_DIR |
-| `implement` | `- [x] Tasks generated` marked; no UNANSWERED comments |
+| `build` | PR exists; `plan_generated` in status.json; feature directory exists |
+| `submit` | On a feature branch; PR exists; `code_verified` in status.json |
+| `deploy-to-stage` | `in_review` in status.json; PR approved by team |
+| `plan` | `spec_created` in status.json; no pending UNANSWERED comments |
+| `tasks` | `spec_created` + `plan_generated` in status.json; `plan.md` and `spec.md` exist in FEATURE_DIR |
+| `implement` | `tasks_generated` in status.json OR `tasks.md` exists in FEATURE_DIR; no UNANSWERED comments |
 | `checklist` | `spec.md` exists in FEATURE_DIR |
-| `consolidate-spec` | `- [x] Spec created` marked; pending comments exist |
-| `consolidate-plan` | `- [x] Plan generated` marked; pending comments exist |
+| `consolidate-spec` | `spec_created` in status.json; pending comments exist |
+| `consolidate-plan` | `plan_generated` in status.json; pending comments exist |
 | `speckit.specify` | On a feature branch, or on main with clean working tree |
 | `speckit.plan` | `spec.md` exists in FEATURE_DIR |
 | `speckit.tasks` | `plan.md` and `spec.md` exist in FEATURE_DIR |

@@ -144,10 +144,17 @@ Add row:
 | Tasks generated | YYYY-MM-DD | tasks.md created |
 ```
 
-Update the checklist block: replace the `<!-- dev-checklist -->` ... `<!-- /dev-checklist -->` section with the Tasks line filled in, followed by the full task table grouped by phase. Each task starts with status `TO DO`.
+Read the current PR body first (`gh pr view --json body -q '.body'`), then apply these changes to it:
+- Mark `- [x] Tasks generated` in `## Status`
+- Add the history row to `## History`
+- Inside `<!-- dev-checklist -->` ... `<!-- /dev-checklist -->`: replace **only** the `- [ ] **Tasks** — pending` line with the filled-in Tasks line followed by the full task table grouped by phase. Do not touch the Spec or Plan lines already in the block.
+- Preserve all other sections intact
 
-Example:
+Example (only the Tasks line and what follows it changes — Spec and Plan lines above remain as-is):
 ```
+<!-- dev-checklist -->
+- [x] **Spec** — <already filled in, do not modify>
+- [x] **Plan** — <already filled in, do not modify>
 - [x] **Tasks** — <N> tasks · <M> phases
 
   **Phase 1 — Setup**
@@ -159,11 +166,8 @@ Example:
   | Task | Description | Status |
   |------|-------------|--------|
   | T002 | <description> | TO DO |
-
-  **Phase 3 — <US label>: <story name>**
-  | Task | Description | Status |
-  |------|-------------|--------|
-  | T003 | <description> | TO DO |
+- [ ] **Implementation** — pending
+<!-- /dev-checklist -->
 ```
 
 ```bash

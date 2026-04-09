@@ -193,11 +193,9 @@ If the user chose "No, skip": skip this step silently.
 
 Use `$PR_NUMBER` from step 1 (the branch may no longer exist after the merge).
 
-Mark `- [x] Published` in the PR body and add a history row:
-
-```
-| Published | YYYY-MM-DD | Merged to main |
-```
+Read the current PR body first (`gh pr view --json body -q '.body'`), then apply these changes — preserve all other sections intact:
+- Mark `- [x] Published` in `## Status`
+- Add row to `## History`: `| Published | YYYY-MM-DD | Merged to main |`
 
 ```bash
 gh pr edit $PR_NUMBER --body "<updated-body>"

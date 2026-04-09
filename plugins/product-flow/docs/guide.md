@@ -22,6 +22,10 @@ plugins/product-flow/
 ├── .claude-plugin/
 │   └── plugin.json           ← manifest: 7 public PM commands
 ├── hooks/
+│   ├── git-sync.sh           ← syncs repo with origin before any public skill (UserPromptSubmit)
+│   ├── intent-router.sh      ← maps short ambiguous phrases to the correct skill via status.json (UserPromptSubmit)
+│   ├── state-notifier.sh     ← shows PM-friendly message on every status.json state transition (PostToolUse on Bash)
+│   ├── permission-request.sh ← auto-approves safe read/write operations (PermissionRequest)
 │   ├── security-guard.sh     ← blocks writes/deletes outside the repository (PreToolUse)
 │   └── workflow-guard.sh     ← enforces product-flow git discipline: branch naming, no direct commits/pushes/merges to main, no PRs outside NNN-kebab-name branches, squash-only merges (PreToolUse)
 └── skills/
@@ -180,6 +184,8 @@ Every public command (`continue`, `build`, `submit`) runs an **Inbox check** at 
 |---|---|---|
 | **Product** | Business intent, priorities, user flows, terminology, functional scope | AskUserQuestion → PM answer recorded as PR comment (ANSWERED) |
 | **Technical** | Architecture, security, integrations, data model, infrastructure, implementation patterns | Resolved autonomously → PR comment (ANSWERED or UNANSWERED) |
+| **Ambiguous** | Could be either product or technical | Defaults to **product** — AskUserQuestion. Never resolved autonomously when classification is uncertain. |
+| **Incomprehensible** | No discernible actionable intent (e.g. `"???"`, stray emoji, link without context) | No change applied. Bot comment posted as UNANSWERED asking for clarification. |
 
 After processing, a 👍 reaction is added to each handled comment on GitHub, and all IDs are recorded in `status.json` to prevent re-processing.
 
@@ -225,6 +231,28 @@ Multiple responses for the same question are allowed — the last one wins. A si
 
 On the next run of any public command (`/product-flow:continue`, `/product-flow:build`, or `/product-flow:submit`), Claude picks up those answers and continues.
 
+### PR body editing convention
+
+**Every skill that calls `gh pr edit --body` MUST follow this pattern — no exceptions:**
+
+1. Read the current PR body first:
+   ```bash
+   gh pr view --json body -q '.body'
+   ```
+2. Apply only the intended change (update a checkbox, add a history row, replace a marked block, insert a section).
+3. Pass the full updated body — with all other sections intact — to `gh pr edit --body`.
+
+**Never reconstruct the body from scratch** unless this is `start` step 3e (initial creation) or `start` step 6 (first edit, which always runs immediately after step 3e with no other edits possible yet).
+
+**Critical sections that must always be preserved:**
+- `## Feature` — spec path
+- `## Status` — all checkboxes
+- `## History` — full table
+- `## Notes` — free text area
+- `## For Developers` — entire section including `<!-- dev-checklist -->`, `<!-- /dev-checklist -->`, and any `### Proposed ADRs` subsection
+
+**Marked block replacements** (e.g. the dev-checklist): use the markers as boundaries. Each skill updates **only its own line** within the block — never rewrite the entire block. Lines from previous steps (already `[x]`) must remain untouched.
+
 ### Comment lifecycle (pr-comments skill)
 
 Bot comments are tracked via invisible HTML markers on the first line:
@@ -263,19 +291,21 @@ Bot comments are tracked via invisible HTML markers on the first line:
 
 **`consolidate-spec` skill:**
 1. Reads pending PR comments and user answers via `pr-comments pending` + `pr-comments read-answers`
-2. Classifies each comment: product (AskUserQuestion → PM answers) / technical (resolves autonomously)
-3. Delegates to `speckit.clarify` with the feedback as context → updates `spec.md`
-4. Posts each decision as a PR comment via `pr-comments write` (ANSWERED or UNANSWERED)
-5. Calls `pr-comments mark-processed` and `pr-comments resolve`
-6. Calls `speckit.retro`
+2. Evaluates each answer for clarity: ambiguous product answers → AskUserQuestion before proceeding; ambiguous technical answers → flagged for autonomous resolution. Incomprehensible freeform comments → posted back as UNANSWERED asking for clarification.
+3. Detects conflicting comments (two items affecting the same spec section with incompatible intent) → AskUserQuestion to resolve before applying either side.
+4. Delegates to `speckit.clarify` with the reconciled feedback as context → updates `spec.md`
+5. Posts each decision as a PR comment via `pr-comments write` (ANSWERED or UNANSWERED)
+6. Calls `pr-comments mark-processed` and `pr-comments resolve`
+7. Calls `speckit.retro`
 
 **`consolidate-plan` skill:**
 1. Reads pending PR comments and user answers via `pr-comments pending` + `pr-comments read-answers`
-2. Classifies each comment: product (AskUserQuestion → PM answers) / technical (applies autonomously)
-3. Updates `research.md`, `data-model.md`, and `contracts/` with the feedback
-4. Posts each decision as a PR comment via `pr-comments write` (ANSWERED or UNANSWERED)
-5. Calls `pr-comments mark-processed` and `pr-comments resolve`
-6. Calls `speckit.retro`
+2. Classifies each comment: product (AskUserQuestion → PM answers) / technical (applies autonomously) / ambiguous (defaults to product) / incomprehensible (posted back as UNANSWERED).
+3. Detects conflicting comments before applying — conflicts are included in the AskUserQuestion call for PM resolution.
+4. Updates `research.md`, `data-model.md`, and `contracts/` with the feedback
+5. Posts each decision as a PR comment via `pr-comments write` (ANSWERED or UNANSWERED)
+6. Calls `pr-comments mark-processed` and `pr-comments resolve`
+7. Calls `speckit.retro`
 
 **`tasks` skill:**
 1. Calls `/product-flow:speckit.tasks` → generates `tasks.md` ordered by dependencies
@@ -321,7 +351,7 @@ Some are invoked automatically under certain conditions; others require explicit
 
 | Skill | Condition | Triggered by |
 |---|---|---|
-| `/product-flow:praxis.collaborative-design` | Feature description is vague or short (< 15 words, no clear actor/action) | `/product-flow:start` step 3 |
+| `/product-flow:praxis.collaborative-design` | Feature description is vague or short (< 15 words, no clear actor/action) | `/product-flow:start` step 4 |
 | `/product-flow:praxis.event-modeling` | Spec contains event-driven signals (domain events, async, webhooks, background processing) | `/product-flow:plan` step 3 |
 
 **Manual invocation only:**
