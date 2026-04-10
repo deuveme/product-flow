@@ -51,7 +51,16 @@ Use `AskUserQuestion` to ask:
 
 > "Do you have any designs, wireframes, screenshots, Figma links, or similar visual references for this feature? If so, please share them now (links, images, or descriptions)."
 
-If the user shares assets, record them as `VISUAL_ASSETS`. If not, record `VISUAL_ASSETS = none`.
+If the user shares assets:
+- Save any **uploaded image files** (PNG, SVG, JPG, GIF, etc.) with descriptive names in a temporary `images/` folder
+- Record **URLs/Figma links** as references (will be saved in `images/sources.md` later)
+- Record **descriptions** as references
+- Store all as `VISUAL_ASSETS` object with:
+  - `files`: list of uploaded files (with paths once saved)
+  - `links`: list of external links
+  - `descriptions`: list of text descriptions
+
+If not, record `VISUAL_ASSETS = none`.
 
 #### 2c. Ask about external documentation
 
@@ -59,7 +68,16 @@ Use `AskUserQuestion` to ask:
 
 > "Is there any external documentation I should use as reference? This could include PDFs, slide decks, API docs, existing code outside this repo, requirement documents, or anything else I can't directly access. If so, paste or link them now."
 
-If the user shares materials, record them as `EXTERNAL_DOCS`. If not, record `EXTERNAL_DOCS = none`.
+If the user shares materials:
+- Save any **uploaded PDF/document files** with descriptive names in a temporary `docs/` folder
+- Record **URLs/links** as references (will be saved in `docs/sources.md` later)
+- Record **text/code pasted directly** in files named `docs/pasted-doc-{N}.txt` or similar
+- Store all as `EXTERNAL_DOCS` object with:
+  - `files`: list of uploaded files (with paths once saved)
+  - `links`: list of external links
+  - `pasted`: list of pasted content (with file references)
+
+If not, record `EXTERNAL_DOCS = none`.
 
 #### 2d. Identify and resolve ambiguities
 
@@ -86,12 +104,23 @@ If the **product ambiguities list** from step 2d was empty (zero questions asked
 
 > "I have no doubts about the product requirements. I'll proceed directly to writing the spec."
 
-#### 2f. Consolidate gathered context
+#### 2f. Consolidate gathered context and persist assets
+
+Before the branch is created, temporarily save uploaded assets:
+
+For `VISUAL_ASSETS.files` and `EXTERNAL_DOCS.files`:
+1. Create temporary directories: `_temp/images/` and `_temp/docs/`
+2. Save all uploaded files there with descriptive, URL-safe names
+3. Record the relative paths in `VISUAL_ASSETS` and `EXTERNAL_DOCS` objects
+
+Example: `_temp/images/wireframe-login-flow.png`, `_temp/docs/requirements.pdf`
+
+Once the branch is created in step 3c, these temp files will be moved to `specs/$BRANCH_NAME/images/` and `specs/$BRANCH_NAME/docs/`.
 
 Produce a single internal object `GATHERED_CONTEXT` containing:
 - `full_description`: expanded feature description after conversation
-- `visual_assets`: list of provided assets or "none"
-- `external_docs`: list of provided materials or "none"
+- `visual_assets`: object with `files` (list with paths), `links` (list), `descriptions` (list), or "none"
+- `external_docs`: object with `files` (list with paths), `links` (list), `pasted` (list), or "none"
 - `product_clarifications`: list of question → answer pairs from step 2d
 - `technical_decisions`: list of resolved technical decisions from step 2d
 
@@ -110,11 +139,42 @@ Also write `GATHERED_CONTEXT` to disk so it survives across sessions. Create the
 
 ## Visual Assets
 
-<visual_assets — or "None provided.">
+### Uploaded Images
+- [image1.png](images/image1.png)
+- [wireframe-login.svg](images/wireframe-login.svg)
+
+<or "None provided." if no files>
+
+### External Links
+- [Figma Design](https://figma.com/...)
+- [Design System](https://design.example.com)
+
+<or "None provided." if no links>
+
+### Descriptions
+- Description of asset 1
+- Description of asset 2
+
+<or "None provided." if no descriptions>
 
 ## External Documentation
 
-<external_docs — or "None provided.">
+### Uploaded Documents
+- [requirements.pdf](docs/requirements.pdf)
+- [API-spec.pdf](docs/API-spec.pdf)
+
+<or "None provided." if no files>
+
+### External Links
+- [API Documentation](https://api.example.com/docs)
+- [Slack Thread](https://slack.com/...)
+
+<or "None provided." if no links>
+
+### Pasted Content
+- [pasted-requirements.txt](docs/pasted-requirements.txt)
+
+<or "None provided." if no pasted content>
 
 ## Product Clarifications
 
@@ -164,7 +224,7 @@ Set:
 - `BRANCH_NAME = <NNN>-<short-name>` (e.g., `001-user-auth`)
 - `SPEC_PATH = specs/$BRANCH_NAME/spec.md`
 
-#### 3c. Create the branch
+#### 3c. Create the branch and persist assets
 
 ```bash
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
@@ -173,10 +233,43 @@ git checkout -b "$BRANCH_NAME" || {
 }
 FEATURE_DIR="$REPO_ROOT/specs/$BRANCH_NAME"
 mkdir -p "$FEATURE_DIR"
+mkdir -p "$FEATURE_DIR/images"
+mkdir -p "$FEATURE_DIR/docs"
 SPEC_FILE="$FEATURE_DIR/spec.md"
+
+# Move temporary assets to permanent locations
+if [ -d "_temp/images" ]; then
+  mv _temp/images/* "$FEATURE_DIR/images/" 2>/dev/null || true
+fi
+if [ -d "_temp/docs" ]; then
+  mv _temp/docs/* "$FEATURE_DIR/docs/" 2>/dev/null || true
+fi
+rm -rf _temp/ 2>/dev/null || true
+```
+
+Additionally, if `VISUAL_ASSETS` or `EXTERNAL_DOCS` contain external links:
+- Create `specs/$BRANCH_NAME/images/sources.md` with all external image links (Figma, design system URLs, etc.)
+- Create `specs/$BRANCH_NAME/docs/sources.md` with all external documentation links (API docs, design docs, etc.)
+
+Example `images/sources.md`:
+```markdown
+# External Visual References
+
+- [Figma Design](https://figma.com/file/ABC123/design)
+- [Design System Storybook](https://storybook.example.com)
+```
+
+Example `docs/sources.md`:
+```markdown
+# External Documentation
+
+- [API Specification](https://api.example.com/docs)
+- [Requirements Document](https://docs.google.com/document/d/ABC123)
 ```
 
 > **Invariant**: `BRANCH_NAME` and the spec folder name (`specs/$BRANCH_NAME/`) must always be identical. `BRANCH_NAME` is confirmed from steps 3a–3b above.
+>
+> **Asset directories**: Every spec folder includes `images/` and `docs/` subdirectories for uploaded assets. These persist with the spec and are committed to git.
 
 Derive the human-readable PR title from `BRANCH_NAME`:
 ```
