@@ -359,10 +359,17 @@ Use `collaborative-design.md` as additional context in the next step.
 
 Invoke `/product-flow:speckit.specify` passing `GATHERED_CONTEXT.full_description` as the feature description. Also inject `GATHERED_CONTEXT` (visual assets, external docs, product clarifications) as additional context so the spec is written with the full picture gathered in step 2.
 
+**Asset availability**: All downstream skills can access persisted assets:
+- **Images**: `specs/$BRANCH_NAME/images/` — read and reference these in specs and implementations
+- **Documents**: `specs/$BRANCH_NAME/docs/` — PDFs, API docs, requirements, etc.
+- **External links**: `specs/$BRANCH_NAME/images/sources.md` and `specs/$BRANCH_NAME/docs/sources.md`
+- **Full context**: `specs/$BRANCH_NAME/gathered-context.md` — complete reference for all gathered information
+
 **Important — skip redundant clarification steps in `speckit.specify`:** since step 2 already asked the user for context, visual assets, external docs, and all product ambiguities, instruct `speckit.specify` to:
 - Skip its step 3.6b (business terminology clarification) for any term already defined in `GATHERED_CONTEXT.product_clarifications`.
 - Skip its step 3.7 (fill gaps and confirm understanding) entirely — the understanding was already validated in step 2.
 - Use `GATHERED_CONTEXT.visual_assets` and `GATHERED_CONTEXT.external_docs` as primary references alongside `collaborative-design.md`.
+- **Read `specs/$BRANCH_NAME/gathered-context.md`** as the authoritative source for all context (visual assets, external docs, product decisions already made).
 
 **Note**: The branch `$BRANCH_NAME` has already been created and pushed. When `speckit.specify` runs, it will detect the existing feature branch and skip branch creation, proceeding directly to writing the spec.
 
@@ -524,6 +531,31 @@ When they approve or comment, run:
 /product-flow:continue
 ─────────────────────────────────────────
 ```
+
+---
+
+## Asset & Context Reference for Downstream Skills
+
+All downstream skills can access persisted assets and context created in this phase:
+
+**📚 Read the Skill Data Access Guide**: `docs/skill-data-access.md` in the plugin docs — it explains:
+- How to access gathered context (`gathered-context.md`)
+- Where to find images and PDFs (`images/` and `docs/` folders)
+- How to reference external links (`sources.md`)
+- Code examples for accessing assets in bash/scripts
+
+**Quick reference:**
+```bash
+BRANCH=$(git branch --show-current)
+cat "specs/$BRANCH/gathered-context.md"        # Read all gathered context
+ls "specs/$BRANCH/images/"                     # List visual assets
+cat "specs/$BRANCH/images/sources.md"          # View external visual links
+cat "specs/$BRANCH/docs/sources.md"            # View external doc links
+```
+
+**For skill developers**: Every skill should verify assets are available before depending on them. See the Skill Data Access Guide for patterns and examples.
+
+---
 
 ### Session close
 
