@@ -32,11 +32,22 @@ You **MUST** consider the user input before proceeding (if not empty).
    - If `$FEATURE_DIR/tasks.md` does not exist: ERROR "tasks.md not found. Run /product-flow:build first." and stop.
 
    Build `AVAILABLE_DOCS` list (optional files present in `FEATURE_DIR`):
+   - `gathered-context.md` if it exists — load it first; contains visual assets, external docs, and decisions from kick-off
    - `research.md` if it exists
    - `data-model.md` if it exists
    - `contracts/` if the directory exists and is non-empty
    - `quickstart.md` if it exists
    - `tasks.md` (always included)
+   - `images/` if it exists and is non-empty — visual assets (wireframes, mockups) available as reference during implementation
+   - `docs/` if it exists and is non-empty — documents (PDFs, API specs, requirements) available as reference
+
+   ```bash
+   cat $FEATURE_DIR/gathered-context.md 2>/dev/null
+   ls $FEATURE_DIR/images/ 2>/dev/null
+   cat $FEATURE_DIR/images/sources.md 2>/dev/null
+   ls $FEATURE_DIR/docs/ 2>/dev/null
+   cat $FEATURE_DIR/docs/sources.md 2>/dev/null
+   ```
 
 2. **Check checklists status** (if FEATURE_DIR/checklists/ exists):
    - Scan all checklist files in the checklists/ directory

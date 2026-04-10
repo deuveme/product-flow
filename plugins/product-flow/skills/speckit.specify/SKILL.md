@@ -91,13 +91,20 @@ Given that feature description, do this:
 
    ```bash
    cat specs/$BRANCH_NAME/gathered-context.md 2>/dev/null
+   ls specs/$BRANCH_NAME/images/ 2>/dev/null
+   ls specs/$BRANCH_NAME/docs/ 2>/dev/null
+   cat specs/$BRANCH_NAME/images/sources.md 2>/dev/null
+   cat specs/$BRANCH_NAME/docs/sources.md 2>/dev/null
    ```
 
-   If the file exists, load it as `GATHERED_CONTEXT` and apply these rules for the rest of this skill:
+   If `gathered-context.md` exists, load it as `GATHERED_CONTEXT` and apply these rules for the rest of this skill:
    - Use `GATHERED_CONTEXT` full description, visual assets, external docs, and product clarifications as primary authoritative input.
    - **Skip step 3.6b** (business terminology clarification) for any term already answered in `GATHERED_CONTEXT.product_clarifications`. Only ask about terms not covered there.
    - **Skip step 3.7** (fill gaps and confirm understanding) entirely — the description and intent were already validated during information gathering.
-   - When writing the spec, treat `GATHERED_CONTEXT.visual_assets` and `GATHERED_CONTEXT.external_docs` as reference material alongside `collaborative-design.md`.
+   - Any uploaded image files in `specs/$BRANCH_NAME/images/` are available to read and reference directly in the spec (e.g., `![alt](images/file.png)`).
+   - Any uploaded documents in `specs/$BRANCH_NAME/docs/` are available as reference material — read their content if needed.
+   - External links are listed in `images/sources.md` and `docs/sources.md`.
+   - When writing the spec, treat uploaded assets and external links as authoritative design and requirements references.
 
 3.5. Load the spec template to understand required sections. Read `$REPO_ROOT/.specify/templates/spec-template.md` if it exists. If it does not exist, proceed without a template — infer the standard section structure from the Quick Guidelines below.
 
