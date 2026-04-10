@@ -59,6 +59,22 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 2. **Load context**: Read FEATURE_SPEC and `.specify/memory/constitution.md`. Load IMPL_PLAN template (already copied).
 
+   Also load gathered context if available (visual assets, external documentation, and decisions made during feature kick-off):
+
+   ```bash
+   cat $SPECS_DIR/gathered-context.md 2>/dev/null
+   ls $SPECS_DIR/images/ 2>/dev/null
+   ls $SPECS_DIR/docs/ 2>/dev/null
+   cat $SPECS_DIR/images/sources.md 2>/dev/null
+   cat $SPECS_DIR/docs/sources.md 2>/dev/null
+   ```
+
+   If `gathered-context.md` exists, use it as background for the plan:
+   - Product clarifications and technical decisions already made — do not revisit or re-decide them.
+   - Images in `$SPECS_DIR/images/` are the authoritative visual references for the feature (wireframes, mockups, flow diagrams).
+   - Documents in `$SPECS_DIR/docs/` are the authoritative requirements and API references — read them if relevant to the plan.
+   - External links are in `images/sources.md` and `docs/sources.md`.
+
    Also load technical context if available (extracted from the original feature description when the user provided implementation details):
 
    ```bash

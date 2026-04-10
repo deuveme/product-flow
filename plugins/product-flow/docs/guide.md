@@ -65,11 +65,31 @@ PM commands delegate to internal engines and only:
 
 **`status.json` is the source of truth** — `specs/<branch>/status.json` determines workflow state. The PR body is updated in parallel for human visibility only.
 
+### Spec folder structure
+
+Each feature branch has a corresponding folder under `specs/<branch>/`:
+
+```
+specs/<branch>/
+├── status.json            ← workflow state machine (source of truth)
+├── gathered-context.md    ← all context collected during /start: description, clarifications, technical decisions, asset references
+├── spec.md                ← feature specification (created by speckit.specify)
+├── plan.md                ← technical plan: data model, contracts, research (created by speckit.plan)
+├── tasks.md               ← ordered task breakdown (created by speckit.tasks)
+├── decisions.md           ← durable log of all PR comments/decisions
+├── images/                ← uploaded visual assets (wireframes, mockups, screenshots)
+│   └── sources.md         ← external visual links (Figma, Storybook, etc.) — only if provided
+└── docs/                  ← uploaded documents (PDFs, API specs, requirements)
+    └── sources.md         ← external doc links (Confluence, Google Docs, etc.) — only if provided
+```
+
+`gathered-context.md` is written by `/product-flow:start` before spec writing and acts as the authoritative input for `speckit.specify` and `speckit.plan`. It ensures no question already answered is re-asked, and that all visual/documentation assets are accessible throughout the workflow.
+
 ### PM command flow
 
 | Command | Internal call chain |
 |---|---|
-| `/product-flow:start` | create branch + Draft PR → [`praxis.collaborative-design` if vague] → `speckit.specify` → `speckit.retro` |
+| `/product-flow:start` | gather context + visual assets + docs → create branch + Draft PR → [`praxis.collaborative-design` if vague] → `speckit.specify` → `speckit.retro` |
 | `/product-flow:continue` | `inbox-sync` → state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` (dispatched by state machine) |
 | `/product-flow:build` | `inbox-sync` → `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `speckit.retro`) → proposes `speckit.verify-tasks` |
 | `/product-flow:submit` | `inbox-sync` → `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → optional git add/commit/push (only if local changes exist) → `gh pr ready` on first run (exits DRAFT) → proposes ADRs in PR body |
