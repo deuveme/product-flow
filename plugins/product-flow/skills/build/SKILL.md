@@ -18,55 +18,7 @@ gh pr view --json number,state,url,body
 
 ### 1b. Inbox
 
-Show: `📬 Checking for new activity...`
-
-**Part A — Answers to bot questions:**
-
-Invoke `/product-flow:pr-comments read-answers`. For each new answer found:
-
-1. Evaluate whether the answer is actionable as-is:
-   - **Clear**: apply directly.
-   - **Ambiguous or incomplete**: clarify before applying:
-     - If the question was `type: technical`: resolve the ambiguity autonomously using project context. Do not ask the PM.
-     - If the question was `type: product`: use **AskUserQuestion** (one entry for this question only) to ask the PM for clarification before applying.
-
-2. Show before applying:
-   ```
-     ⏳ Question <N> — <one-line summary> → applying to <artifact>...
-   ```
-   Apply, then show:
-   ```
-     ✅ Question <N> — applied.
-   ```
-
-Invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers.
-
-**Part B — New user comments:**
-
-Invoke `/product-flow:pr-comments new-comments`. If `NO_NEW_COMMENTS`: continue silently.
-
-For each new comment, classify it first using these rules:
-
-- **Technical**: architecture, security, performance, data model, infrastructure, integration patterns.
-- **Product**: business intent, scope, user flow, acceptance criteria, terminology.
-- **Ambiguous type**: if the comment could be either — default to **product** and ask the PM. Never resolve autonomously when classification is uncertain.
-- **Incomprehensible**: if the comment has no discernible actionable intent (e.g. `"???"`, stray emoji, link without context, unrelated text) — do not apply any change. Invoke `/product-flow:pr-comments write` with `type: product`, `status: UNANSWERED`, body:
-  ```
-  **Unrecognised comment:** "[original comment text]"
-
-  ⚠️ This comment could not be interpreted. Please clarify what change (if any) you'd like.
-  ```
-  Skip to the next comment.
-
-Then act on the classified comment:
-
-- **Technical**: resolve autonomously using project context. Invoke `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED` (or `UNANSWERED` if unresolvable). Apply the decision to the relevant artifact.
-- **Product** (including ambiguous type): use **AskUserQuestion** (single call, one entry per comment). After receiving the PM's answers, apply changes to the relevant artifact. Invoke `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`.
-
-After processing all new comments, invoke `/product-flow:pr-comments mark-comments-processed` with the IDs of all processed comments.
-
-Show: `✅ Inbox processed — <N> answer(s) applied, <M> comment(s) evaluated.`
-(or `✅ Inbox clear.` if nothing to process)
+Invoke `/product-flow:inbox-sync`.
 
 ### 2. Gate: plan generated
 
@@ -91,33 +43,7 @@ Run /product-flow:continue to generate the plan first.
 
 This step runs only if the entry point is **Normal flow** (no prior progress detected). Skip if re-entering mid-build (`code_written` already set).
 
-**1. Resolve unanswered comments:**
-
-Invoke `/product-flow:pr-comments pending`. For each UNANSWERED comment:
-
-- `type: technical`: attempt autonomous resolution using project context and industry standards. Invoke `/product-flow:pr-comments write` with `status: ANSWERED` and mark resolved via `/product-flow:pr-comments resolve`.
-- `type: product`: use **AskUserQuestion** to ask the PM in a single call (one entry per comment). After receiving the PM's answers, post a PR comment via `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`.
-
-Only after all comments are resolved, continue.
-
-**2. Check for unprocessed user answers:**
-
-Invoke `/product-flow:pr-comments read-answers`. Show: `📬 Reading PR answers...`
-
-For each new answer found, show before applying:
-```
-  ⏳ Question <N> — <one-line summary> → applying to <artifact>...
-```
-Apply it, then show:
-```
-  ✅ Question <N> — applied.
-```
-
-After all answers are processed, show: `✅ <N> answer(s) applied.` (or `No new answers found.` if none).
-
-Invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers (e.g. `1 3`).
-
-**3. Reminder to review AI-answered comments:**
+Reminder to review AI-answered comments:
 
 ```
 💬 Last chance to review decisions before code is written.
@@ -215,11 +141,22 @@ Your choice:
   Add a History row `| Code written | YYYY-MM-DD | recovered from interrupted run |` to the PR body. Skip directly to step 6b.
 
 - **B** → run:
+  first show the exact files that will be deleted or reset:
   ```bash
-  git checkout -- .
-  git clean -fd
+  git status --short
   ```
-  Then continue with Normal flow (step 6).
+  Then ask for explicit confirmation:
+  ```
+  ⚠️  This will permanently discard all local changes listed above.
+  Type exactly: CONFIRM DELETE
+  ```
+  - If the response is not exactly `CONFIRM DELETE`: show `Aborted — no files were deleted.` and **STOP**.
+  - If the response is exactly `CONFIRM DELETE`, run:
+    ```bash
+    git checkout -- .
+    git clean -fd
+    ```
+    Then continue with Normal flow (step 6).
 
 2.6. **Failed artifact commit** — code is NOT marked as generated AND uncommitted changes exist **only** inside `specs/` (tasks, checklists, or other spec artifacts whose commit was interrupted, e.g. due to GPG): commit the artifacts and continue normally.
 

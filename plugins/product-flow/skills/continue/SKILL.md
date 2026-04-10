@@ -83,55 +83,7 @@ If the file exists, load it silently as background context. It contains the full
 
 ### 1b. Inbox
 
-Show: `📬 Checking for new activity...`
-
-**Part A — Answers to bot questions:**
-
-Invoke `/product-flow:pr-comments read-answers`. For each new answer found:
-
-1. Evaluate whether the answer is actionable as-is:
-   - **Clear**: apply directly.
-   - **Ambiguous or incomplete**: clarify before applying:
-     - If the question was `type: technical`: resolve the ambiguity autonomously using project context. Do not ask the PM.
-     - If the question was `type: product`: use **AskUserQuestion** (one entry for this question only) to ask the PM for clarification before applying.
-
-2. Show before applying:
-   ```
-     ⏳ Question <N> — <one-line summary> → applying to <artifact>...
-   ```
-   Apply, then show:
-   ```
-     ✅ Question <N> — applied.
-   ```
-
-Invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers.
-
-**Part B — New user comments:**
-
-Invoke `/product-flow:pr-comments new-comments`. If `NO_NEW_COMMENTS`: continue silently.
-
-For each new comment, classify it first using these rules:
-
-- **Technical**: architecture, security, performance, data model, infrastructure, integration patterns.
-- **Product**: business intent, scope, user flow, acceptance criteria, terminology.
-- **Ambiguous type**: if the comment could be either — default to **product** and ask the PM. Never resolve autonomously when classification is uncertain.
-- **Incomprehensible**: if the comment has no discernible actionable intent (e.g. `"???"`, stray emoji, link without context, unrelated text) — do not apply any change. Invoke `/product-flow:pr-comments write` with `type: product`, `status: UNANSWERED`, body:
-  ```
-  **Unrecognised comment:** "[original comment text]"
-
-  ⚠️ This comment could not be interpreted. Please clarify what change (if any) you'd like.
-  ```
-  Skip to the next comment.
-
-Then act on the classified comment:
-
-- **Technical**: resolve autonomously using project context. Invoke `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED` (or `UNANSWERED` if unresolvable). Apply the decision to the relevant artifact.
-- **Product** (including ambiguous type): use **AskUserQuestion** (single call, one entry per comment). After receiving the PM's answers, apply changes to the relevant artifact. Invoke `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`.
-
-After processing all new comments, invoke `/product-flow:pr-comments mark-comments-processed` with the IDs of all processed comments.
-
-Show: `✅ Inbox processed — <N> answer(s) applied, <M> comment(s) evaluated.`
-(or `✅ Inbox clear.` if nothing to process)
+Invoke `/product-flow:inbox-sync`.
 
 ### 2. Determine current state
 
@@ -247,35 +199,7 @@ Then continue automatically to `READY_TO_BE_BUILT`.
 
 #### `READY_TO_BE_BUILT`
 
-Before showing the plan, run the pre-build comment review:
-
-**1. Resolve unanswered comments:**
-
-Invoke `/product-flow:pr-comments pending`. For each UNANSWERED comment:
-
-- `type: technical`: attempt autonomous resolution using project context and industry standards. Invoke `/product-flow:pr-comments write` with `status: ANSWERED` and mark resolved via `/product-flow:pr-comments resolve`.
-- `type: product`: use **AskUserQuestion** to ask the PM in a single call (one entry per comment). After receiving the PM's answers, post a PR comment via `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`.
-
-Only after all comments are resolved, continue.
-
-**2. Check for unprocessed user answers:**
-
-Invoke `/product-flow:pr-comments read-answers`. Show: `📬 Reading PR answers...`
-
-For each new answer found, show before applying:
-```
-  ⏳ Question <N> — <one-line summary> → applying to <artifact>...
-```
-Apply it, then show:
-```
-  ✅ Question <N> — applied.
-```
-
-After all answers are processed, show: `✅ <N> answer(s) applied.` (or `No new answers found.` if none).
-
-Invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers (e.g. `1 3`).
-
-**3. Show reminder about AI-answered comments:**
+Show reminder about AI-answered comments:
 
 ```
 💬 REMINDER — Before building, review the decisions recorded on the PR.
@@ -285,9 +209,7 @@ Invoke `/product-flow:pr-comments mark-processed` with the question numbers of a
    Link: <PR_URL>
 ```
 
-Read `specs/<feature-dir>/plan.md` and output its full contents as markdown.
-
-Then output:
+Output:
 
 ```
 📋 Plan ready. You can review it at your own pace in the PR:

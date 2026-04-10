@@ -14,21 +14,13 @@ start
   └─ speckit.retro
 
 continue
-  ├─ pr-comments read-answers          (inbox: apply pending answers)
-  ├─ pr-comments mark-processed        (inbox: record applied answers + react 👍)
-  ├─ pr-comments new-comments          (inbox: detect new user comments)
-  ├─ pr-comments mark-comments-processed (inbox: react 👍 + record processed IDs)
-  ├─ pr-comments write                 (inbox: record decisions from new comments)
+  ├─ inbox-sync                        (internal inbox orchestration)
   ├─ [SPEC_REVIEW]  → consolidate-spec → (then auto-proceeds to PLAN_PENDING)
   ├─ [PLAN_PENDING] → plan
   └─ [PLAN_REVIEW]  → consolidate-plan → (then auto-proceeds to READY_TO_BE_BUILT)
 
 build
-  ├─ pr-comments read-answers          (inbox: apply pending answers)
-  ├─ pr-comments mark-processed        (inbox: record applied answers + react 👍)
-  ├─ pr-comments new-comments          (inbox: detect new user comments)
-  ├─ pr-comments mark-comments-processed (inbox: react 👍 + record processed IDs)
-  ├─ pr-comments write                 (inbox: record decisions from new comments)
+  ├─ inbox-sync                        (internal inbox orchestration)
   ├─ pr-comments pending               (pre-implement gate: resolve UNANSWERED before code)
   ├─ tasks            (if tasks not yet generated)
   ├─ checklist        (if checklists not yet generated)
@@ -36,11 +28,7 @@ build
   └─ speckit.verify-tasks  (re-entry shortcut only)
 
 submit
-  ├─ pr-comments read-answers          (inbox: apply pending answers)
-  ├─ pr-comments mark-processed        (inbox: record applied answers + react 👍)
-  ├─ pr-comments new-comments          (inbox: detect new user comments)
-  ├─ pr-comments mark-comments-processed (inbox: react 👍 + record processed IDs)
-  ├─ pr-comments write                 (inbox: record decisions from new comments)
+  ├─ inbox-sync                        (internal inbox orchestration)
   ├─ speckit.verify
   └─ speckit.reconcile  (optional, if user chooses option B)
 
@@ -106,6 +94,13 @@ consolidate-plan
 
 pr-comments
   (leaf node — calls no other skills)
+
+inbox-sync
+  ├─ pr-comments read-answers
+  ├─ pr-comments mark-processed
+  ├─ pr-comments new-comments
+  ├─ pr-comments mark-comments-processed
+  └─ pr-comments write
 ```
 
 ---
@@ -135,6 +130,7 @@ pr-comments
 | `speckit.checklist` | `spec.md` exists in FEATURE_DIR |
 | `speckit.retro` | Active feature branch |
 | `praxis.*` | Input artifacts passed by caller |
+| `inbox-sync` | Active PR (`gh pr view` succeeds) |
 | `pr-comments` | Active PR (`gh pr view` succeeds) |
 
 ---

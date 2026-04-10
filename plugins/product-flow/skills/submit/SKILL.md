@@ -18,55 +18,7 @@ gh pr view --json number,state,url,body,isDraft
 
 ### 1b. Inbox
 
-Show: `📬 Checking for new activity...`
-
-**Part A — Answers to bot questions:**
-
-Invoke `/product-flow:pr-comments read-answers`. For each new answer found:
-
-1. Evaluate whether the answer is actionable as-is:
-   - **Clear**: apply directly.
-   - **Ambiguous or incomplete**: clarify before applying:
-     - If the question was `type: technical`: resolve the ambiguity autonomously using project context. Do not ask the PM.
-     - If the question was `type: product`: use **AskUserQuestion** (one entry for this question only) to ask the PM for clarification before applying.
-
-2. Show before applying:
-   ```
-     ⏳ Question <N> — <one-line summary> → applying to <artifact>...
-   ```
-   Apply, then show:
-   ```
-     ✅ Question <N> — applied.
-   ```
-
-Invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers.
-
-**Part B — New user comments:**
-
-Invoke `/product-flow:pr-comments new-comments`. If `NO_NEW_COMMENTS`: continue silently.
-
-For each new comment, classify it first using these rules:
-
-- **Technical**: architecture, security, performance, data model, infrastructure, integration patterns.
-- **Product**: business intent, scope, user flow, acceptance criteria, terminology.
-- **Ambiguous type**: if the comment could be either — default to **product** and ask the PM. Never resolve autonomously when classification is uncertain.
-- **Incomprehensible**: if the comment has no discernible actionable intent (e.g. `"???"`, stray emoji, link without context, unrelated text) — do not apply any change. Invoke `/product-flow:pr-comments write` with `type: product`, `status: UNANSWERED`, body:
-  ```
-  **Unrecognised comment:** "[original comment text]"
-
-  ⚠️ This comment could not be interpreted. Please clarify what change (if any) you'd like.
-  ```
-  Skip to the next comment.
-
-Then act on the classified comment:
-
-- **Technical**: resolve autonomously using project context. Invoke `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED` (or `UNANSWERED` if unresolvable). Apply the decision to the relevant artifact.
-- **Product** (including ambiguous type): use **AskUserQuestion** (single call, one entry per comment). After receiving the PM's answers, apply changes to the relevant artifact. Invoke `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`.
-
-After processing all new comments, invoke `/product-flow:pr-comments mark-comments-processed` with the IDs of all processed comments.
-
-Show: `✅ Inbox processed — <N> answer(s) applied, <M> comment(s) evaluated.`
-(or `✅ Inbox clear.` if nothing to process)
+Invoke `/product-flow:inbox-sync`.
 
 ### 2. Gate: code verified
 
@@ -141,14 +93,20 @@ Invoke `/product-flow:speckit.verify`.
 
 - If it reports **no issues** → continue to step 3 silently.
 
-### 3. Verify there are changes to save
+### 3. Detect whether there are local changes to save
 
 ```bash
 git status --porcelain
 ```
 
-- If there are changes: continue normally.
-- If there are **no changes**: ERROR "There are no new changes to save."
+- If there are changes: continue to step 4.
+- If there are **no changes**:
+  - Show:
+    ```
+    ℹ️  No new local changes to save.
+    The code is already created in this branch/PR, so we'll continue and move the PR to review.
+    ```
+  - Skip steps 4 and 5 and continue directly to step 7.
 
 ### 4. Show change summary
 
@@ -159,7 +117,7 @@ git status --short
 
 Show the user which files are going to be saved (including untracked files that will be added).
 
-### 5. Commit and push
+### 5. Commit and push (only when step 3 found local changes)
 
 #### 5a. Commit
 

@@ -34,7 +34,7 @@ plugins/product-flow/
     │
     └── [Internal engines]
         ├── [Orchestrators]
-        │   ├── consolidate-spec, consolidate-plan, plan, tasks, implement, checklist, pr-comments
+        │   ├── consolidate-spec, consolidate-plan, plan, tasks, implement, checklist, pr-comments, inbox-sync
         │
         ├── [Spec-Kit engines]
         │   ├── speckit.specify, speckit.clarify, speckit.plan, speckit.tasks
@@ -70,9 +70,9 @@ PM commands delegate to internal engines and only:
 | Command | Internal call chain |
 |---|---|
 | `/product-flow:start` | create branch + Draft PR → [`praxis.collaborative-design` if vague] → `speckit.specify` → `speckit.retro` |
-| `/product-flow:continue` | state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` (dispatched by state machine) |
-| `/product-flow:build` | `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `speckit.retro`) → proposes `speckit.verify-tasks` |
-| `/product-flow:submit` | `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → git add/commit/push → `gh pr ready` on first run (exits DRAFT) → proposes ADRs in PR body |
+| `/product-flow:continue` | `inbox-sync` → state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` (dispatched by state machine) |
+| `/product-flow:build` | `inbox-sync` → `tasks` → `checklist` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `speckit.retro`) → proposes `speckit.verify-tasks` |
+| `/product-flow:submit` | `inbox-sync` → `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → optional git add/commit/push (only if local changes exist) → `gh pr ready` on first run (exits DRAFT) → proposes ADRs in PR body |
 | `/product-flow:deploy-to-stage` | [ADR consolidation: ask user → generate in memory if yes] → `gh pr merge --squash --delete-branch` → [write ADRs to `docs/adr/` + commit if yes] → mark published |
 
 ---
@@ -313,11 +313,10 @@ Bot comments are tracked via invisible HTML markers on the first line:
 
 **`submit` skill:**
 1. Verifies branch and PR exist
-2. Runs **Inbox check** — processes pending answers and new user comments (same as `continue` and `build`)
+2. Runs `/product-flow:inbox-sync` — processes pending answers and new user comments
 3. Runs `speckit.verify` — CRITICAL blocks; HIGH/MEDIUM/LOW asks the user
-3. Verifies there are uncommitted changes
-4. Shows change summary (`git diff --stat`)
-5. Commits and pushes
+4. If there are local changes: shows summary (`git diff --stat`), commits and pushes
+5. If there are no local changes: skips commit/push and continues to review transition
 6. Takes PR out of draft on first run (`gh pr ready`)
 7. Updates `status.json` with `in_review` on first run
 8. Proposes ADRs: reads `research.md` and `decisions.md`, filters decisions that would cause future inconsistency, inserts `### Proposed ADRs` inside `## For Developers` in the PR body
