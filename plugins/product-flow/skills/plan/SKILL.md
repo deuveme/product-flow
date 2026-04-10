@@ -192,7 +192,7 @@ Mark: `- [x] Plan generated`
 
 Add row:
 ```
-| Plan generated | YYYY-MM-DD | research.md + data-model.md |
+| Plan generated | YYYY-MM-DD HH:MM:SS | @github-user | research.md + data-model.md |
 ```
 
 Read the current PR body first (`gh pr view --json body -q '.body'`), then apply these changes to it:

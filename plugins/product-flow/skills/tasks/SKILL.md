@@ -141,7 +141,7 @@ Mark: `- [x] Tasks generated`
 
 Add row:
 ```
-| Tasks generated | YYYY-MM-DD | tasks.md created |
+| Tasks generated | YYYY-MM-DD HH:MM:SS | @github-user | tasks.md created |
 ```
 
 Read the current PR body first (`gh pr view --json body -q '.body'`), then apply these changes to it:

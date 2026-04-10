@@ -329,7 +329,7 @@ ORIG_PR_BODY=$(gh pr view --json body -q '.body')
 Reconstruct the body by appending a new row to the History table. Take `ORIG_PR_BODY` as the base, find the History table, and add after the last existing row:
 
 ```
-| Scope extracted | $(date +%Y-%m-%d) | $SHORT_NAME split to $NEW_BRANCH — $NEW_PR_URL |
+| Scope extracted | $(date -u +%Y-%m-%d\ %H:%M:%S) | @$(gh api user --jq '.login') | $SHORT_NAME split to $NEW_BRANCH — $NEW_PR_URL |
 ```
 
 Then update the PR:

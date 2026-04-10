@@ -195,7 +195,7 @@ Use `$PR_NUMBER` from step 1 (the branch may no longer exist after the merge).
 
 Read the current PR body first (`gh pr view --json body -q '.body'`), then apply these changes — preserve all other sections intact:
 - Mark `- [x] Published` in `## Status`
-- Add row to `## History`: `| Published | YYYY-MM-DD | Merged to main |`
+- Add row to `## History`: `| Published | YYYY-MM-DD HH:MM:SS | @github-user | Merged to main |`
 
 ```bash
 gh pr edit $PR_NUMBER --body "<updated-body>"

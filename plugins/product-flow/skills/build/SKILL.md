@@ -138,7 +138,7 @@ Your choice:
   ```
   If this commit also fails with a GPG error: same fix as above. **STOP.**
 
-  Add a History row `| Code written | YYYY-MM-DD | recovered from interrupted run |` to the PR body. Skip directly to step 6b.
+  Add a History row `| Code written | YYYY-MM-DD HH:MM:SS | @github-user | recovered from interrupted run |` to the PR body. Skip directly to step 6b.
 
 - **B** → run:
   first show the exact files that will be deleted or reset:

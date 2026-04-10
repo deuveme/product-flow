@@ -284,9 +284,9 @@ Spec: $SPEC_PATH
 
 ## History
 
-| Status | Date | Note |
-|--------|-------|------|
-| PR created | $(date +%Y-%m-%d) | Feature started |
+| Status | Date Time | GitHub User | Note |
+|--------|-----------|-------------|------|
+| PR created | $(date -u +%Y-%m-%d\ %H:%M:%S) | @$(gh api user --jq '.login') | Feature started |
 
 ## Notes
 
@@ -394,10 +394,10 @@ Spec: $SPEC_PATH
 
 ## History
 
-| Status | Date | Note |
-|--------|-------|------|
-| PR created | $(date +%Y-%m-%d) | Feature started |
-| Spec created | $(date +%Y-%m-%d) | Spec written |
+| Status | Date Time | GitHub User | Note |
+|--------|-----------|-------------|------|
+| PR created | $(date -u +%Y-%m-%d\ %H:%M:%S) | @$(gh api user --jq '.login') | Feature started |
+| Spec created | $(date -u +%Y-%m-%d\ %H:%M:%S) | @$(gh api user --jq '.login') | Spec written |
 
 ## Notes
 

@@ -178,7 +178,7 @@ gh pr view --json isDraft --jq '.isDraft' | grep -q true && gh pr ready
 
 Read the current PR body first (`gh pr view --json body -q '.body'`), then apply these changes — preserve all other sections intact:
 - Mark `- [x] In code review` in `## Status`
-- Add row to `## History`: `| In code review | YYYY-MM-DD | PR ready for review |`
+- Add row to `## History`: `| In code review | YYYY-MM-DD HH:MM:SS | @github-user | PR ready for review |`
 
 ```bash
 gh pr edit --body "<updated-body>"
