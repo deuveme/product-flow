@@ -1,6 +1,6 @@
 {
   "name": "product-flow",
-  "version": "1.9.12",
+  "version": "1.9.13",
   "description": "Product Flow - PM commands for spec-driven development workflow.",
   "author": { "name": "David Valero" },
   "license": "MIT",
@@ -73,6 +73,7 @@
     "./skills/deploy-to-stage",
     "./skills/status",
     "./skills/context",
+    "./skills/inbox-sync",
     "./skills/plan",
     "./skills/tasks",
     "./skills/implement",
