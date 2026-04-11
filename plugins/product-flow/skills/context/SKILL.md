@@ -37,19 +37,3 @@ Show ONLY: the visual bar, the percentage and the recommendation. Example for �
 
 The recommendation is mandatory and is always shown below the bar.
 
-### 4. Show current branch
-
-Show the current branch and PR URL (if on a feature branch) so that after a `/clear` the user knows what to run:
-
-```bash
-git branch --show-current
-gh pr view --json url -q '.url' 2>/dev/null || echo "(no PR)"
-```
-
-Output format:
-```
-🌿 Branch: <branch-name>
-🔗 PR: <PR_URL>   ← omit this line if no PR
-```
-
-If on `main`, show: `📍 main · no active feature`
