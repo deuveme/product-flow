@@ -176,9 +176,72 @@ Also take the PR out of draft if it still is:
 gh pr view --json isDraft --jq '.isDraft' | grep -q true && gh pr ready
 ```
 
-Read the current PR body first (`gh pr view --json body -q '.body'`), then apply these changes — preserve all other sections intact:
+Read the current PR body first (`gh pr view --json body -q '.body'`). If the output is empty, stop with ERROR "Could not read PR body — check GitHub access and try again." Then apply these changes — preserve all other sections intact:
 - Mark `- [x] In code review` in `## Status`
 - Add row to `## History`: `| In code review | YYYY-MM-DD HH:MM:SS | @github-user | PR ready for review |`
+
+```bash
+gh pr edit --body "<updated-body>"
+```
+
+### 7b. Generate quickstart and populate "How to test"
+
+Read `specs/<branch>/spec.md`, `specs/<branch>/plan.md`, and `specs/<branch>/tasks.md` to understand what was built.
+
+Generate `specs/<branch>/quickstart.md` with the following structure:
+
+```markdown
+# How to test: <feature name>
+
+## For PM
+
+<Acceptance scenarios any reviewer can execute without technical knowledge.
+One scenario per user story, written as numbered steps. Include:
+- Preconditions (what state the system needs to be in)
+- Steps to follow
+- Expected result>
+
+## For Devs
+
+<Technical test steps. Include:
+- Setup or migration commands to run
+- Endpoints or API calls to verify (with example payloads)
+- Edge cases and error scenarios to validate
+- Any flags or environment variables needed>
+```
+
+Commit the file:
+
+```bash
+git add specs/<branch>/quickstart.md
+git commit -m "docs: add quickstart testing guide"
+git push origin HEAD
+```
+
+If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
+```
+🚫 Commit failed — GPG signing is blocking automatic commits.
+
+To fix it, run in your terminal:
+  git config commit.gpgsign false
+
+Then run /product-flow:submit again.
+```
+**STOP.**
+
+Then update the PR body `## How to test` section. Read the current PR body first (`gh pr view --json body -q '.body'`). If the output is empty, stop with ERROR "Could not read PR body — check GitHub access and try again." Then replace the contents of `## How to test` — preserve all other sections intact:
+
+```markdown
+## How to test
+
+### For PM
+
+<summary of PM scenarios — concise, 3–5 bullet points max, linking to quickstart.md for full detail>
+
+### For Devs
+
+<summary of Dev steps — concise, 3–5 bullet points max, linking to quickstart.md for full detail>
+```
 
 ```bash
 gh pr edit --body "<updated-body>"
@@ -216,7 +279,7 @@ If the section already exists (re-running submit), replace it entirely with the 
 
 If no decisions pass the filter, skip this step silently — do not add the section.
 
-Read the current PR body first (`gh pr view --json body -q '.body'`), then insert or replace the `### Proposed ADRs` subsection immediately after `<!-- /dev-checklist -->` — preserve all other sections intact.
+Read the current PR body first (`gh pr view --json body -q '.body'`). If the output is empty, stop with ERROR "Could not read PR body — check GitHub access and try again." Then insert or replace the `### Proposed ADRs` subsection immediately after `<!-- /dev-checklist -->` — preserve all other sections intact.
 
 ```bash
 gh pr edit --body "<updated-body>"

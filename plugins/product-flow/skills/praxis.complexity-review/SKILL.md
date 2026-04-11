@@ -128,4 +128,22 @@ gather more data before deciding.
 
 ---
 
+## Question Handling
+
+After producing the output, resolve all Open Questions before finishing:
+
+**Technical** (architecture, performance, infrastructure, data model, security):
+1. Resolve autonomously using project context, existing code, and industry standards.
+2. Post a PR comment via `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED`, including the chosen answer and reasoning. If it cannot be resolved: post with `status: UNANSWERED`.
+3. Record the decision in `specs/<branch>/research.md` (create if needed) under a `## Complexity Review Decisions` section.
+
+**Product** (business priorities, scope, user requirements, feature boundaries):
+1. Collect all product open questions and ask the PM in a **single AskUserQuestion call** (one entry per question).
+2. Post a PR comment via `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`, recording the question and the PM's answer.
+3. Record the decision in `specs/<branch>/research.md` under `## Complexity Review Decisions`.
+
+Never ask the user a technical question. Never silently drop a decision without a PR comment.
+
+---
+
 **Attribution:** Adapted from Praxis by Antonio Acuña (https://github.com/acunap/praxis), MIT License.

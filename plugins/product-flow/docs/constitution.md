@@ -149,7 +149,7 @@ This project uses a spec-driven workflow where PM commands orchestrate internal 
 |---|---|---|
 | `/product-flow:start` | Internal spec engine | Be on `main` |
 | `/product-flow:continue` | Internal clarify / plan engine | Spec created |
-| `/product-flow:build` | Internal tasks + implement engine | Plan approved in PR |
+| `/product-flow:build` | Internal implement engine | Plan approved in PR |
 | `/product-flow:submit` | — | Code generated |
 | `/product-flow:deploy-to-stage` | — | PR approved |
 
@@ -164,12 +164,21 @@ Fields written by each skill:
 | `spec_created` | `/product-flow:start`, `speckit.split` |
 | `plan_generated` | `/product-flow:plan` |
 | `tasks_generated` | `/product-flow:tasks` |
-| `checklist_done` | `/product-flow:checklist` (step 4, after artifact commit) and `/product-flow:build` (step 5, after resolving critical issues) |
+| `checklist_done` | `/product-flow:checklist` (after artifact commit) |
 | `code_written` | `/product-flow:implement` |
 | `code_verified` | `/product-flow:build` (after verify-tasks) |
 | `in_review` | `/product-flow:submit` |
 | `processed_answers` | `pr-comments mark-processed` — question numbers already applied (prevents re-processing) |
 | `processed_comment_ids` | `pr-comments mark-comments-processed` — IDs of general user comments already evaluated |
+
+**Fields are write-once.** Once a timestamp is recorded it must not be overwritten or removed. Always use `jq '. + {"field": $ts}'` to merge new fields — never replace the whole file. Skills that write to status.json must check for prior existence of a field if the step might run more than once (e.g. re-runs of submit should not overwrite `in_review`).
+
+**Idempotency.** Every workflow command must be safe to re-run. Concrete rules:
+- Gate checks must rely on status.json fields, never on file existence alone (files can appear out of order).
+- Writing to status.json: merge, don't replace.
+- PR body edits: read the current body first; if it already contains the target change, skip silently.
+- Git commits that write spec artifacts must be guarded: if the file is already committed and unchanged, do not create an empty commit.
+- `gh pr ready` (remove draft) must be guarded with `isDraft` check — calling it on a non-draft PR is a no-op but should not surface as an error.
 
 ---
 

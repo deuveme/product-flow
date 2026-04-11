@@ -101,7 +101,7 @@ specifying which button), classify each ambiguity and resolve it:
     **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
     ```
 
-- **Product** (scope, user intent, acceptance criteria, UX behaviour): ask the PM via a single **AskUserQuestion** call (one entry per ambiguity, max 5):
+- **Product** (scope, user intent, acceptance criteria, UX behaviour): ask the PM via a single **AskUserQuestion** call (one entry per ambiguity):
   - `question`: describe the ambiguity and ask what to do, ending with "?"
   - `header`: short topic label max 12 chars
   - `options`: 2–4 choices with `description` explaining each. Place the recommended option first with `" (Recommended)"`.
@@ -120,13 +120,19 @@ specifying which button), classify each ambiguity and resolve it:
     **Change applied:** [what was updated and in which artifact]
     ```
 
-Rules:
-- Max 5 product questions total.
-- Max 3 unresolved `[NEEDS CLARIFICATION]` markers in output — beyond that,
-  pick a reasonable default and note it in the Sync Impact Report.
-- If the gap report is unambiguous: output the following message to the user and skip this step entirely.
+After resolving all ambiguities, scan for any remaining `[NEEDS CLARIFICATION]` markers. If any exist, **STOP**:
 
-  > "I have no doubts about the gap report. Proceeding to reconcile directly."
+```
+🚫 Reconciliation blocked — <N> unresolved item(s) remain:
+
+  · [item description]
+  · ...
+
+These could not be resolved automatically. Address them and run
+/product-flow:speckit.reconcile again.
+```
+
+If the gap report is fully unambiguous from the start, skip this step entirely and proceed silently.
 
 ### 3. Impact Map
 

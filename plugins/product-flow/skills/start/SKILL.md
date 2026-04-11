@@ -282,6 +282,14 @@ Spec: $SPEC_PATH
 - [ ] In code review
 - [ ] Published
 
+## How to test
+
+### For PM
+*To be populated when the implementation is submitted for review.*
+
+### For Devs
+*To be populated when the implementation is submitted for review.*
+
 ## History
 
 | Status | Date Time | GitHub User | Note |

@@ -154,7 +154,7 @@ If no domain-specific terms are found, skip this step silently.
     - **Classify each question** as **Technical** or **Product**:
       - **Technical**: authentication, authorisation, security, compliance, data retention, integration patterns, infrastructure constraints, performance targets — resolve autonomously, never ask the PM.
       - **Product**: business intent, priorities, functional scope, user flows, terminology, acceptance criteria — ask the PM.
-    - For product questions: if more than 7 remain after the quality filter, keep the 7 of highest impact (by Impact × Uncertainty). Quality filter is primary; 7 is the safety net.
+    - Ask all product questions that survive the quality filter — do not cap or silently drop any.
 
 4. Resolve all questions:
 
@@ -220,7 +220,7 @@ If no domain-specific terms are found, skip this step silently.
 
 6. Validation (performed after EACH write plus final pass):
    - Clarifications session contains exactly one bullet per accepted answer (no duplicates).
-   - Product questions asked ≤ 7 (safety net cap).
+   - All product questions that survived the quality filter were asked — none silently dropped.
    - Updated sections contain no lingering vague placeholders the new answer was meant to resolve.
    - No contradictory earlier statement remains (scan for now-invalid alternative choices removed).
    - Markdown structure valid; only allowed new headings: `## Clarifications`, `### Session YYYY-MM-DD`.
@@ -257,6 +257,6 @@ Behavior rules:
 - Avoid speculative tech stack questions unless the absence blocks functional clarity.
 - Respect user early termination signals ("stop", "done", "proceed").
 - If no product questions exist, output a compact coverage summary (all categories Clear or Deferred to plan) then suggest advancing.
-- If product questions exceed 7 after filtering, keep the 7 highest impact and flag the rest as Deferred with rationale.
+- If many product questions arise, ask them all in a single grouped AskUserQuestion call — never silently drop any.
 
 Context for prioritization: $ARGUMENTS

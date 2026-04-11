@@ -13,6 +13,8 @@ effort: medium
 | `SPEC_REVIEW` | `/product-flow:consolidate-spec` |
 | `PLAN_PENDING` | `/product-flow:plan` |
 | `PLAN_REVIEW` | `/product-flow:consolidate-plan` |
+| `TASKS_PENDING` | `/product-flow:tasks` |
+| `CHECKLIST_PENDING` | `/product-flow:checklist` |
 
 If a transition requires work that has no dedicated sub-skill, stop and surface the gap — do not implement it inline.
 
@@ -51,7 +53,17 @@ If a transition requires work that has no dedicated sub-skill, stop and surface 
                                │ (auto-proceed)
                                ▼
             ┌───────────────────────┐
-            │      READY_TO_BE_BUILT      │──── blocked: redirect to /product-flow:build
+            │     TASKS_PENDING     │◄── auto: /product-flow:tasks runs here
+            └───────────┬───────────┘
+                        │ (auto-proceed)
+                        ▼
+            ┌───────────────────────┐
+            │   CHECKLIST_PENDING   │◄── auto: /product-flow:checklist runs here
+            └───────────┬───────────┘
+                        │ (auto-proceed)
+                        ▼
+            ┌───────────────────────┐
+            │    READY_TO_BE_BUILT  │──── blocked: redirect to /product-flow:build
             └───────────────────────┘
 ```
 
@@ -94,14 +106,16 @@ BRANCH=$(git branch --show-current)
 cat "specs/$BRANCH/status.json" 2>/dev/null || echo "{}"
 ```
 
-Map to state using `spec_created` and `plan_generated` fields:
+Map to state using `spec_created`, `plan_generated`, and `tasks_generated` fields:
 
-| spec_created | plan_generated | has_comments | → State |
-|:---:|:---:|:---:|:---|
-| ✓ | ✗ | ✓ | `SPEC_REVIEW` |
-| ✓ | ✗ | ✗ | `PLAN_PENDING` → auto-generate plan |
-| ✓ | ✓ | ✓ | `PLAN_REVIEW` |
-| ✓ | ✓ | ✗ | `READY_TO_BE_BUILT` |
+| spec_created | plan_generated | tasks_generated | checklist_done | has_comments | → State |
+|:---:|:---:|:---:|:---:|:---:|:---|
+| ✓ | ✗ | - | - | ✓ | `SPEC_REVIEW` |
+| ✓ | ✗ | - | - | ✗ | `PLAN_PENDING` → auto-generate plan |
+| ✓ | ✓ | - | - | ✓ | `PLAN_REVIEW` |
+| ✓ | ✓ | ✗ | - | ✗ | `TASKS_PENDING` → auto-generate tasks |
+| ✓ | ✓ | ✓ | ✗ | ✗ | `CHECKLIST_PENDING` → auto-validate requirements |
+| ✓ | ✓ | ✓ | ✓ | ✗ | `READY_TO_BE_BUILT` |
 
 For `has_comments`: invoke `/product-flow:pr-comments pending` and `/product-flow:pr-comments read-answers` in parallel.
 - If `pending` returns non-empty UNANSWERED comments → `has_comments = true`.
@@ -195,7 +209,71 @@ Starting...
 Invoke `/product-flow:consolidate-plan`.
 Wait for it to finish. If ERROR: propagate and stop.
 
-Then continue automatically to `READY_TO_BE_BUILT`.
+Then **within this same invocation**, proceed immediately to the `TASKS_PENDING` transition below — do not stop and wait for a new user command.
+
+#### `TASKS_PENDING` (auto-generate)
+
+```
+🔜 Breaking down the plan into development tasks.
+
+Starting...
+```
+
+Invoke `/product-flow:tasks`.
+
+**Wait for `/product-flow:tasks` to finish completely before continuing.**
+If it produces an ERROR: propagate and stop.
+
+Then **within this same invocation**, proceed immediately to the `CHECKLIST_PENDING` transition below.
+
+#### `CHECKLIST_PENDING` (auto-validate)
+
+```
+🔜 Validating requirements quality.
+
+Starting...
+```
+
+Invoke `/product-flow:checklist`.
+
+**Wait for `/product-flow:checklist` to finish completely before continuing.**
+If it produces an ERROR: propagate and stop.
+
+After it finishes, check for unresolved items:
+
+```bash
+BRANCH=$(git branch --show-current)
+grep -r "^- \[ \]" "specs/$BRANCH/checklists/" 2>/dev/null
+```
+
+If any `- [ ]` lines are found, **STOP**:
+
+```
+🚫 Requirements validation blocked — <N> unresolved item(s):
+
+  · [CHK###] <item description>
+  · [CHK###] <item description>
+  ...
+
+These items could not be resolved automatically and require input
+before implementation can begin. Review the checklist at:
+specs/<branch>/checklists/<filename>
+
+Reply with your answers and run /product-flow:continue again.
+```
+
+If no unresolved items remain, show:
+
+```
+✅ Requirements validated.
+
+─────────────────────────────────────────
+➡️  NEXT STEP
+─────────────────────────────────────────
+Run /product-flow:continue to proceed to build,
+or add comments on the PR first if changes are needed.
+─────────────────────────────────────────
+```
 
 #### `READY_TO_BE_BUILT`
 

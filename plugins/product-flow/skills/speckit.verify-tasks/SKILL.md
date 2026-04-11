@@ -18,13 +18,6 @@ Supported arguments:
 - Optional space/comma-separated task IDs to verify only specific tasks.
 - `--scope branch|uncommitted|all` (default: `all`) to control which git changes count as evidence.
 
-Display this advisory **immediately** before any other work:
-
-> ⚠️ **FRESH SESSION ADVISORY**: For maximum reliability, run
-> `/product-flow:speckit.verify-tasks` in a **separate** agent session from the
-> one that ran `/product-flow:speckit.implement.withTDD`. The implementing
-> agent's context biases it toward confirming its own work.
-
 ## Outline
 
 **Asymmetric error model** — a false flag (flagging real work) is cheap; the

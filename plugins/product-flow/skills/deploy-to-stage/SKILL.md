@@ -168,6 +168,22 @@ If the user chose "Yes, write them" in step 4:
 mkdir -p docs/adr
 ```
 
+Before writing, check whether `docs/adr/` would be ignored by git:
+
+```bash
+git check-ignore -q docs/adr && echo "GITIGNORED"
+```
+
+If the output is `GITIGNORED`, warn the user:
+
+```
+⚠️  docs/adr/ is listed in .gitignore — ADR files written there will not be tracked in version control.
+
+To fix it, remove or adjust the relevant .gitignore entry, then run /product-flow:deploy-to-stage again.
+```
+
+**STOP.**
+
 Write each generated ADR file to `docs/adr/`. Then:
 
 ```bash
@@ -193,7 +209,7 @@ If the user chose "No, skip": skip this step silently.
 
 Use `$PR_NUMBER` from step 1 (the branch may no longer exist after the merge).
 
-Read the current PR body first (`gh pr view --json body -q '.body'`), then apply these changes — preserve all other sections intact:
+Read the current PR body first (`gh pr view --json body -q '.body'`). If the output is empty, stop with ERROR "Could not read PR body — check GitHub access and try again." Then apply these changes — preserve all other sections intact:
 - Mark `- [x] Published` in `## Status`
 - Add row to `## History`: `| Published | YYYY-MM-DD HH:MM:SS | @github-user | Merged to main |`
 

@@ -1,5 +1,5 @@
 ---
-description: "STEP 3 — Generates the feature code. Run when the plan is ready."
+description: "STEP 3 — Generates the feature code. Run when the tasks are ready."
 model: sonnet
 effort: medium
 ---
@@ -20,21 +20,21 @@ gh pr view --json number,state,url,body
 
 Invoke `/product-flow:inbox-sync`.
 
-### 2. Gate: plan generated
+### 2. Gate: tasks generated
 
-Read `specs/<branch>/status.json` and verify that `plan_generated` is present:
+Read `specs/<branch>/status.json` and verify that `tasks_generated` is present, or that `specs/<branch>/tasks.md` exists on disk:
 
 ```bash
 BRANCH=$(git branch --show-current)
-cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.plan_generated' > /dev/null
+cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.tasks_generated' > /dev/null || ls "specs/$BRANCH/tasks.md" > /dev/null 2>&1
 ```
 
-If not marked:
+If neither condition is met:
 
 ```
-🚫 The plan has not been generated yet.
+🚫 The tasks have not been generated yet.
 
-Run /product-flow:continue to generate the plan first.
+Run /product-flow:continue to generate the tasks first.
 ```
 
 **STOP.**
@@ -74,8 +74,6 @@ BRANCH=$(git branch --show-current)
 cat "specs/$BRANCH/status.json" 2>/dev/null || echo "{}"
 ```
 
-- Tasks done? → `tasks_generated` is set in `status.json` OR `specs/<feature-dir>/tasks.md` exists on disk
-- Checklist done? → `checklist_done` is set in `status.json` OR `specs/<feature-dir>/checklists/` exists with at least one file
 - Code written? → `code_written` is set in `status.json`
 - Code verified? → `code_verified` is set in `status.json`
 - Verify-tasks done? → `specs/<feature-dir>/verify-tasks-report.md` exists
@@ -90,7 +88,7 @@ Determine entry point using these mutually exclusive cases (check in order):
 
 1. **All done** — `code_verified` is set in `status.json` AND `verify-tasks-report.md` exists: skip all work and go directly to the final report.
 
-2. **Re-entry shortcut** — `code_written` is set in `status.json` AND `code_verified` is NOT set AND `verify-tasks-report.md` does NOT exist: the user chose option B ("open a new session") from the verify-tasks proposal. **Skip directly to step 6b** without re-running tasks, checklist, or implement.
+2. **Re-entry shortcut** — `code_written` is set in `status.json` AND `code_verified` is NOT set AND `verify-tasks-report.md` does NOT exist: the user chose option B ("open a new session") from the verify-tasks proposal. **Skip directly to step 4b** without re-running implement.
 
 2.5. **Partial implementation** — `code_written` is NOT set in `status.json` AND uncommitted changes exist in files **outside** `specs/` (i.e., source code or test files): this is a previous interrupted implementation run.
 
@@ -138,7 +136,7 @@ Your choice:
   ```
   If this commit also fails with a GPG error: same fix as above. **STOP.**
 
-  Add a History row `| Code written | YYYY-MM-DD HH:MM:SS | @github-user | recovered from interrupted run |` to the PR body. Skip directly to step 6b.
+  Add a History row `| Code written | YYYY-MM-DD HH:MM:SS | @github-user | recovered from interrupted run |` to the PR body. Skip directly to step 4b.
 
 - **B** → run:
   first show the exact files that will be deleted or reset:
@@ -184,18 +182,14 @@ Then run /product-flow:build again.
 ```
 **STOP.**
 
-Then re-read `specs/<branch>/status.json` and continue with the appropriate remaining step (step 4, 5, or 6) based on what fields are not yet set.
+Then re-read `specs/<branch>/status.json` and continue with the appropriate remaining step based on what fields are not yet set.
 
-3. **Normal flow** — code is NOT yet generated (and no uncommitted changes): build the pending steps list based on what is NOT yet done and show:
+3. **Normal flow** — code is NOT yet generated (and no uncommitted changes): show:
 
 ```
-📍 Current status: Plan generated · Ready to build
+📍 Current status: Tasks and requirements validated · Ready to build
 
-🔜 I'm going to:
-   [only list pending steps, e.g.:]
-   1. Break down the plan into development tasks   ← skip if already done
-   2. Validate requirements quality                ← skip if already done
-   3. Generate the feature code                    ← skip if already done
+🔜 Generating the feature code...
 
 This may take several minutes.
 
@@ -204,100 +198,13 @@ Starting...
 
 If all steps (including verify-tasks) are already done, skip to the final report.
 
-### 4. Generate tasks
-
-Skip this step if `tasks_generated` is already set in `status.json` OR if `specs/<feature-dir>/tasks.md` already exists on disk.
-
-Otherwise, show:
-```
-⏳ Step 1/3 — Breaking down the plan into tasks...
-```
-
-Invoke `/product-flow:tasks`.
-
-**Wait for `/product-flow:tasks` to finish completely before continuing.**
-If it produces an ERROR: propagate and stop.
-
-Then show:
-```
-✅ Step 1/3 — Tasks ready.
-```
-
-### 5. Validate requirements quality
-
-Skip this step if `checklist_done` is set in `status.json` OR if `specs/<feature-dir>/checklists/` already exists and contains at least one file other than `requirements.md`.
-
-Otherwise, show:
-```
-⏳ Step 2/3 — Validating requirements quality...
-```
-
-Invoke `/product-flow:checklist`.
-
-**Wait for `/product-flow:checklist` to finish completely before continuing.**
-If it produces an ERROR: propagate and stop.
-
-If the checklist reveals CRITICAL issues (gaps, conflicts, or ambiguities that would break implementation):
-
-For each critical issue, classify and resolve:
-
-- **Technical** (architecture, performance, security, data model, infrastructure): resolve autonomously using available context. Invoke `/product-flow:pr-comments write` with:
-  - `type`: `technical`, `status`: `ANSWERED`
-  - `body`:
-    ```
-    **Technical question detected:** "[identified question]"
-
-    **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
-
-    **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
-    ```
-- **Product** (scope, user flow, acceptance criteria, business rules): use **AskUserQuestion** to ask the PM (single call, one entry per issue). After receiving answers, invoke `/product-flow:pr-comments write` with:
-  - `type`: `product`, `status`: `ANSWERED`
-  - `body`:
-    ```
-    **Checklist issue:** "[the gap or ambiguity found]"
-
-    **Options:** A. "[option A]" B. "[option B]" (... etc)
-
-    **PM answer:** "[the answer received]"
-
-    **Change applied:** [what was updated, or "no change — decision recorded"]
-    ```
-
-After all critical issues are resolved via the decision flow, write `checklist_done` to `specs/<branch>/status.json`:
-
-```bash
-BRANCH=$(git branch --show-current)
-STATUS_FILE="specs/$BRANCH/status.json"
-EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"checklist_done": $ts}' > "$STATUS_FILE"
-git add "$STATUS_FILE"
-git commit -m "chore: record checklist_done in status.json"
-git push origin HEAD
-```
-
-If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
-```
-🚫 Commit failed — GPG signing is blocking automatic commits.
-
-To fix it, run in your terminal:
-  git config commit.gpgsign false
-
-Then run /product-flow:build again.
-```
-**STOP.**
-
-Show `✅ Step 2/3 — Requirements validated.` and continue to step 6.
-
-The only case that warrants a **STOP** is if the PM explicitly answers "Other" with a response requiring follow-up before building. In that case, state clearly what is needed and stop.
-
-### 6. Implement
+### 4. Implement
 
 Skip this step if `code_written` is already set in `status.json`.
 
 Otherwise, show:
 ```
-⏳ Step 3/3 — Generating feature code... (this may take several minutes)
+⏳ Generating feature code... (this may take several minutes)
 ```
 
 Invoke `/product-flow:implement`.
@@ -305,7 +212,7 @@ Invoke `/product-flow:implement`.
 **Wait for `/product-flow:implement` to finish completely before continuing.**
 If it produces an ERROR: propagate and stop.
 
-### 6b. Verify-tasks (re-entry from new session)
+### 4b. Verify-tasks (re-entry from new session)
 
 **Entry condition** (must match exactly — both required):
 - `code_written` is set in `status.json` AND `code_verified` is NOT set, AND
@@ -324,11 +231,11 @@ Invoke `/product-flow:speckit.verify-tasks`.
 - If it flags **NOT_FOUND** or **PARTIAL** tasks: surface the interactive
   walkthrough and wait for the user to resolve each item.
 - When the walkthrough finishes (or if no items are flagged): continue to
-  step 7.
+  step 5.
 
-### 6c. Mark code as verified
+### 4c. Mark code as verified
 
-Runs after step 6 or step 6b completes successfully (verify-tasks passed or no flagged items).
+Runs after step 4 or step 4b completes successfully (verify-tasks passed or no flagged items).
 
 Write `code_verified` to `specs/<branch>/status.json` and check `- [x] Code generated` in the PR body:
 
@@ -362,7 +269,7 @@ Read the current PR body first (`gh pr view --json body -q '.body'`), then apply
 gh pr edit --body "<updated-body>"
 ```
 
-### 7. Final report
+### 5. Final report
 
 ```
 ✅ Feature built

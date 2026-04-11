@@ -112,9 +112,10 @@ Any time a question or decision arises during this session, classify it before a
 4. If it cannot be resolved with available context: post with `status: UNANSWERED` and continue.
 
 **Product** — business rules, domain terminology, actor responsibilities, slice scope, acceptance criteria:
-1. Ask the user directly in chat. One question at a time.
+1. Collect all pending product questions and ask the PM in a **single AskUserQuestion call** (one entry per question, with `options` and a recommended default).
 2. Once answered, post a PR comment via `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`, recording the question and the user's answer.
-3. Continue with the confirmed decision.
+3. Record the decision in `event-model.md` in the relevant slice or in a `## Decisions` section.
+4. Continue with the confirmed decisions.
 
 Never ask the user a technical question. Never silently drop a decision without a PR comment.
 

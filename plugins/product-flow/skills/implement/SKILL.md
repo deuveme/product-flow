@@ -27,23 +27,6 @@ cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.spec_created, .plan_genera
 TASKS_DONE=$(cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.tasks_generated' > /dev/null && echo "true" || ([ -f "specs/$BRANCH/tasks.md" ] && echo "true" || echo "false"))
 ```
 
-Invoke `/product-flow:pr-comments read-answers`.
-
-Show: `📬 Reading PR answers...`
-
-For each new answer found, show before applying:
-```
-  ⏳ Question <N> — <one-line summary of the question> → applying to <artifact>...
-```
-Apply it, then show:
-```
-  ✅ Question <N> — applied.
-```
-
-After all answers are processed, show: `✅ <N> answer(s) applied.` (or `No new answers found.` if none).
-
-After applying, invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers (e.g. `1 3`).
-
 If `TASKS_DONE` is `false`:
 
 ```
@@ -70,6 +53,23 @@ Once all questions are answered, run /product-flow:build again.
 ```
 
 **STOP.**
+
+Invoke `/product-flow:pr-comments read-answers`.
+
+Show: `📬 Reading PR answers...`
+
+For each new answer found, show before applying:
+```
+  ⏳ Question <N> — <one-line summary of the question> → applying to <artifact>...
+```
+Apply it, then show:
+```
+  ✅ Question <N> — applied.
+```
+
+After all answers are processed, show: `✅ <N> answer(s) applied.` (or `No new answers found.` if none).
+
+After applying, invoke `/product-flow:pr-comments mark-processed` with the question numbers of all applied answers (e.g. `1 3`).
 
 ### 3. Verify clean repo state
 
@@ -155,7 +155,7 @@ Then run /product-flow:build again.
 
 Do **not** check `- [x] Code generated` in the PR body — that is set by `/product-flow:build` after verify-tasks passes.
 
-Read the current PR body first (`gh pr view --json body -q '.body'`), then add only this row to `## History` — preserve all other sections intact:
+Read the current PR body first (`gh pr view --json body -q '.body'`). If the output is empty, stop with ERROR "Could not read PR body — check GitHub access and try again." Then add only this row to `## History` — preserve all other sections intact:
 
 ```
 | Code written | YYYY-MM-DD | speckit.implement.withTDD + praxis.test-desiderata completed |
@@ -176,37 +176,17 @@ If it returns a **Blocked** status: do not show the final report until the user 
 
 > **Entry condition for this step**: runs after `speckit.implement.withTDD` completes normally (not skipped).
 
-After the retro completes, propose:
+After the retro completes, output:
 
 ```
 🔍 Final quality check
 
-This verifies that all tasks have been fully implemented with no placeholders left.
-
-⚠️  For best results, run this in a new session.
-
-  A. Run it now
-  B. I'll open a new Claude Code session and run /product-flow:build again there
-  C. Skip
-
-Your choice:
+Open a new Claude Code session and run /product-flow:build — it will detect
+that the code is already generated and run the verification automatically
+with a clean context.
 ```
 
-Wait for the user's response:
-
-- **A** → invoke `/product-flow:speckit.verify-tasks`. Wait for it to finish.
-  - If it flags **NOT_FOUND** or **PARTIAL** tasks: surface the walkthrough and
-    wait for the user to resolve each item before continuing.
-  - When the walkthrough finishes (or if no items are flagged): continue to
-    step 11.
-- **B** → output:
-  ```
-  ✅ Noted. When you open a new session, run /product-flow:build — it will
-  detect that the code is already generated and run verify-tasks automatically.
-  ```
-  Then continue to step 11.
-
-- **C** → continue to step 11 silently.
+Then continue to step 11.
 
 ### 11. Final report
 

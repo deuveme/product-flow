@@ -14,16 +14,16 @@ start
   └─ speckit.retro
 
 continue
-  ├─ inbox-sync                        (internal inbox orchestration)
-  ├─ [SPEC_REVIEW]  → consolidate-spec → (then auto-proceeds to PLAN_PENDING)
-  ├─ [PLAN_PENDING] → plan
-  └─ [PLAN_REVIEW]  → consolidate-plan → (then auto-proceeds to READY_TO_BE_BUILT)
+  ├─ inbox-sync                              (internal inbox orchestration)
+  ├─ [SPEC_REVIEW]       → consolidate-spec → (then auto-proceeds to PLAN_PENDING)
+  ├─ [PLAN_PENDING]      → plan
+  ├─ [PLAN_REVIEW]       → consolidate-plan → (then auto-proceeds to TASKS_PENDING)
+  ├─ [TASKS_PENDING]     → tasks            → (then auto-proceeds to CHECKLIST_PENDING)
+  └─ [CHECKLIST_PENDING] → checklist        → (then auto-proceeds to READY_TO_BE_BUILT)
 
 build
   ├─ inbox-sync                        (internal inbox orchestration)
   ├─ pr-comments pending               (pre-implement gate: resolve UNANSWERED before code)
-  ├─ tasks            (if tasks not yet generated)
-  ├─ checklist        (if checklists not yet generated)
   ├─ implement        (if code not yet generated)
   └─ speckit.verify-tasks  (re-entry shortcut only)
 

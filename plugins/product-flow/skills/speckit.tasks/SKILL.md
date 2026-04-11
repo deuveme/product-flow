@@ -97,6 +97,8 @@ The tasks.md should be immediately executable - each task must be specific enoug
 
 **Tests are OPTIONAL**: Only generate test tasks if explicitly requested in the feature specification or if user requests TDD approach.
 
+**🚫 NEVER generate review, validation, or approval tasks** (e.g. "Review implementation", "Validate with PM", "User acceptance review"). The workflow already has explicit review steps (checklist, verify-tasks, submit). Adding them as tasks creates redundancy and noise.
+
 ### Checklist Format (REQUIRED)
 
 Every task MUST strictly follow this format:

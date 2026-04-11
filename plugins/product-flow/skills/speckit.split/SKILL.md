@@ -326,6 +326,8 @@ ORIG_PR_NUMBER=$(gh pr view --json number -q '.number')
 ORIG_PR_BODY=$(gh pr view --json body -q '.body')
 ```
 
+If `ORIG_PR_BODY` is empty, stop with ERROR "Could not read PR body — check GitHub access and try again."
+
 Reconstruct the body by appending a new row to the History table. Take `ORIG_PR_BODY` as the base, find the History table, and add after the last existing row:
 
 ```
@@ -359,6 +361,14 @@ Next steps:
 - Continue current feature:  /product-flow:continue
 - Start extracted feature:   /product-flow:status  (switch to $NEW_BRANCH)
 ```
+
+## Exit state
+
+After a successful split (steps 4a–4g completed):
+- **Current branch** (`BRANCH_NAME`): you are back on it, spec trimmed, trimmed spec committed and pushed. Status.json is unchanged — its existing workflow state (e.g. `spec_created`) is still valid. `/product-flow:continue` can be run immediately.
+- **New branch** (`NEW_BRANCH`): exists on remote with `spec_created` recorded in status.json and a draft PR open. Start the new feature's workflow with `/product-flow:continue` after switching to it.
+
+If the split was declined (score 0 or user chose "No"): you remain on `BRANCH_NAME` with no changes made.
 
 ## Key rules
 
