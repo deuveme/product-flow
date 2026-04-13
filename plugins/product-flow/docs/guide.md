@@ -49,6 +49,7 @@ plugins/product-flow/
             ├── praxis.frontend-architecture    (called in plan: validate feature-based structure)
             ├── praxis.bdd-with-approvals       (called in implement: write approval specs first)
             ├── praxis.test-desiderata          (called in implement: validate test quality)
+            ├── bugmagnet                        (called in implement: adversarial coverage pass using exploratory testing heuristics)
             ├── praxis.code-simplifier          (called in implement: simplify and refine code after TDD cycles)
             ├── praxis.collaborative-design     (optional pre-spec: explore ambiguous features visually before speckit.specify)
             ├── praxis.event-modeling           (optional in plan: decompose event-driven features into slices before speckit.plan)
@@ -91,7 +92,7 @@ specs/<branch>/
 |---|---|
 | `/product-flow:start` | create branch + Draft PR → facilitated product framing (4 dimensions) + visual assets + docs → quality gate → [`praxis.collaborative-design` if vague] → `speckit.specify` → `speckit.retro` |
 | `/product-flow:continue` | `inbox-sync` → state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` / `TASKS_PENDING` → `tasks` / `CHECKLIST_PENDING` → `checklist` (dispatched by state machine) |
-| `/product-flow:build` | `inbox-sync` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `speckit.retro`) → directs to open a new session for `speckit.verify-tasks` |
+| `/product-flow:build` | `inbox-sync` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `bugmagnet` → `speckit.retro`) → directs to open a new session for `speckit.verify-tasks` |
 | `/product-flow:submit` | `inbox-sync` → `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → optional git add/commit/push (only if local changes exist) → `gh pr ready` on first run (exits DRAFT) → proposes ADRs in PR body |
 | `/product-flow:deploy-to-stage` | [ADR consolidation: ask user → generate in memory if yes] → `gh pr merge --squash --delete-branch` → [write ADRs to `docs/adr/` + commit if yes] → mark published |
 
@@ -312,8 +313,9 @@ Bot comments are tracked via invisible HTML markers on the first line:
 1. Calls `/product-flow:praxis.bdd-with-approvals` → writes approval fixtures (executable specs) *(TS/JS only)*
 2. Calls `/product-flow:speckit.implement.withTDD` → implements with Red-Green-Refactor TDD + ZOMBIES. After each task, `praxis.code-simplifier` is invoked on the touched files. As each task is completed, its status in the PR checklist section is updated to `DONE`
 3. Calls `/product-flow:praxis.test-desiderata` → validates test quality against Kent Beck's 12 properties
-4. Calls `/product-flow:speckit.retro` → phase retrospective and artifact sync
-5. Proposes `/product-flow:speckit.verify-tasks` → user chooses: run now, open new session, or skip
+4. Calls `/product-flow:bugmagnet` → adversarial coverage pass: applies exploratory testing heuristics to find untested cases; writes HIGH priority tests automatically
+5. Calls `/product-flow:speckit.retro` → phase retrospective and artifact sync
+6. Proposes `/product-flow:speckit.verify-tasks` → user chooses: run now, open new session, or skip
 
 **`consolidate-spec` skill:**
 1. Reads pending PR comments and user answers via `pr-comments pending` + `pr-comments read-answers`

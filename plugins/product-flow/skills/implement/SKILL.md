@@ -130,11 +130,11 @@ Invoke `/product-flow:praxis.test-desiderata` pointing to the test files generat
 
 ### 7b. Adversarial coverage pass
 
-Invoke `/product-flow:repo_original.bugmagnet`.
+Invoke `/product-flow:bugmagnet`.
 
-`repo_original.bugmagnet` applies exploratory testing heuristics (boundaries, error conditions, state transitions, authorization, CRUD matrix, data quality, concurrency) to find test cases not covered by the existing suite.
+`bugmagnet` applies exploratory testing heuristics (boundaries, error conditions, state transitions, authorization, CRUD matrix, data quality, concurrency) to find test cases not covered by the existing suite.
 
-**Wait for `repo_original.bugmagnet` to finish before continuing.**
+**Wait for `bugmagnet` to finish before continuing.**
 
 - HIGH priority cases: written automatically as new tests — commit them alongside the implementation.
 - MEDIUM / LOW cases: reported for the developer to decide in code review. No action required before continuing.

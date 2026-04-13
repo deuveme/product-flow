@@ -69,6 +69,7 @@ implement
   ├─ speckit.implement.withTDD
   │     └─ praxis.code-simplifier  (called per task within withTDD)
   ├─ praxis.test-desiderata
+  ├─ bugmagnet
   ├─ speckit.retro
   └─ speckit.verify-tasks          (optional, user choice)
 

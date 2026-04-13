@@ -534,6 +534,216 @@ If all checks pass: continue.
 
 ---
 
+### 5b. Epic scope check
+
+Evaluate `GATHERED_CONTEXT` for signals that the description covers more than one independent deployable feature.
+
+**Epic signals — score 1 point if ANY of these fire:**
+
+- Two or more distinct actors with completely independent journeys (not just different permissions on the same journey)
+- Two or more outcomes that are unrelated and could each provide standalone value
+- The `full_description` uses conjunctions bundling distinct product lines: "and also", "as well as", "plus", "additionally" linking separate user-facing capabilities
+- The Out of Scope answer defers a feature that is clearly part of the same product initiative ("we'll do X later") — suggesting X is a sibling feature, not a future iteration
+- The Actor + Main Scenario dimension describes multiple scenarios with no dependency between them
+
+**Score 0** — no epic signals. Continue silently to step 6.
+
+**Score ≥ 1** — ask the PM via `AskUserQuestion`:
+
+> "This looks like it may cover more than one independent feature: [name the identified sub-features in one sentence each]. Should we keep this as a single feature or split it into separate ones now?"
+
+Options: `Keep as a single feature` (Recommended if uncertain) / `Split into separate features`
+
+If the PM selects **Keep as a single feature**: continue to step 6 without changes.
+
+If the PM selects **Split into separate features**: execute the split below, then continue to step 6 with the trimmed scope on the current branch.
+
+---
+
+#### 5b-i. Determine split boundaries
+
+Based on the gathered context, identify:
+
+- **Feature A** (current branch `BRANCH_NAME`): the primary sub-feature — the one most directly described in `$ARGUMENTS`. Define its trimmed scope: which outcome, which actor+scenario, which constraints apply.
+- **Feature B, C…** (new branches): each remaining sub-feature. Define each one's scope in the same terms.
+
+For each new feature, determine its short name (2–4 words, kebab-case, action-noun).
+
+Ask the PM to confirm the split boundaries via `AskUserQuestion` if any boundary is ambiguous. Show the proposed split clearly:
+
+```
+Feature A — [BRANCH_NAME] (keep)
+  Outcome: [trimmed outcome]
+  Actor + Scenario: [trimmed scenario]
+
+Feature B — [proposed-slug] (new)
+  Outcome: [extracted outcome]
+  Actor + Scenario: [extracted scenario]
+
+[repeat for C, D…]
+```
+
+Accept confirmation before executing.
+
+---
+
+#### 5b-ii. Create new branches and Draft PRs
+
+For each new sub-feature (Feature B, C…):
+
+**Find next branch number:**
+
+```bash
+git fetch --all --prune
+git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-'
+git branch | grep -E '^[* ]*[0-9]+-'
+ls specs/ 2>/dev/null | grep -E '^[0-9]+-'
+```
+
+Compute next number: highest N + 1, zero-padded to 3 digits. Set `NEW_BRANCH = NNN-<short-name>`.
+
+**Create branch from main:**
+
+```bash
+git checkout main
+git pull
+git checkout -b "$NEW_BRANCH"
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+NEW_FEATURE_DIR="$REPO_ROOT/specs/$NEW_BRANCH"
+mkdir -p "$NEW_FEATURE_DIR/images"
+mkdir -p "$NEW_FEATURE_DIR/docs"
+```
+
+**Write `gathered-context.md` for the new branch** — populate it with:
+- The sub-feature's trimmed scope (outcome, actor+scenario, out of scope, constraints)
+- All shared context that applies to both features: visual assets, external documentation, shared technical decisions
+- A `## Related Features` section:
+  ```markdown
+  ## Related Features
+  - **[BRANCH_NAME]**: [one-line description of the sibling feature]
+  ```
+
+**Write `status.json`:**
+
+```bash
+echo "{}" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"FEATURE_STARTED": $ts}' > "$NEW_FEATURE_DIR/status.json"
+```
+
+**Commit and push:**
+
+```bash
+git add "specs/$NEW_BRANCH/"
+git commit -m "chore: initialize feature branch and gathered context"
+git push -u origin HEAD
+```
+
+**Open Draft PR:**
+
+```bash
+NEW_SLUG_WORDS="${NEW_BRANCH#*-}"
+NEW_PR_TITLE="${NEW_BRANCH%%\-*}: ${NEW_SLUG_WORDS^}"
+
+gh pr create \
+  --title "$NEW_PR_TITLE" \
+  --draft \
+  --base main \
+  --body "$(cat <<EOF
+## Feature
+Spec: specs/$NEW_BRANCH/spec.md
+
+## Status
+- [ ] Spec created
+- [ ] Plan generated
+- [ ] Tasks generated
+- [ ] Code generated
+- [ ] In code review
+- [ ] Published
+
+## How to test
+
+### For PM
+*To be populated when the implementation is submitted for review.*
+
+### For Devs
+*To be populated when the implementation is submitted for review.*
+
+## History
+
+| Status | Date Time | GitHub User | Note |
+|--------|-----------|-------------|------|
+| PR created | $(date -u +%Y-%m-%d\ %H:%M:%S) | @$(gh api user --jq '.login') | Extracted from $BRANCH_NAME during epic split |
+
+## Notes
+
+## For Developers
+*PMs and designers can ignore this section.*
+
+### Checklist
+
+<!-- dev-checklist -->
+- [ ] **Spec** — pending
+- [ ] **Plan** — pending
+- [ ] **Tasks** — pending
+- [ ] **Implementation** — pending
+<!-- /dev-checklist -->
+EOF
+)"
+```
+
+Save the returned URL as `NEW_PR_URL`.
+
+Repeat for each additional new branch. Compute a fresh branch number for each one after the previous branch has been created.
+
+---
+
+#### 5b-iii. Return to current branch and trim its gathered context
+
+```bash
+git checkout $BRANCH_NAME
+```
+
+Edit `specs/$BRANCH_NAME/gathered-context.md`:
+- Replace the Outcome, Actor + Main Scenario, Out of Scope, and Full Description with Feature A's trimmed scope
+- Keep all shared context (visual assets, external docs, shared technical decisions)
+- Append a `## Related Features` section:
+  ```markdown
+  ## Related Features
+  - **[NEW_BRANCH]**: [one-line description of what was extracted]
+  [repeat for each new branch]
+  ```
+
+Commit:
+
+```bash
+git add "specs/$BRANCH_NAME/gathered-context.md"
+git commit -m "chore: trim gathered context to feature A scope after epic split"
+git push origin HEAD
+```
+
+Also update the current PR body History table — add a row:
+
+```
+| Epic split | YYYY-MM-DD HH:MM:SS | @github-user | Split into [BRANCH_NAME] + [NEW_BRANCH(ES)] |
+```
+
+---
+
+#### 5b-iv. Report to PM
+
+```
+✂️  Epic split complete
+
+[BRANCH_NAME] — current branch, gathered context trimmed to: [one-line scope]
+[NEW_BRANCH]  — new branch created · PR: [NEW_PR_URL]
+[repeat for each new branch]
+
+Continuing with [BRANCH_NAME]. Run /product-flow:start on each new branch when ready.
+```
+
+Then update `GATHERED_CONTEXT` in memory to reflect the trimmed scope before continuing to step 6.
+
+---
+
 ### 6. Write spec (delegate to speckit.specify)
 
 Show:
