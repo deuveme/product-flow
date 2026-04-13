@@ -77,19 +77,19 @@ ask() {
 case "$TOOL_NAME" in
 
   Edit)
-    p=$(echo "$INPUT" | $JQ -r'.tool_input.file_path // empty')
+    p=$(echo "$INPUT" | $JQ -r '.tool_input.file_path // empty')
     [[ -n "$p" ]] && ! in_project "$p" && \
       block "Edit is not allowed outside the project repository." "$p"
     ;;
 
   Write)
-    p=$(echo "$INPUT" | $JQ -r'.tool_input.file_path // empty')
+    p=$(echo "$INPUT" | $JQ -r '.tool_input.file_path // empty')
     [[ -n "$p" ]] && ! in_project "$p" && \
       block "Write is not allowed outside the project repository." "$p"
     ;;
 
   NotebookEdit)
-    p=$(echo "$INPUT" | $JQ -r'.tool_input.notebook_path // empty')
+    p=$(echo "$INPUT" | $JQ -r '.tool_input.notebook_path // empty')
     [[ -n "$p" ]] && ! in_project "$p" && \
       block "NotebookEdit is not allowed outside the project repository." "$p"
     ;;
@@ -97,7 +97,7 @@ case "$TOOL_NAME" in
 # ── Bash: hard blocks ─────────────────────────────────────────────────────────
 
   Bash)
-    cmd=$(echo "$INPUT" | $JQ -r'.tool_input.command // empty')
+    cmd=$(echo "$INPUT" | $JQ -r '.tool_input.command // empty')
     [[ -z "$cmd" ]] && exit 0
 
     # Extract all absolute paths found in a string.
