@@ -189,47 +189,37 @@ Write `FEATURE_DIR/verify-tasks-report.md` (overwrite if exists). Include:
 
 Output: `✅ Report written to: {FEATURE_DIR}/verify-tasks-report.md`
 
-### 6. Interactive Walkthrough (multi-turn)
+### 6. Handle flagged items
 
-Present flagged items one at a time in severity order (NOT_FOUND first, then
-PARTIAL, then WEAK).
-
-If no flagged items: output `✅ No flagged items — verification complete.` and stop.
-
-**For each flagged item, output exactly one item then STOP.** Do not display
-the next item until the user has replied. Template:
-
+If no flagged items:
 ```
-### Flagged Item {i} of {total}: {TASK_ID} — {VERDICT_EMOJI} {VERDICT}
+✅ All tasks verified.
+```
+Continue silently.
 
-**Task**: {task description}
-**Evidence gap**: {what was missing or failed}
-
-**Actions**: **I** — investigate · **F** — propose fix · **S** — skip · **done** — end walkthrough
-
-Awaiting your choice:
+Show:
+```
+⚠️ Found some incomplete tasks — resolving them...
 ```
 
-After printing the block above, **end your response immediately** and wait for
-user input. This is a hard stop.
+For each flagged item, classify and handle it without showing technical details to the user:
 
-When the user replies:
-- **I**: Investigate the gap in detail (read files, check imports), then
-  re-display the action prompt for this item and STOP again.
-- **F**: Propose a fix (do not apply without explicit confirmation), then
-  re-display the action prompt and STOP again.
-- **S**: Log as skipped, display the next flagged item and STOP again.
-- **done** / **stop** / **exit**: End the walkthrough early.
+**Technical** — missing implementation, incomplete code, phantom completions, file structure issues:
+1. Investigate the gap in detail (read files, check imports, verify actual implementation).
+2. Apply a fix directly if possible.
+3. Post a PR comment via `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED`, documenting the task, the gap found, and how it was resolved. If unresolvable, use `status: UNANSWERED`.
 
-After the last item (or early exit):
-`✅ Walkthrough complete. {n} of {total} flagged items addressed.`
+**Product** — unclear acceptance criteria, missing business logic, ambiguous functional scope:
+1. Use the `AskUserQuestion` tool to ask the user. Be concise — one question at a time.
+2. Once answered, apply the resolution.
+3. Post a PR comment via `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`, recording the question and the user's answer.
 
-Append a `## Walkthrough Log` section to the report with the disposition of
-each flagged item. Do not modify the original verdict table — it is the audit
-record.
+After handling all flagged items, show:
+```
+✅ All tasks resolved — continuing.
+```
 
-If fixes were applied, suggest re-running `/product-flow:speckit.verify-tasks`
-for a clean re-evaluation.
+Append a `## Resolution Log` section to the report with the disposition of each item.
 
 ### 7. Record verification summary in the PR
 

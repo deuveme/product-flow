@@ -26,7 +26,7 @@ BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 ```
 
-Verify that `spec_created` is present. If missing: ERROR "The spec does not exist yet. Run /product-flow:start first."
+Verify that `SPEC_CREATED` is present. If missing: ERROR "The spec does not exist yet. Run /product-flow:start first."
 
 ### 3. Collect pending comments
 

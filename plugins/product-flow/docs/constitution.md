@@ -161,17 +161,17 @@ Fields written by each skill:
 
 | Field | Written by |
 |---|---|
-| `spec_created` | `/product-flow:start`, `speckit.split` |
-| `plan_generated` | `/product-flow:plan` |
-| `tasks_generated` | `/product-flow:tasks` |
-| `checklist_done` | `/product-flow:checklist` (after artifact commit) |
-| `code_written` | `/product-flow:implement` |
-| `code_verified` | `/product-flow:build` (after verify-tasks) |
-| `in_review` | `/product-flow:submit` |
+| `SPEC_CREATED` | `/product-flow:start`, `speckit.split` |
+| `PLAN_GENERATED` | `/product-flow:plan` |
+| `TASKS_GENERATED` | `/product-flow:tasks` |
+| `CHECKLIST_DONE` | `/product-flow:checklist` (after artifact commit) |
+| `CODE_WRITTEN` | `/product-flow:implement` |
+| `CODE_VERIFIED` | `/product-flow:build` (after verify-tasks) |
+| `IN_REVIEW` | `/product-flow:submit` |
 | `processed_answers` | `pr-comments mark-processed` — question numbers already applied (prevents re-processing) |
 | `processed_comment_ids` | `pr-comments mark-comments-processed` — IDs of general user comments already evaluated |
 
-**Fields are write-once.** Once a timestamp is recorded it must not be overwritten or removed. Always use `jq '. + {"field": $ts}'` to merge new fields — never replace the whole file. Skills that write to status.json must check for prior existence of a field if the step might run more than once (e.g. re-runs of submit should not overwrite `in_review`).
+**Fields are write-once.** Once a timestamp is recorded it must not be overwritten or removed. Always use `jq '. + {"field": $ts}'` to merge new fields — never replace the whole file. Skills that write to status.json must check for prior existence of a field if the step might run more than once (e.g. re-runs of submit should not overwrite `IN_REVIEW`).
 
 **Idempotency.** Every workflow command must be safe to re-run. Concrete rules:
 - Gate checks must rely on status.json fields, never on file existence alone (files can appear out of order).

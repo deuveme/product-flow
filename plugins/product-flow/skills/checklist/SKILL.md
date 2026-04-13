@@ -67,7 +67,7 @@ Write to `specs/<branch>/status.json` before committing:
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"checklist_done": $ts}' > "$STATUS_FILE"
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"CHECKLIST_DONE": $ts}' > "$STATUS_FILE"
 ```
 
 ```bash

@@ -16,7 +16,7 @@ start
 continue
   ├─ inbox-sync                              (internal inbox orchestration)
   ├─ [SPEC_REVIEW]       → consolidate-spec → (then auto-proceeds to PLAN_PENDING)
-  ├─ [PLAN_PENDING]      → plan
+  ├─ [PLAN_PENDING]      → speckit.clarify → plan
   ├─ [PLAN_REVIEW]       → consolidate-plan → (then auto-proceeds to TASKS_PENDING)
   ├─ [TASKS_PENDING]     → tasks            → (then auto-proceeds to CHECKLIST_PENDING)
   └─ [CHECKLIST_PENDING] → checklist        → (then auto-proceeds to READY_TO_BE_BUILT)
@@ -24,13 +24,13 @@ continue
 build
   ├─ inbox-sync                        (internal inbox orchestration)
   ├─ pr-comments pending               (pre-implement gate: resolve UNANSWERED before code)
-  ├─ implement        (if code not yet generated)
-  └─ speckit.verify-tasks  (re-entry shortcut only)
+  ├─ implement           (if code not yet generated)
+  ├─ speckit.verify-tasks              (re-entry shortcut only)
+  ├─ speckit.verify                    (verification gate after implement)
+  └─ speckit.reconcile                 (optional, if spec/plan need updating after verify)
 
 submit
-  ├─ inbox-sync                        (internal inbox orchestration)
-  ├─ speckit.verify
-  └─ speckit.reconcile  (optional, if user chooses option B)
+  └─ inbox-sync                        (internal inbox orchestration)
 
 deploy-to-stage
   (no sub-skill calls — direct git/gh operations)
@@ -111,15 +111,15 @@ inbox-sync
 |-------|----------------------|
 | `start` | Clean working tree; on main/master |
 | `continue` | On a feature branch; PR exists |
-| `build` | PR exists; `plan_generated` in status.json; feature directory exists |
-| `submit` | On a feature branch; PR exists; `code_verified` in status.json |
-| `deploy-to-stage` | `in_review` in status.json; PR approved by team |
-| `plan` | `spec_created` in status.json; no pending UNANSWERED comments |
-| `tasks` | `spec_created` + `plan_generated` in status.json; `plan.md` and `spec.md` exist in FEATURE_DIR |
-| `implement` | `tasks_generated` in status.json OR `tasks.md` exists in FEATURE_DIR; no UNANSWERED comments |
+| `build` | PR exists; `PLAN_GENERATED` in status.json; feature directory exists |
+| `submit` | On a feature branch; PR exists; `CODE_VERIFIED` in status.json |
+| `deploy-to-stage` | `IN_REVIEW` in status.json; PR approved by team |
+| `plan` | `SPEC_CREATED` in status.json; no pending UNANSWERED comments |
+| `tasks` | `SPEC_CREATED` + `PLAN_GENERATED` in status.json; `plan.md` and `spec.md` exist in FEATURE_DIR |
+| `implement` | `TASKS_GENERATED` in status.json OR `tasks.md` exists in FEATURE_DIR; no UNANSWERED comments |
 | `checklist` | `spec.md` exists in FEATURE_DIR |
-| `consolidate-spec` | `spec_created` in status.json; pending comments exist |
-| `consolidate-plan` | `plan_generated` in status.json; pending comments exist |
+| `consolidate-spec` | `SPEC_CREATED` in status.json; pending comments exist |
+| `consolidate-plan` | `PLAN_GENERATED` in status.json; pending comments exist |
 | `speckit.specify` | On a feature branch, or on main with clean working tree |
 | `speckit.plan` | `spec.md` exists in FEATURE_DIR |
 | `speckit.tasks` | `plan.md` and `spec.md` exist in FEATURE_DIR |

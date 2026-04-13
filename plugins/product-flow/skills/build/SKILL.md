@@ -20,28 +20,36 @@ gh pr view --json number,state,url,body
 
 Invoke `/product-flow:inbox-sync`.
 
-### 2. Gate: tasks generated
+### 2. Gate: ready to build
 
-Read `specs/<branch>/status.json` and verify that `tasks_generated` is present, or that `specs/<branch>/tasks.md` exists on disk:
+Read `specs/<branch>/status.json`:
 
 ```bash
 BRANCH=$(git branch --show-current)
-cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.tasks_generated' > /dev/null || ls "specs/$BRANCH/tasks.md" > /dev/null 2>&1
+cat "specs/$BRANCH/status.json" 2>/dev/null || echo "{}"
 ```
 
-If neither condition is met:
+Check in order — stop at the first failing condition:
 
-```
-🚫 The tasks have not been generated yet.
+1. `TASKS_GENERATED` is present OR `specs/<branch>/tasks.md` exists on disk. If not:
+   ```
+   🚫 The tasks have not been generated yet.
 
-Run /product-flow:continue to generate the tasks first.
-```
+   Run /product-flow:continue to generate the tasks first.
+   ```
+   **STOP.**
 
-**STOP.**
+2. `CHECKLIST_DONE` is present in `status.json`. If not:
+   ```
+   🚫 The checklists have not been completed yet.
+
+   Run /product-flow:continue to complete the checklist validation first.
+   ```
+   **STOP.**
 
 ### 2b. Pre-build comment review
 
-This step runs only if the entry point is **Normal flow** (no prior progress detected). Skip if re-entering mid-build (`code_written` already set).
+This step runs only if the entry point is **Normal flow** (no prior progress detected). Skip if re-entering mid-build (`CODE_WRITTEN` already set).
 
 Reminder to review AI-answered comments:
 
@@ -74,8 +82,8 @@ BRANCH=$(git branch --show-current)
 cat "specs/$BRANCH/status.json" 2>/dev/null || echo "{}"
 ```
 
-- Code written? → `code_written` is set in `status.json`
-- Code verified? → `code_verified` is set in `status.json`
+- Code written? → `CODE_WRITTEN` is set in `status.json`
+- Code verified? → `CODE_VERIFIED` is set in `status.json`
 - Verify-tasks done? → `specs/<feature-dir>/verify-tasks-report.md` exists
 
 Also check for uncommitted changes:
@@ -86,11 +94,11 @@ git status --porcelain
 
 Determine entry point using these mutually exclusive cases (check in order):
 
-1. **All done** — `code_verified` is set in `status.json` AND `verify-tasks-report.md` exists: skip all work and go directly to the final report.
+1. **All done** — `CODE_VERIFIED` is set in `status.json` AND `verify-tasks-report.md` exists: skip all work and go directly to the final report.
 
-2. **Re-entry shortcut** — `code_written` is set in `status.json` AND `code_verified` is NOT set AND `verify-tasks-report.md` does NOT exist: the user chose option B ("open a new session") from the verify-tasks proposal. **Skip directly to step 4b** without re-running implement.
+2. **Re-entry shortcut** — `CODE_WRITTEN` is set in `status.json` AND `CODE_VERIFIED` is NOT set AND `verify-tasks-report.md` does NOT exist: the user chose option B ("open a new session") from the verify-tasks proposal. **Skip directly to step 4b** without re-running implement.
 
-2.5. **Partial implementation** — `code_written` is NOT set in `status.json` AND uncommitted changes exist in files **outside** `specs/` (i.e., source code or test files): this is a previous interrupted implementation run.
+2.5. **Partial implementation** — `CODE_WRITTEN` is NOT set in `status.json` AND uncommitted changes exist in files **outside** `specs/` (i.e., source code or test files): this is a previous interrupted implementation run.
 
 To detect this, run:
 ```bash
@@ -98,14 +106,13 @@ git status --porcelain | grep -v "^.. specs/"
 ```
 If the output is non-empty, this case applies. Show:
 
+Use the `AskUserQuestion` tool to ask:
 ```
 ⚠️  Uncommitted code detected from a previous interrupted run.
 
   A. Save these changes and mark the code as generated
      (use this if the implementation looks complete or you want to keep the work)
   B. Discard all changes and restart the implementation from scratch
-
-Your choice:
 ```
 
 - **A** → run:
@@ -124,12 +131,12 @@ Your choice:
   ```
   **STOP.**
 
-  Then write `code_written` to `status.json`:
+  Then write `CODE_WRITTEN` to `status.json`:
   ```bash
   BRANCH=$(git branch --show-current)
   STATUS_FILE="specs/$BRANCH/status.json"
   EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-  echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"code_written": $ts}' > "$STATUS_FILE"
+  echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"CODE_WRITTEN": $ts}' > "$STATUS_FILE"
   git add "$STATUS_FILE"
   git commit -m "chore: record code_written in status.json"
   git push origin HEAD
@@ -156,7 +163,7 @@ Your choice:
     ```
     Then continue with Normal flow (step 6).
 
-2.6. **Failed artifact commit** — code is NOT marked as generated AND uncommitted changes exist **only** inside `specs/` (tasks, checklists, or other spec artifacts whose commit was interrupted, e.g. due to GPG): commit the artifacts and continue normally.
+2.6. **Failed artifact commit** — code is NOT marked as generated (no `CODE_WRITTEN`) AND uncommitted changes exist **only** inside `specs/` (tasks, checklists, or other spec artifacts whose commit was interrupted, e.g. due to GPG): commit the artifacts and continue normally.
 
 To confirm this is the case, verify that:
 ```bash
@@ -200,7 +207,7 @@ If all steps (including verify-tasks) are already done, skip to the final report
 
 ### 4. Implement
 
-Skip this step if `code_written` is already set in `status.json`.
+Skip this step if `CODE_WRITTEN` is already set in `status.json`.
 
 Otherwise, show:
 ```
@@ -212,10 +219,15 @@ Invoke `/product-flow:implement`.
 **Wait for `/product-flow:implement` to finish completely before continuing.**
 If it produces an ERROR: propagate and stop.
 
+Show:
+```
+⚙️ Code generated. Running verification...
+```
+
 ### 4b. Verify-tasks (re-entry from new session)
 
 **Entry condition** (must match exactly — both required):
-- `code_written` is set in `status.json` AND `code_verified` is NOT set, AND
+- `CODE_WRITTEN` is set in `status.json` AND `CODE_VERIFIED` is NOT set, AND
 - `verify-tasks-report.md` does NOT exist in FEATURE_DIR
 
 This step runs only when the re-entry shortcut was triggered in step 3:
@@ -223,6 +235,11 @@ code is already generated AND `verify-tasks-report.md` does NOT exist.
 
 The user opened a new session specifically to run verify-tasks with a clean
 context — execute it directly without re-proposing.
+
+Show:
+```
+🔍 Checking that all tasks are complete...
+```
 
 Invoke `/product-flow:speckit.verify-tasks`.
 
@@ -233,17 +250,101 @@ Invoke `/product-flow:speckit.verify-tasks`.
 - When the walkthrough finishes (or if no items are flagged): continue to
   step 5.
 
-### 4c. Mark code as verified
+### 4c. verify-tasks complete
 
-Runs after step 4 or step 4b completes successfully (verify-tasks passed or no flagged items).
+Runs after step 4 or step 4b completes successfully (verify-tasks passed or no flagged items). Continue to step 5.
 
-Write `code_verified` to `specs/<branch>/status.json` and check `- [x] Code generated` in the PR body:
+### 5. Verification gate
+
+Show:
+```
+🔍 Verifying implementation against spec, plan and tasks...
+```
+
+Invoke `/product-flow:speckit.verify`.
+
+**Wait for `speckit.verify` to finish before continuing.**
+
+- If it reports **CRITICAL** issues → Do not proceed. Show:
+  ```
+  ⚠️ Found some issues — resolving them...
+  ```
+  Then classify and handle each issue autonomously:
+
+  **Technical** — architecture, security, auth, compliance, data retention, integration patterns, infrastructure, performance, scalability:
+  1. Analyze whether the gap is in the **code** (incomplete or incorrect implementation) or in the **spec/plan** (artifacts out of sync with a correct implementation).
+  2. If the code needs fixing: apply the fix directly.
+  3. If the spec/plan need updating: invoke `/product-flow:speckit.reconcile` with a description of the gap. After it finishes, re-run `/product-flow:speckit.verify`. If CRITICAL issues remain, repeat this process. If it passes, continue to step 5b.
+  4. Post a PR comment via `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED`, documenting the issue, the chosen resolution path, and the reasoning.
+
+  **Product** — business intent, functional scope, user flows, priorities, terminology, acceptance criteria:
+  1. Use the `AskUserQuestion` tool to ask the user. Be concise — one question at a time.
+  2. Once answered, apply the resolution (fix code or invoke `/product-flow:speckit.reconcile` as appropriate).
+  3. Post a PR comment via `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`, recording the question and the user's answer.
+
+  After resolving all CRITICAL issues, show:
+  ```
+  🔍 Re-verifying after fixes...
+  ```
+  Re-run `/product-flow:speckit.verify`. If it passes, show:
+  ```
+  ✅ All issues resolved — continuing.
+  ```
+  Then continue to step 5b. If new CRITICAL issues appear, repeat this block.
+
+- If it reports only **HIGH / MEDIUM / LOW** issues → Show:
+  ```
+  ⚠️ Found some issues — resolving them...
+  ```
+  Then classify each issue before acting:
+
+  **Technical** — architecture, security, auth, compliance, data retention, integration patterns, infrastructure, performance, scalability:
+  1. Attempt to resolve it autonomously using project context and industry standards.
+  2. Invoke `/product-flow:pr-comments write`:
+     - If resolved: `type: technical`, `status: ANSWERED`, body:
+       ```
+       **Technical question detected:** "[identified issue]"
+
+       **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+
+       **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
+       ```
+     - If unresolved: `type: technical`, `status: UNANSWERED`, body:
+       ```
+       **Technical question detected:** "[identified issue]"
+
+       **Possible answers:** A. "[option A]" B. "[option B]" C. "[option C]"
+
+       ⚠️ **Unresolved — requires input from the development team.**
+       ```
+
+  **Product** — business intent, functional scope, user flows, priorities, terminology, acceptance criteria:
+  1. Use the `AskUserQuestion` tool to ask the user. Be concise — one question at a time.
+  2. Once answered, invoke `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`, recording the question and the user's answer.
+
+  After handling all issues, show:
+  ```
+  ✅ All issues resolved — continuing.
+  ```
+  Then continue to step 5b.
+
+- If it reports **no issues** → Show:
+  ```
+  ✅ No issues found — everything looks correct.
+  ```
+  Then continue to step 5b.
+
+### 5b. Mark code as verified
+
+Runs after the verification gate passes (step 5).
+
+Write `CODE_VERIFIED` to `specs/<branch>/status.json` and update the PR body:
 
 ```bash
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"code_verified": $ts}' > "$STATUS_FILE"
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"CODE_VERIFIED": $ts}' > "$STATUS_FILE"
 git add "$STATUS_FILE"
 git commit -m "chore: record code_verified in status.json"
 git push origin HEAD
@@ -262,14 +363,19 @@ Then run /product-flow:build again.
 
 Read the current PR body first (`gh pr view --json body -q '.body'`), then apply these changes — preserve all other sections intact:
 - Mark `- [x] Code generated` in `## Status`
-- Add row to `## History`: `| Code generated | YYYY-MM-DD | verify-tasks passed |`
+- Add row to `## History`: `| Code generated | YYYY-MM-DD | verify-tasks and verify passed |`
 - Replace the `- [ ] **Implementation** — pending` line inside `<!-- dev-checklist -->` with `- [x] **Implementation** — complete`
 
 ```bash
 gh pr edit --body "<updated-body>"
 ```
 
-### 5. Final report
+Show:
+```
+🔒 Code verified. Run /product-flow:submit to send for review.
+```
+
+### 6. Final report
 
 ```
 ✅ Feature built

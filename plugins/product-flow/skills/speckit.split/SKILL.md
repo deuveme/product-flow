@@ -217,7 +217,7 @@ Write `status.json` for the new feature before committing:
 
 ```bash
 STATUS_FILE="specs/$NEW_BRANCH/status.json"
-echo "{}" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"spec_created": $ts}' > "$STATUS_FILE"
+echo "{}" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"SPEC_CREATED": $ts}' > "$STATUS_FILE"
 ```
 
 ```bash
@@ -365,8 +365,8 @@ Next steps:
 ## Exit state
 
 After a successful split (steps 4a–4g completed):
-- **Current branch** (`BRANCH_NAME`): you are back on it, spec trimmed, trimmed spec committed and pushed. Status.json is unchanged — its existing workflow state (e.g. `spec_created`) is still valid. `/product-flow:continue` can be run immediately.
-- **New branch** (`NEW_BRANCH`): exists on remote with `spec_created` recorded in status.json and a draft PR open. Start the new feature's workflow with `/product-flow:continue` after switching to it.
+- **Current branch** (`BRANCH_NAME`): you are back on it, spec trimmed, trimmed spec committed and pushed. Status.json is unchanged — its existing workflow state (e.g. `SPEC_CREATED`) is still valid. `/product-flow:continue` can be run immediately.
+- **New branch** (`NEW_BRANCH`): exists on remote with `SPEC_CREATED` recorded in status.json and a draft PR open. Start the new feature's workflow with `/product-flow:continue` after switching to it.
 
 If the split was declined (score 0 or user chose "No"): you remain on `BRANCH_NAME` with no changes made.
 

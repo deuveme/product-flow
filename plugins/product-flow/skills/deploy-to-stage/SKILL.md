@@ -35,7 +35,7 @@ BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 ```
 
-Verify that `in_review` is present. If missing: ERROR "The code has not been submitted for review. Run /product-flow:submit first."
+Verify that `IN_REVIEW` is present. If missing: ERROR "The code has not been submitted for review. Run /product-flow:submit first."
 
 ### 3. Gate: PR approved
 
@@ -215,6 +215,33 @@ Read the current PR body first (`gh pr view --json body -q '.body'`). If the out
 
 ```bash
 gh pr edit $PR_NUMBER --body "<updated-body>"
+```
+
+Write `PUBLISHED` to `specs/$BRANCH/status.json` (use `$BRANCH` saved in step 2 — the branch name is still valid as a path even after the branch is deleted):
+
+```bash
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"PUBLISHED": $ts}' > "$STATUS_FILE"
+git add "$STATUS_FILE"
+git commit -m "chore: record published in status.json"
+git push origin main
+```
+
+If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
+```
+🚫 Commit failed — GPG signing is blocking automatic commits.
+
+To fix it, run in your terminal:
+  git config commit.gpgsign false
+
+Then run /product-flow:deploy-to-stage again.
+```
+**STOP.**
+
+Show:
+```
+🌐 Published. Feature is live.
 ```
 
 ### 9. Check CI/CD status

@@ -19,11 +19,11 @@ gh pr view --json number,state,url,body
 
 ### 2. Gate: plan generated and pending comments resolved
 
-Read `specs/<branch>/status.json` and verify that `spec_created` and `plan_generated` are present:
+Read `specs/<branch>/status.json` and verify that `SPEC_CREATED` and `PLAN_GENERATED` are present:
 
 ```bash
 BRANCH=$(git branch --show-current)
-cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.spec_created, .plan_generated' > /dev/null
+cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.SPEC_CREATED, .PLAN_GENERATED' > /dev/null
 ```
 
 Invoke `/product-flow:pr-comments read-answers`.
@@ -107,13 +107,13 @@ Skip if no technical decisions were made.
 
 ### 5. Commit the tasks
 
-Write `tasks_generated` to `specs/<branch>/status.json` before committing:
+Write `TASKS_GENERATED` to `specs/<branch>/status.json` before committing:
 
 ```bash
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"tasks_generated": $ts}' > "$STATUS_FILE"
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"TASKS_GENERATED": $ts}' > "$STATUS_FILE"
 ```
 
 Then commit tasks and the updated status in a single commit:

@@ -54,20 +54,29 @@ You **MUST** consider the user input before proceeding (if not empty).
      | security.md | 6   | 6         | 0          | ✓ PASS |
      ```
 
-   - Calculate overall status:
-     - **PASS**: All checklists have 0 incomplete items
-     - **FAIL**: One or more checklists have incomplete items
+   - **If any checklist is incomplete**: Show:
+     ```
+     ⚠️ Some checklist items are incomplete — resolving them...
+     ```
+     For each incomplete item, classify it before acting:
 
-   - **If any checklist is incomplete**:
-     - Display the table with incomplete item counts
-     - **STOP** and ask: "Some checklists are incomplete. Proceed with implementation anyway, or stop to complete them first? (yes to proceed / no to stop)"
-     - Wait for user response before continuing
-     - If user says "no" or "stop", halt execution
-     - If user says "yes" or "proceed" or "continue", proceed to step 3
+     **Technical** — architecture, security, auth, compliance, data retention, integration patterns, infrastructure, performance, scalability:
+     1. Resolve it autonomously using project context, existing code, and industry standards.
+     2. Mark the item as complete in the checklist file.
+     3. Post a PR comment via `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED`, documenting what was resolved and how.
 
-   - **If all checklists are complete**:
-     - Display the table showing all checklists passed
-     - Automatically proceed to step 3
+     **Product** — business intent, functional scope, user flows, priorities, terminology, acceptance criteria:
+     1. Use the `AskUserQuestion` tool to ask the user. Be concise — one question at a time.
+     2. Once answered, mark the item as complete in the checklist file.
+     3. Post a PR comment via `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`, recording the question and the user's answer.
+
+     After handling all incomplete items, proceed to step 3.
+
+   - **If all checklists are complete**: Show:
+     ```
+     ✅ All checklist items complete.
+     ```
+     Then proceed to step 3.
 
 2b. **Detect redesign mode**: Scan FEATURE_DIR/spec.md for visual or UX redesign signals. Keywords: "redesign", "rediseño", "new look", "new design", "visual overhaul", "UI revamp", "rework the UI", "rework the UX", "visual refresh", "new interface", "change the look", "change the UI", "new layout".
 

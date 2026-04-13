@@ -19,12 +19,12 @@ gh pr view --json number,state,url,body
 
 ### 2. Gate: tasks generated and technical corrections applied
 
-Read `specs/<branch>/status.json` and verify that `spec_created` and `plan_generated` are present. For `tasks_generated`, accept either the flag in status.json OR the existence of `specs/<branch>/tasks.md` on disk (handles the case where tasks.md was committed but the status flag was not yet written):
+Read `specs/<branch>/status.json` and verify that `SPEC_CREATED` and `PLAN_GENERATED` are present. For `TASKS_GENERATED`, accept either the flag in status.json OR the existence of `specs/<branch>/tasks.md` on disk (handles the case where tasks.md was committed but the status flag was not yet written):
 
 ```bash
 BRANCH=$(git branch --show-current)
-cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.spec_created, .plan_generated' > /dev/null
-TASKS_DONE=$(cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.tasks_generated' > /dev/null && echo "true" || ([ -f "specs/$BRANCH/tasks.md" ] && echo "true" || echo "false"))
+cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.SPEC_CREATED, .PLAN_GENERATED' > /dev/null
+TASKS_DONE=$(cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.TASKS_GENERATED' > /dev/null && echo "true" || ([ -f "specs/$BRANCH/tasks.md" ] && echo "true" || echo "false"))
 ```
 
 If `TASKS_DONE` is `false`:
@@ -130,13 +130,13 @@ Invoke `/product-flow:praxis.test-desiderata` pointing to the test files generat
 
 ### 8. Update status.json
 
-Write `code_written` to `specs/<branch>/status.json`:
+Write `CODE_WRITTEN` to `specs/<branch>/status.json`:
 
 ```bash
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"code_written": $ts}' > "$STATUS_FILE"
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"CODE_WRITTEN": $ts}' > "$STATUS_FILE"
 git add "$STATUS_FILE"
 git commit -m "chore: record code_written in status.json"
 git push origin HEAD

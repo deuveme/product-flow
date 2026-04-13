@@ -19,11 +19,11 @@ gh pr view --json number,state,url,body
 
 ### 2. Gate: spec created and pending comments resolved
 
-Read `specs/<branch>/status.json` and verify that `spec_created` is present:
+Read `specs/<branch>/status.json` and verify that `SPEC_CREATED` is present:
 
 ```bash
 BRANCH=$(git branch --show-current)
-cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.spec_created' > /dev/null
+cat "specs/$BRANCH/status.json" 2>/dev/null | jq -e '.SPEC_CREATED' > /dev/null
 ```
 
 Invoke `/product-flow:pr-comments read-answers`.
@@ -166,7 +166,7 @@ Write to `specs/<branch>/status.json` before committing:
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"plan_generated": $ts}' > "$STATUS_FILE"
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"PLAN_GENERATED": $ts}' > "$STATUS_FILE"
 ```
 
 ```bash

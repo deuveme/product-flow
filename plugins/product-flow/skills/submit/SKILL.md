@@ -29,69 +29,7 @@ BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 ```
 
-Verify that `code_verified` is present. If missing: ERROR "The code has not been verified yet. Run /product-flow:build first."
-
-### 2b. Verification gate
-
-Invoke `/product-flow:speckit.verify`.
-
-**Wait for `speckit.verify` to finish before continuing.**
-
-- If it reports **CRITICAL** issues → **STOP**. Do not commit or push. Show:
-
-  ```
-  🚫 BLOCKED — Verification failed
-
-  The implementation has critical issues that must be resolved before submitting.
-
-  Options:
-    A. Fix the issues manually and run /product-flow:submit again
-    B. Run /product-flow:speckit.reconcile "<gap description>" if the
-       implementation is correct and the spec/plan need updating instead
-
-  What do you want to do?
-  ```
-
-  Wait for the user's response:
-  - Option A → stop here. User fixes and re-runs `/product-flow:submit`.
-  - Option B → invoke `/product-flow:speckit.reconcile` passing the gap
-    description the user provides. After it finishes, re-run
-    `/product-flow:speckit.verify` once more. If it still shows CRITICAL issues,
-    stop and repeat this decision. If it passes, continue to step 3.
-
-- If it reports only **HIGH / MEDIUM / LOW** issues → for each issue found:
-  1. Attempt to resolve it autonomously using project context and industry standards.
-  2. Invoke `/product-flow:pr-comments write`:
-     - If resolved: `type: technical`, `status: ANSWERED`, body:
-       ```
-       **Technical question detected:** "[identified issue]"
-
-       **Proposed answers:** A. "[option A]" B. "[option B]" C. "[option C]"
-
-       **Autonomously chosen answer:** We chose "[chosen option]" because "[brief reasoning]"
-       ```
-     - If unresolved: `type: technical`, `status: UNANSWERED`, body:
-       ```
-       **Technical question detected:** "[identified issue]"
-
-       **Possible answers:** A. "[option A]" B. "[option B]" C. "[option C]"
-
-       ⚠️ **Unresolved — requires input from the development team.**
-       ```
-
-  Then ask:
-
-  ```
-  ⚠️  The code review found some minor issues. They have been posted on the PR for the team to review.
-
-  Do you want to proceed anyway, or fix them first? (yes to proceed / no to stop)
-  ```
-
-  Wait for the user's response:
-  - yes → continue to step 3.
-  - no → stop here.
-
-- If it reports **no issues** → continue to step 3 silently.
+Verify that `CODE_VERIFIED` is present. If missing: ERROR "The code has not been verified yet. Run /product-flow:build first."
 
 ### 3. Detect whether there are local changes to save
 
@@ -106,7 +44,7 @@ git status --porcelain
     ℹ️  No new local changes to save.
     The code is already created in this branch/PR, so we'll continue and move the PR to review.
     ```
-  - Skip steps 4 and 5 and continue directly to step 7.
+  - Skip steps 4 and 5 and continue directly to step 6.
 
 ### 4. Show change summary
 
@@ -143,17 +81,17 @@ Then run /product-flow:submit again.
 git push origin HEAD
 ```
 
-### 7. Update PR status (first time only)
+### 6. Update PR status (first time only)
 
-If `in_review` is not yet present in `specs/<branch>/status.json`:
+If `IN_REVIEW` is not yet present in `specs/<branch>/status.json`:
 
-Write `in_review` to `specs/<branch>/status.json`:
+Write `IN_REVIEW` to `specs/<branch>/status.json`:
 
 ```bash
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"in_review": $ts}' > "$STATUS_FILE"
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"IN_REVIEW": $ts}' > "$STATUS_FILE"
 git add "$STATUS_FILE"
 git commit -m "chore: record in_review in status.json"
 git push origin HEAD
@@ -184,7 +122,17 @@ Read the current PR body first (`gh pr view --json body -q '.body'`). If the out
 gh pr edit --body "<updated-body>"
 ```
 
-### 7b. Generate quickstart and populate "How to test"
+Show:
+```
+👀 In code review. Waiting for team approval.
+```
+
+### 6b. Generate quickstart and populate "How to test"
+
+Show:
+```
+📋 Generating testing guide...
+```
 
 Read `specs/<branch>/spec.md`, `specs/<branch>/plan.md`, and `specs/<branch>/tasks.md` to understand what was built.
 
@@ -247,7 +195,12 @@ Then update the PR body `## How to test` section. Read the current PR body first
 gh pr edit --body "<updated-body>"
 ```
 
-### 8. Propose ADRs
+Show:
+```
+✅ Testing guide ready — specs/<branch>/quickstart.md
+```
+
+### 7. Propose ADRs
 
 Read `specs/<branch>/research.md` and `specs/<branch>/decisions.md` (if they exist).
 
@@ -285,7 +238,7 @@ Read the current PR body first (`gh pr view --json body -q '.body'`). If the out
 gh pr edit --body "<updated-body>"
 ```
 
-### 9. Final report
+### 8. Final report
 
 ```
 ✅ Code saved
@@ -305,6 +258,6 @@ When the dev approves the PR, run:
 ─────────────────────────────────────────
 ```
 
-### 10. Session close
+### 9. Session close
 
 Invoke `/product-flow:context`.

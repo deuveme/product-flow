@@ -33,7 +33,7 @@ fi
 - If `LOCAL_HASH` equals `REMOTE_HASH` (or `REMOTE_HASH` is empty due to no network): skip this step and continue to step 0.
 - If `LOCAL_HASH` differs from `REMOTE_HASH`:
 
-Show the user:
+Use the `AskUserQuestion` tool to ask:
 ```
 ─────────────────────────────────────────
   🆕 product-flow update available
@@ -111,7 +111,7 @@ Read `~/.claude/settings.json`. Check whether it contains a `permissions.deny` b
 
 - If both are present: continue.
 - If the file doesn't exist or the permissions are missing:
-  - Ask the user:
+  - Use the `AskUserQuestion` tool to ask:
     ```
     ⚠️  Claude Code permissions are not configured on this machine.
 
@@ -182,7 +182,7 @@ git config --get commit.gpgsign 2>/dev/null
 ```
 
 If the output is `true`:
-  Ask the user:
+  Use the `AskUserQuestion` tool to ask:
   ```
   ⚠️  GPG commit signing is enabled on this machine.
 
@@ -298,12 +298,12 @@ For each feature with a spec directory, read `specs/<branch>/status.json` if it 
 cat "specs/$branch/status.json" 2>/dev/null || echo "{}"
 ```
 
-- `spec_created` in status.json (or `spec.md` present) → "Spec created" is done
-- `plan_generated` in status.json (or `plan.md` present) → "Plan generated" is done
-- `tasks_generated` in status.json (or `tasks.md` present) → "Tasks generated" is done
-- `code_written` in status.json → implementation in progress (not yet verified)
-- `code_verified` in status.json → "Code generated" is done
-- `in_review` in status.json → "In code review" is done
+- `SPEC_CREATED` in status.json (or `spec.md` present) → "Spec created" is done
+- `PLAN_GENERATED` in status.json (or `plan.md` present) → "Plan generated" is done
+- `TASKS_GENERATED` in status.json (or `tasks.md` present) → "Tasks generated" is done
+- `CODE_WRITTEN` in status.json → implementation in progress (not yet verified)
+- `CODE_VERIFIED` in status.json → "Code generated" is done
+- `IN_REVIEW` in status.json → "In code review" is done
 
 Track branches with no PR but with at least `spec.md` as **SPEC-only branches**.
 
@@ -387,7 +387,7 @@ Show a brief inline note for each fix applied:
   🔧 Updated PR title → "<branch_name>"
 ```
 
-**Sequence mismatches** require user confirmation. Show:
+**Sequence mismatches** require user confirmation. Use the `AskUserQuestion` tool to ask:
 
 ```
 ⚠️  SEQUENCE MISMATCH
@@ -573,7 +573,7 @@ Using the file changes captured in step 1 (`git status --branch --porcelain`), i
 
 ### 5a. Offer to create PR for SPEC-only branches
 
-If one or more branches have SPEC files but no PR, show the following prompt (one per branch, in order — current branch first, then others):
+If one or more branches have SPEC files but no PR, for each branch (current branch first, then others) use the `AskUserQuestion` tool to ask:
 
 ```
 ─────────────────────────────────────────
@@ -585,7 +585,7 @@ If one or more branches have SPEC files but no PR, show the following prompt (on
   Create a PR for this feature? (yes / no)
 ```
 
-Wait for user input:
+Based on the answer:
 
 - **If "no"**: skip this branch and continue to the next one (or to step 5).
 - **If "yes"**: build the PR body based on the SPEC files found, then run:

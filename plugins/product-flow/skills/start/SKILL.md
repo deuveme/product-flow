@@ -315,6 +315,20 @@ EOF
 
 Save the returned PR URL as `PR_URL` and PR number as `PR_NUMBER`.
 
+#### 3f. Record feature started
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"FEATURE_STARTED": $ts}' > "$STATUS_FILE"
+```
+
+Show:
+```
+🌱 Feature started. Writing the spec...
+```
+
 ### 4. Design exploration (conditional)
 
 First, check if design exploration was already completed in a previous run:
@@ -338,9 +352,26 @@ If running: invoke `/product-flow:praxis.collaborative-design` passing `GATHERED
 **Wait for `praxis.collaborative-design` to finish before continuing.**
 If it produces an ERROR: propagate and stop.
 
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"DESIGN_DONE": $ts}' > "$STATUS_FILE"
+```
+
+Show:
+```
+🎨 Design exploration complete. Writing the spec...
+```
+
 Use `collaborative-design.md` as additional context in the next step.
 
 ### 5. Write spec (delegate to speckit.specify)
+
+Show:
+```
+📋 Writing feature spec...
+```
 
 Invoke `/product-flow:speckit.specify` passing `GATHERED_CONTEXT.full_description` as the feature description. Also inject `GATHERED_CONTEXT` (visual assets, external docs, product clarifications) as additional context so the spec is written with the full picture gathered in step 2.
 
@@ -430,10 +461,15 @@ EOF
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"spec_created": $ts}' > "$STATUS_FILE"
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"SPEC_CREATED": $ts}' > "$STATUS_FILE"
 git add "specs/$BRANCH/"
 git commit -m "chore: record spec_created and persist gathered context"
 git push origin HEAD
+```
+
+Show:
+```
+📄 Spec created. Share the PR with the team for review. Run /product-flow:continue when ready.
 ```
 
 If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):

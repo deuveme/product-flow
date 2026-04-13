@@ -106,9 +106,9 @@ BRANCH=$(git branch --show-current)
 cat "specs/$BRANCH/status.json" 2>/dev/null || echo "{}"
 ```
 
-Map to state using `spec_created`, `plan_generated`, and `tasks_generated` fields:
+Map to state using `SPEC_CREATED`, `PLAN_GENERATED`, and `TASKS_GENERATED` fields:
 
-| spec_created | plan_generated | tasks_generated | checklist_done | has_comments | → State |
+| SPEC_CREATED | PLAN_GENERATED | TASKS_GENERATED | CHECKLIST_DONE | has_comments | → State |
 |:---:|:---:|:---:|:---:|:---:|:---|
 | ✓ | ✗ | - | - | ✓ | `SPEC_REVIEW` |
 | ✓ | ✗ | - | - | ✗ | `PLAN_PENDING` → auto-generate plan |
@@ -124,36 +124,20 @@ For `has_comments`: invoke `/product-flow:pr-comments pending` and `/product-flo
 
 ### 3. Display current state
 
-Always show the active state before doing anything:
+Always show the active state before doing anything, using the exact message for each state:
 
-```
-📍 State: <STATE_NAME>
-   <one-line description of what this means>
-```
-
-Examples:
-
-```
-📍 The team has left feedback on the spec. Integrating before proceeding.
-```
-
-```
-📍 Spec is ready. Generating the technical plan.
-```
-
-```
-📍 The plan is ready.
-```
+| State | Message |
+|-------|---------|
+| `SPEC_REVIEW` | `📝 Integrating spec feedback from the team...` |
+| `PLAN_PENDING` | `🗺️ Spec ready. Generating the technical plan...` |
+| `PLAN_REVIEW` | `📋 Integrating plan feedback from the team...` |
+| `TASKS_PENDING` | `✂️ Plan ready. Breaking down into development tasks...` |
+| `CHECKLIST_PENDING` | `✅ Tasks ready. Validating requirements...` |
+| `READY_TO_BE_BUILT` | `🚀 Everything is ready. Run /product-flow:build to start building.` |
 
 ### 4. Execute state transition
 
 #### `SPEC_REVIEW`
-
-```
-🔜 Integrating team feedback into the spec.
-
-Starting...
-```
 
 Invoke `/product-flow:consolidate-spec`.
 Wait for it to finish. If ERROR: propagate and stop.
@@ -176,12 +160,6 @@ Invoke `/product-flow:speckit.clarify`.
 - If it resolves ambiguities (technical via PR comments, product via PM questions): continue after answers are applied.
 - If it produces an ERROR: propagate and stop.
 
-```
-🔜 Generating the technical plan.
-
-Starting...
-```
-
 Invoke `/product-flow:plan`.
 Wait for it to finish. If ERROR: propagate and stop.
 
@@ -200,24 +178,12 @@ or add comments on the PR first if changes are needed.
 
 #### `PLAN_REVIEW`
 
-```
-🔜 Integrating team feedback into the plan.
-
-Starting...
-```
-
 Invoke `/product-flow:consolidate-plan`.
 Wait for it to finish. If ERROR: propagate and stop.
 
 Then **within this same invocation**, proceed immediately to the `TASKS_PENDING` transition below — do not stop and wait for a new user command.
 
 #### `TASKS_PENDING` (auto-generate)
-
-```
-🔜 Breaking down the plan into development tasks.
-
-Starting...
-```
 
 Invoke `/product-flow:tasks`.
 
@@ -227,12 +193,6 @@ If it produces an ERROR: propagate and stop.
 Then **within this same invocation**, proceed immediately to the `CHECKLIST_PENDING` transition below.
 
 #### `CHECKLIST_PENDING` (auto-validate)
-
-```
-🔜 Validating requirements quality.
-
-Starting...
-```
 
 Invoke `/product-flow:checklist`.
 
@@ -296,7 +256,7 @@ Output:
 Do you want to start building, or would you like to make adjustments first?
 ```
 
-**STOP and wait for the user's response.**
+Use the `AskUserQuestion` tool to ask this.
 
 - If the user wants adjustments: apply them to the relevant artifacts (`plan.md`, `research.md`, `data-model.md`), commit, push, and show the updated plan again repeating this block.
 - If the user confirms they want to continue:

@@ -344,12 +344,12 @@ Bot comments are tracked via invisible HTML markers on the first line:
 4. If there are local changes: shows summary (`git diff --stat`), commits and pushes
 5. If there are no local changes: skips commit/push and continues to review transition
 6. Takes PR out of draft on first run (`gh pr ready`)
-7. Updates `status.json` with `in_review` on first run
+7. Updates `status.json` with `IN_REVIEW` on first run
 8. Proposes ADRs: reads `research.md` and `decisions.md`, filters decisions that would cause future inconsistency, inserts `### Proposed ADRs` inside `## For Developers` in the PR body
 
 **`deploy-to-stage` skill:**
 1. Verifies branch and PR exist
-2. Gate: `in_review` present in `status.json`
+2. Gate: `IN_REVIEW` present in `status.json`
 3. Gate: PR approved (`reviewDecision: APPROVED`)
 4. ADR consolidation (conditional): if unchecked ADRs exist in `### Proposed ADRs`, asks the user — if yes, reads `research.md` and generates ADR file contents in memory
 5. Squash merge to main, branch deleted (`gh pr merge --squash --delete-branch`)

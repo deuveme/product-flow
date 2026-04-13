@@ -31,8 +31,10 @@ CURRENT_BRANCH="${SPECIFY_FEATURE:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null
 ```
 
 If `CURRENT_BRANCH` does not match `^[0-9]{3}-`:
-- Scan `specs/*/` to list available feature directories.
-- Ask the user which feature to verify before proceeding.
+- Stop immediately and output:
+  > ⚠️ No active feature detected. Verification requires a feature branch (format: `NNN-...`).
+  > Run `/product-flow:status` to see available features.
+- Do not proceed further.
 
 Derive absolute paths:
 - `FEATURE_DIR` = `$REPO_ROOT/specs/$CURRENT_BRANCH`
@@ -131,54 +133,17 @@ summarize the rest in an overflow note at the end of the report.
 | **MEDIUM** | Design pattern drift · minor spec intent deviation |
 | **LOW** | Structure deviations · naming inconsistencies · minor observations not affecting functionality |
 
-### 6. Produce Verification Report
+### 6. Handle findings
 
-Output a Markdown report (no file writes):
+Do **not** output a report. Classify and handle each finding silently:
 
-```markdown
-## Verification Report — <feature-branch>
+**Technical** — architecture, security, auth, compliance, data retention, integration patterns, infrastructure, performance, scalability, task completion, file existence, constitution alignment, design consistency:
+1. Resolve autonomously using project context, existing code, and industry standards. If the gap is in the code, fix it. If the gap is in the spec/plan, invoke `/product-flow:speckit.reconcile`.
+2. Post a PR comment via `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED`, documenting the finding, resolution path, and reasoning. If unresolvable, use `status: UNANSWERED`.
 
-| ID | Category | Severity | Location(s) | Summary | Recommendation |
-|----|----------|----------|-------------|---------|----------------|
-| A1 | Task Completion | CRITICAL | tasks.md | 3 of 12 tasks incomplete | Complete tasks T05, T08, T11 |
-| B1 | File Existence | CRITICAL | src/auth.ts | Task-referenced file missing | Create file or update task reference |
-| C1 | Requirement Coverage | HIGH | spec.md FR-003 | No implementation evidence | Implement FR-003 in src/... |
+**Product** — business intent, functional scope, user flows, priorities, terminology, acceptance criteria:
+1. Use the `AskUserQuestion` tool to ask the user. Be concise — one question at a time.
+2. Once answered, apply the resolution.
+3. Post a PR comment via `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`, recording the question and the user's answer.
 
-**Task Summary**
-
-| Task ID | Status | Referenced Files | Notes |
-|---------|--------|-----------------|-------|
-
-**Constitution Issues** (if any)
-
-**Metrics**
-- Tasks: X completed / Y total
-- Requirement coverage: Z% (N with evidence / M total)
-- Files verified: N
-- Critical issues: N
-```
-
-If there are CRITICAL issues, add at the top:
-> ⛔ **This feature is NOT ready to submit.** Resolve CRITICAL findings first.
-
-If there are only HIGH/MEDIUM/LOW issues, add:
-> ⚠️ **Review recommended before submitting.** No blockers, but findings should be addressed.
-
-If there are no findings:
-> ✅ **All checks passed.** Ready to submit.
-
-### 7. Next Actions
-
-- **CRITICAL issues**: Recommend resolving before running `/product-flow:submit`.
-  Suggest `/product-flow:speckit.reconcile` if the drift is in spec artifacts,
-  or `/product-flow:speckit.implement.withTDD` if implementation is incomplete.
-- **HIGH issues**: Recommend addressing before merge; user may proceed at own
-  risk.
-- **LOW / MEDIUM only**: User may proceed. Provide specific improvement
-  suggestions.
-
-### 8. Offer Remediation
-
-Ask: "Would you like me to suggest concrete remediation for the top findings?"
-
-Do **not** apply any changes automatically. This command is strictly read-only.
+If there are no findings: return silently with a PASS signal for the calling skill.

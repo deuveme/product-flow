@@ -72,7 +72,7 @@ Any time a question or decision arises during this session, classify it before a
 4. If it cannot be resolved with available context: post with `status: UNANSWERED` and continue.
 
 **Product** — business intent, functional scope, user flows, priorities, terminology, acceptance criteria:
-1. Ask the user directly in chat. Be concise — one question at a time.
+1. Use the `AskUserQuestion` tool to ask the user. Be concise — one question at a time.
 2. Once answered, post a PR comment via `/product-flow:pr-comments write` with `type: product`, `status: ANSWERED`, recording the question and the user's answer.
 3. Continue with the confirmed decision.
 

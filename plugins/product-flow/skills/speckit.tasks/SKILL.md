@@ -51,7 +51,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    This may cause mixed formats in the file. Proceed? (yes / no)
    ```
 
-   If the user says "no", stop. If "yes" or if tasks.md does not exist, continue.
+   Use the `AskUserQuestion` tool to ask this. If the user says "no", stop. If "yes" or if tasks.md does not exist, continue.
 
 3. **Load design documents**: Read from FEATURE_DIR:
    - **Required**: plan.md (tech stack, libraries, structure), spec.md (user stories with priorities)

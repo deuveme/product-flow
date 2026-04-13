@@ -191,7 +191,7 @@ Then, show a one-paragraph summary of what you understood:
 Does this look right? (yes to continue / correct me if something is off)
 ```
 
-Wait for the user's response:
+Use the `AskUserQuestion` tool to ask this. Based on the response:
 - If **yes** or equivalent: proceed to step 4.
 - If the user corrects something: update your understanding and show the summary again. Repeat until confirmed.
 
@@ -291,7 +291,7 @@ Skip this step if `collaborative-design.md` was loaded in step 3.8 — in that c
       - **If [NEEDS CLARIFICATION] markers remain**:
         1. Extract all [NEEDS CLARIFICATION: ...] markers from the spec
         2. **Classify each marker** as Technical or Product:
-           - **Technical** (authentication, authorisation, security, compliance, data retention, integration patterns, infrastructure): resolve autonomously using project context, `.agents/rules/base.md`, and industry standards. For each, invoke `/product-flow:pr-comments write`:
+           - **Technical** (authentication, authorisation, security, compliance, data retention, integration patterns, infrastructure, performance, scalability): resolve autonomously using project context, `.agents/rules/base.md`, and industry standards. For each, invoke `/product-flow:pr-comments write`:
              - Resolved: `type: technical`, `status: ANSWERED`, body with chosen answer and reasoning.
              - Unresolved: `type: technical`, `status: UNANSWERED`, body with possible options.
              - Do NOT include technical markers in the AskUserQuestion call.
