@@ -1,6 +1,6 @@
 {
   "name": "product-flow",
-  "version": "1.10.2",
+  "version": "1.10.3",
   "description": "Product Flow - PM commands for spec-driven development workflow.",
   "author": { "name": "David Valero" },
   "license": "MIT",
@@ -94,7 +94,7 @@
     "./skills/speckit.implement.withTDD",
     "./skills/praxis.complexity-review",
     "./skills/praxis.test-desiderata",
-    "./skills/repo_original.bugmagnet",
+    "./skills/bugmagnet",
     "./skills/praxis.bdd-with-approvals",
     "./skills/praxis.backend-architecture",
     "./skills/praxis.frontend-architecture",
