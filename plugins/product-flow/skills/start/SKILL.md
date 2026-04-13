@@ -25,7 +25,8 @@ git branch --show-current
 ```
 
 - If there are uncommitted changes: ERROR "There are unsaved changes. Save or discard them before starting a new feature."
-- If the current branch is not `main` or `master`:
+- If the current branch matches `^[0-9]{3}-`: **RESUMPTION MODE** — the user is returning to an interrupted session. Set `BRANCH_NAME` from the current branch name, derive `SPEC_PATH = specs/$BRANCH_NAME/spec.md`, and skip to step 3 (Information gathering). The skill will read `gathered-context.md` to determine which steps have already been completed.
+- If the current branch is not `main` or `master` (and not a feature branch):
   Run:
   ```bash
   git checkout main
@@ -33,162 +34,19 @@ git branch --show-current
   ```
   Then show: `ℹ️  Switched to main to start the new feature.` and continue normally.
 
-### 2. Information gathering
-
-This step is **mandatory** and runs every time, before any branch or spec is created. Its purpose is to collect all available context so that the spec can be written with full information and without assumptions.
-
-#### 2a. Ask for more context
-
-Use `AskUserQuestion` to ask:
-
-> "Before I start writing the spec, I need a bit more context. Can you tell me more about what you have in mind? Feel free to share details about user flows, expected behaviour, constraints, business goals, or anything else that might be relevant."
-
-Wait for the user's response. If they provide additional information, store it together with `$ARGUMENTS` as `FULL_DESCRIPTION`. If they reply with nothing new, `FULL_DESCRIPTION = $ARGUMENTS`.
-
-#### 2b. Ask about visual assets
-
-Use `AskUserQuestion` to ask:
-
-> "Do you have any designs, wireframes, screenshots, Figma links, or similar visual references for this feature? If so, please share them now (links, images, or descriptions)."
-
-If the user shares assets, record them as `VISUAL_ASSETS` object with:
-- `files`: list of uploaded image files (PNG, SVG, JPG, GIF, etc.) with descriptive, URL-safe names — these will be saved to `specs/$BRANCH_NAME/images/` in step 3c
-- `links`: list of external URLs (Figma, Storybook, design systems, etc.)
-- `descriptions`: list of text descriptions provided by the user
-
-If not, record `VISUAL_ASSETS = none`.
-
-#### 2c. Ask about external documentation
-
-Use `AskUserQuestion` to ask:
-
-> "Is there any external documentation I should use as reference? This could include PDFs, slide decks, API docs, existing code outside this repo, requirement documents, or anything else I can't directly access. If so, paste or link them now."
-
-If the user shares materials, record them as `EXTERNAL_DOCS` object with:
-- `files`: list of uploaded document files (PDF, slides, etc.) with descriptive, URL-safe names — these will be saved to `specs/$BRANCH_NAME/docs/` in step 3c
-- `links`: list of external URLs (API docs, Confluence, Google Docs, etc.)
-- `pasted`: list of text/code pasted directly — each will be saved as `docs/pasted-doc-{N}.txt` in step 3c
-
-If not, record `EXTERNAL_DOCS = none`.
-
-#### 2d. Identify and resolve ambiguities
-
-Carefully read `FULL_DESCRIPTION`, `VISUAL_ASSETS`, and `EXTERNAL_DOCS`. Internally produce two lists:
-
-**Product ambiguities list**: anything that is vague, underspecified, contradictory, or missing that a PM or product owner must answer. Examples: unclear user roles, undefined acceptance criteria, missing edge cases, ambiguous scope ("all users" — which users?).
-
-**Technical ambiguities list**: architecture, authentication, data model, performance constraints, integration patterns, security, compliance. These must be resolved autonomously (see below).
-
-For each item in the **product ambiguities list**, ask the user one question at a time using `AskUserQuestion`. Do **not** batch questions. Do **not** assume or infer the answer — wait for explicit confirmation before moving on. Present the question clearly, and if relevant, offer concrete options to make it easier to answer.
-
-> ⚠️ **Rule**: Do NOT assume anything in this phase. Every product ambiguity must be asked and answered before continuing.
-
-For each item in the **technical ambiguities list**, resolve it autonomously using existing project context (codebase, `.agents/rules/base.md`, detected stack, industry standards). Record each decision internally as a **technical-decision** with:
-- The question identified
-- The options considered
-- The chosen option and brief reasoning
-
-These will be published as PR comments in step 7b.
-
-#### 2e. Notify if no product ambiguities
-
-If the **product ambiguities list** from step 2d was empty (zero questions asked), output this message to the user:
-
-> "I have no doubts about the product requirements. I'll proceed directly to writing the spec."
-
-#### 2f. Consolidate gathered context
-
-Produce a single internal object `GATHERED_CONTEXT` containing:
-- `full_description`: expanded feature description after conversation
-- `visual_assets`: object with `files` (list with paths), `links` (list), `descriptions` (list), or "none"
-- `external_docs`: object with `files` (list with paths), `links` (list), `pasted` (list), or "none"
-- `product_clarifications`: list of question → answer pairs from step 2d
-- `technical_decisions`: list of resolved technical decisions from step 2d
-
-`GATHERED_CONTEXT` will be passed as additional context to all subsequent steps.
-
-Also write `GATHERED_CONTEXT` to disk so it survives across sessions. Create the specs directory first if needed, then write `specs/$BRANCH_NAME/gathered-context.md` (using the branch name derived in step 3 — if the branch does not exist yet, write to a temporary path and move it after step 3c). Use this format:
-
-```markdown
-# Gathered Context
-
-> Collected during /product-flow:start before spec writing. Use this as authoritative input — do not re-ask any question already answered here.
-
-## Full Description
-
-<full_description>
-
-## Visual Assets
-
-### Uploaded Images
-- [image1.png](images/image1.png)
-- [wireframe-login.svg](images/wireframe-login.svg)
-
-<or "None provided." if no files>
-
-### External Links
-- [Figma Design](https://figma.com/...)
-- [Design System](https://design.example.com)
-
-<or "None provided." if no links>
-
-### Descriptions
-- Description of asset 1
-- Description of asset 2
-
-<or "None provided." if no descriptions>
-
-## External Documentation
-
-### Uploaded Documents
-- [requirements.pdf](docs/requirements.pdf)
-- [API-spec.pdf](docs/API-spec.pdf)
-
-<or "None provided." if no files>
-
-### External Links
-- [API Documentation](https://api.example.com/docs)
-- [Slack Thread](https://slack.com/...)
-
-<or "None provided." if no links>
-
-### Pasted Content
-- [pasted-requirements.txt](docs/pasted-requirements.txt)
-
-<or "None provided." if no pasted content>
-
-## Product Clarifications
-
-<for each question → answer pair:>
-**Q:** <question>
-**A:** <answer>
-
-<if none: "None.">
-
-## Technical Decisions (pre-spec)
-
-<for each technical decision:>
-**Question:** <question>
-**Chosen:** <chosen option> — <brief reasoning>
-
-<if none: "None.">
-```
-
-This file will be included in the commit at step 6b together with the rest of `specs/$BRANCH_NAME/`.
-
 ---
 
-### 3. Generate branch identity and open Draft PR
+### 2. Generate branch identity and open Draft PR
 
-This step establishes the branch and creates the Draft PR **before** writing the spec.
+**Goal: NOT to write the spec. NOT to gather all context yet. Goal: establish the branch and PR so everything that follows is tracked from the start.**
 
-#### 3a. Generate short name
+#### 2a. Generate short name
 
-From `GATHERED_CONTEXT.full_description`, generate a concise short name (2–4 words, kebab-case, action-noun format).
+From `$ARGUMENTS`, generate a concise short name (2–4 words, kebab-case, action-noun format).
 Examples: `user-auth`, `fix-payment-timeout`, `analytics-dashboard`.
 Preserve technical terms (OAuth2, API, JWT, etc.).
 
-#### 3b. Find next branch number
+#### 2b. Find next branch number
 
 ```bash
 git fetch --all --prune
@@ -205,7 +63,7 @@ Set:
 - `BRANCH_NAME = <NNN>-<short-name>` (e.g., `001-user-auth`)
 - `SPEC_PATH = specs/$BRANCH_NAME/spec.md`
 
-#### 3c. Create the branch and persist assets
+#### 2c. Create the branch and initialize spec directory
 
 ```bash
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
@@ -218,36 +76,6 @@ mkdir -p "$FEATURE_DIR/docs"
 SPEC_FILE="$FEATURE_DIR/spec.md"
 ```
 
-Now persist all assets collected in step 2 to the feature directory:
-
-- **Uploaded image files** (`VISUAL_ASSETS.files`): write each file to `specs/$BRANCH_NAME/images/<descriptive-name>.<ext>` using the Write tool
-- **Uploaded document files** (`EXTERNAL_DOCS.files`): write each file to `specs/$BRANCH_NAME/docs/<descriptive-name>.<ext>` using the Write tool
-- **Pasted content** (`EXTERNAL_DOCS.pasted`): write each entry to `specs/$BRANCH_NAME/docs/pasted-doc-{N}.txt`
-- **External image links** (`VISUAL_ASSETS.links`): create `specs/$BRANCH_NAME/images/sources.md` listing all links
-- **External doc links** (`EXTERNAL_DOCS.links`): create `specs/$BRANCH_NAME/docs/sources.md` listing all links
-
-Only create `images/sources.md` and `docs/sources.md` if there are actual links to record. Skip if the respective list is empty.
-
-Example `images/sources.md`:
-```markdown
-# External Visual References
-
-- [Figma Design](https://figma.com/file/ABC123/design)
-- [Design System Storybook](https://storybook.example.com)
-```
-
-Example `docs/sources.md`:
-```markdown
-# External Documentation
-
-- [API Specification](https://api.example.com/docs)
-- [Requirements Document](https://docs.google.com/document/d/ABC123)
-```
-
-> **Invariant**: `BRANCH_NAME` and the spec folder name (`specs/$BRANCH_NAME/`) must always be identical. `BRANCH_NAME` is confirmed from steps 3a–3b above.
->
-> **Asset directories**: Every spec folder includes `images/` and `docs/` subdirectories for uploaded assets. These persist with the spec and are committed to git.
-
 Derive the human-readable PR title from `BRANCH_NAME`:
 ```
 BRANCH_NUMBER=${BRANCH_NAME%%-*}
@@ -255,15 +83,66 @@ BRANCH_SLUG=${BRANCH_NAME#*-}
 BRANCH_SLUG_SPACES=${BRANCH_SLUG//-/ }
 PR_TITLE="$BRANCH_NUMBER: <capitalize first letter of BRANCH_SLUG_SPACES>"
 ```
-Example: `001-user-auth` → `001: User auth`. Capitalize only the first letter of the slug; leave all other words as-is (do not title-case every word).
+Example: `001-user-auth` → `001: User auth`. Capitalize only the first letter of the slug; leave all other words as-is.
 
-#### 3d. Push the branch
+#### 2d. Initialize gathered-context.md
+
+Create `specs/$BRANCH_NAME/gathered-context.md` immediately so facilitation answers can be persisted incrementally:
+
+```markdown
+# Gathered Context
+
+> Collected during /product-flow:start before spec writing. Use this as authoritative input — do not re-ask any question already answered here.
+
+## Product Framing
+
+**Outcome:** _pending_
+**Actor + Main Scenario:** _pending_
+**Out of Scope:** _pending_
+**Known Constraints:** _pending_
+
+## Full Description
+
+_pending_
+
+## Visual Assets
+
+### Uploaded Images
+None provided.
+
+### External Links
+None provided.
+
+### Descriptions
+None provided.
+
+## External Documentation
+
+### Uploaded Documents
+None provided.
+
+### External Links
+None provided.
+
+### Pasted Content
+None provided.
+
+## Product Clarifications
+
+None.
+
+## Technical Decisions (pre-spec)
+
+None.
+```
+
+#### 2e. Push the branch
 
 ```bash
 git push -u origin HEAD
 ```
 
-#### 3e. Open Draft PR
+#### 2f. Open Draft PR
 
 ```bash
 gh pr create \
@@ -315,7 +194,7 @@ EOF
 
 Save the returned PR URL as `PR_URL` and PR number as `PR_NUMBER`.
 
-#### 3f. Record feature started
+#### 2g. Record feature started
 
 ```bash
 BRANCH=$(git branch --show-current)
@@ -324,10 +203,282 @@ EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
 echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"FEATURE_STARTED": $ts}' > "$STATUS_FILE"
 ```
 
+Commit and push the initial files:
+
+```bash
+git add "specs/$BRANCH_NAME/"
+git commit -m "chore: initialize feature branch and gathered context"
+git push origin HEAD
+```
+
 Show:
 ```
-🌱 Feature started. Writing the spec...
+🌱 Feature started. Let's shape the spec before writing it...
 ```
+
+---
+
+### 3. Information gathering
+
+**Goal: NOT to write the spec. Goal: make the thinking solid before generating anything.**
+
+If in RESUMPTION MODE: read `specs/$BRANCH_NAME/gathered-context.md` to determine which steps have already been completed. Skip any sub-step whose data is already present (not `_pending_`).
+
+#### 3a. Structured facilitation — Product Framing
+
+Probe the 4 key dimensions below. For each one:
+
+1. Check `gathered-context.md` — if the field is not `_pending_`, skip it (already answered in a previous session).
+2. If the dimension is clearly answered in `$ARGUMENTS`: infer the answer, update the file, write a PR comment. Do not ask.
+3. Otherwise: ask via `AskUserQuestion`, wait for the answer, update the file, write a PR comment.
+4. If a **technical question** arises while exploring any dimension (e.g., "does this imply a new auth mechanism?"): resolve it autonomously using project context (codebase, `.agents/rules/base.md`, stack, standards). Write a PR comment with `type: technical`. Do not ask the PM.
+
+**After each answer**, immediately update `specs/$BRANCH_NAME/gathered-context.md` — replace the `_pending_` value for that dimension with the answer. This persists progress incrementally so the session can be resumed if interrupted.
+
+---
+
+**Dimension 1 — Outcome**
+
+> "What changes for the user when this is done? How will we know it actually worked — is there a specific metric, behavior change, or observable outcome we can point to?"
+
+After receiving the answer, evaluate concreteness: an outcome describes a **result** (behavioral change, measurable indicator, decision unlocked), not a feature ("users can export data" is a feature, not an outcome). If the answer only describes what the feature does:
+
+> Push back once: "That describes what the feature does, not what changes. Imagine it's been live for 3 months — how do you know if it worked? What's different for the user or the business?"
+
+Accept whatever comes back from the push-back. Do not push more than once.
+
+- Answer goes to: `**Outcome:**` in `## Product Framing`
+- PR comment: `type: product, status: ANSWERED`
+  ```
+  **Facilitation — Outcome**
+  
+  **Question:** What changes for the user when this is done? How will we know it worked?
+  **Answer:** [final answer after push-back if applicable]
+  ```
+- If inferred (not asked): same PR comment format, note it was inferred from the description.
+
+---
+
+**Dimension 2 — Actor + Main Scenario**
+
+> "Who uses this and in what concrete situation? Walk me through the main flow from start to finish — what does the user do, and what happens?"
+
+After receiving the answer, evaluate concreteness: look for a specific user type, a concrete triggering situation, and a step-by-step flow. If the answer is "all users" or describes the feature without a real scenario:
+
+> Push back once: "Walk me through the most important case step by step — who exactly, doing what, in what situation, and what do they get at the end?"
+
+Accept whatever comes back. Do not push more than once.
+
+- Answer goes to: `**Actor + Main Scenario:**` in `## Product Framing`
+- PR comment: `type: product, status: ANSWERED`
+  ```
+  **Facilitation — Actor + Main Scenario**
+  
+  **Question:** Who uses this and in what concrete situation?
+  **Answer:** [final answer after push-back if applicable]
+  ```
+
+---
+
+**Dimension 3 — Out of Scope**
+
+> "What is explicitly out of scope for this feature? What are we intentionally NOT building right now?"
+
+After receiving the answer, evaluate concreteness: "nothing" or "the usual" are not valid exclusions. If the answer is empty or vague:
+
+> Push back once: "What might the dev team assume is included that isn't? Any related functionality that's tempting to add but shouldn't be part of this?"
+
+Accept whatever comes back. Do not push more than once.
+
+- Answer goes to: `**Out of Scope:**` in `## Product Framing`
+- PR comment: `type: product, status: ANSWERED`
+  ```
+  **Facilitation — Out of Scope**
+  
+  **Question:** What is explicitly out of scope for this feature?
+  **Answer:** [final answer after push-back if applicable]
+  ```
+
+---
+
+**Dimension 4 — Known Constraints**
+
+> "Are there any known constraints we must respect — business rules, technical limitations, deadlines, compliance requirements, or dependencies on other teams or systems?"
+
+After receiving the answer, evaluate concreteness: "the usual ones" or "standard constraints" are not actionable. If the answer is generic:
+
+> Push back once: "What are the usual ones in this context? Any deadlines, team dependencies, or technical limitations we need to respect from the start?"
+
+Accept whatever comes back. Do not push more than once. If the user genuinely has no constraints, "None identified." is a valid answer.
+
+- Answer goes to: `**Known Constraints:**` in `## Product Framing`
+- PR comment: `type: product, status: ANSWERED`
+  ```
+  **Facilitation — Known Constraints**
+  
+  **Question:** Are there any known constraints we must respect?
+  **Answer:** [final answer after push-back if applicable]
+  ```
+
+---
+
+**Facilitation rules (apply throughout 3a):**
+
+- Ask dimensions one at a time. Do not batch all 4 in a single question.
+- After each answer, evaluate concreteness before accepting. If vague: push back once with a specific, sharp question targeted at what is missing — not a generic "can you be more specific?".
+- **One push-back maximum per dimension.** Accept whatever comes back after the push-back, even if still imprecise. Flag it internally and continue.
+- Do not jump to the next dimension until the current one has been answered (and pushed back if needed).
+- If a technical implication surfaces (auth, data model, integration, security): resolve it autonomously and write a `type: technical` PR comment. Never ask the PM about technical decisions.
+
+#### 3b. Ask about visual assets
+
+Use `AskUserQuestion` to ask:
+
+> "Do you have any designs, wireframes, screenshots, Figma links, or similar visual references for this feature? If so, please share them now (links, images, or descriptions)."
+
+If the user shares assets, record them as `VISUAL_ASSETS` object with:
+- `files`: list of uploaded image files (PNG, SVG, JPG, GIF, etc.) with descriptive, URL-safe names — these will be saved to `specs/$BRANCH_NAME/images/`
+- `links`: list of external URLs (Figma, Storybook, design systems, etc.)
+- `descriptions`: list of text descriptions provided by the user
+
+If not, record `VISUAL_ASSETS = none`.
+
+#### 3c. Ask about external documentation
+
+Use `AskUserQuestion` to ask:
+
+> "Is there any external documentation I should use as reference? This could include PDFs, slide decks, API docs, existing code outside this repo, requirement documents, or anything else I can't directly access. If so, paste or link them now."
+
+If the user shares materials, record them as `EXTERNAL_DOCS` object with:
+- `files`: list of uploaded document files (PDF, slides, etc.) with descriptive, URL-safe names — these will be saved to `specs/$BRANCH_NAME/docs/`
+- `links`: list of external URLs (API docs, Confluence, Google Docs, etc.)
+- `pasted`: list of text/code pasted directly — each will be saved as `docs/pasted-doc-{N}.txt`
+
+If not, record `EXTERNAL_DOCS = none`.
+
+#### 3d. Identify and resolve remaining ambiguities
+
+Carefully read `$ARGUMENTS`, the completed `## Product Framing`, `VISUAL_ASSETS`, and `EXTERNAL_DOCS`. Internally produce two lists:
+
+**Product ambiguities list**: anything that is vague, underspecified, contradictory, or missing that a PM or product owner must answer — beyond what was already covered in step 3a. Examples: unclear user roles, undefined acceptance criteria, missing edge cases, ambiguous scope ("all users" — which users?).
+
+**Technical ambiguities list**: architecture, authentication, data model, performance constraints, integration patterns, security, compliance. These must be resolved autonomously (see below).
+
+For each item in the **product ambiguities list**, ask the user one question at a time using `AskUserQuestion`. Do **not** batch questions. Do **not** assume or infer the answer — wait for explicit confirmation before moving on. Present the question clearly, and if relevant, offer concrete options to make it easier to answer.
+
+> ⚠️ **Rule**: Do NOT assume anything in this phase. Every product ambiguity must be asked and answered before continuing.
+
+For each item in the **technical ambiguities list**, resolve it autonomously using existing project context (codebase, `.agents/rules/base.md`, detected stack, industry standards). Record each decision internally as a **technical-decision** with:
+- The question identified
+- The options considered
+- The chosen option and brief reasoning
+
+These will be published as PR comments in step 8b.
+
+#### 3e. Notify if no product ambiguities
+
+If the **product ambiguities list** from step 3d was empty (zero questions asked), output this message to the user:
+
+> "I have no doubts about the product requirements. I'll proceed directly to writing the spec."
+
+#### 3f. Consolidate gathered context
+
+Produce a single internal object `GATHERED_CONTEXT` containing:
+- `full_description`: `$ARGUMENTS` plus any significant enrichment from the facilitation conversation
+- `product_framing`: the 4 completed dimensions from step 3a
+- `visual_assets`: object with `files` (list with paths), `links` (list), `descriptions` (list), or "none"
+- `external_docs`: object with `files` (list with paths), `links` (list), `pasted` (list), or "none"
+- `product_clarifications`: list of question → answer pairs from step 3d
+- `technical_decisions`: list of resolved technical decisions from step 3d
+
+Persist assets to disk:
+
+- **Uploaded image files** (`VISUAL_ASSETS.files`): write each file to `specs/$BRANCH_NAME/images/<descriptive-name>.<ext>` using the Write tool
+- **Uploaded document files** (`EXTERNAL_DOCS.files`): write each file to `specs/$BRANCH_NAME/docs/<descriptive-name>.<ext>` using the Write tool
+- **Pasted content** (`EXTERNAL_DOCS.pasted`): write each entry to `specs/$BRANCH_NAME/docs/pasted-doc-{N}.txt`
+- **External image links** (`VISUAL_ASSETS.links`): create `specs/$BRANCH_NAME/images/sources.md` listing all links
+- **External doc links** (`EXTERNAL_DOCS.links`): create `specs/$BRANCH_NAME/docs/sources.md` listing all links
+
+Only create `images/sources.md` and `docs/sources.md` if there are actual links to record. Skip if the respective list is empty.
+
+Write the final `specs/$BRANCH_NAME/gathered-context.md` with all sections complete:
+
+```markdown
+# Gathered Context
+
+> Collected during /product-flow:start before spec writing. Use this as authoritative input — do not re-ask any question already answered here.
+
+## Product Framing
+
+**Outcome:** <outcome answer>
+**Actor + Main Scenario:** <actor + scenario answer>
+**Out of Scope:** <out of scope answer>
+**Known Constraints:** <constraints answer>
+
+## Full Description
+
+<full_description>
+
+## Visual Assets
+
+### Uploaded Images
+- [image1.png](images/image1.png)
+
+<or "None provided." if no files>
+
+### External Links
+- [Figma Design](https://figma.com/...)
+
+<or "None provided." if no links>
+
+### Descriptions
+- Description of asset 1
+
+<or "None provided." if no descriptions>
+
+## External Documentation
+
+### Uploaded Documents
+- [requirements.pdf](docs/requirements.pdf)
+
+<or "None provided." if no files>
+
+### External Links
+- [API Documentation](https://api.example.com/docs)
+
+<or "None provided." if no links>
+
+### Pasted Content
+- [pasted-requirements.txt](docs/pasted-requirements.txt)
+
+<or "None provided." if no pasted content>
+
+## Product Clarifications
+
+<for each question → answer pair:>
+**Q:** <question>
+**A:** <answer>
+
+<if none: "None.">
+
+## Technical Decisions (pre-spec)
+
+<for each technical decision:>
+**Question:** <question>
+**Chosen:** <chosen option> — <brief reasoning>
+
+<if none: "None.">
+```
+
+Commit the final gathered-context.md and any persisted assets:
+
+```bash
+git add "specs/$BRANCH_NAME/"
+git commit -m "chore: persist gathered context and assets"
+git push origin HEAD
+```
+
+---
 
 ### 4. Design exploration (conditional)
 
@@ -337,7 +488,7 @@ First, check if design exploration was already completed in a previous run:
 ls "specs/$BRANCH_NAME/collaborative-design.md" 2>/dev/null
 ```
 
-If the file exists, load it as `collaborative-design.md` and skip the rest of this step — use its contents as context in step 5.
+If the file exists, load it as `collaborative-design.md` and skip the rest of this step — use its contents as context in step 6.
 
 Otherwise, assess the feature description using `GATHERED_CONTEXT.full_description`. Also check `GATHERED_CONTEXT.visual_assets` — if the user provided designs or Figma links, factor them into the assessment:
 
@@ -361,19 +512,36 @@ echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"DESIGN_
 
 Show:
 ```
-🎨 Design exploration complete. Writing the spec...
+🎨 Design exploration complete. Running quality check before writing the spec...
 ```
 
 Use `collaborative-design.md` as additional context in the next step.
 
-### 5. Write spec (delegate to speckit.specify)
+---
+
+### 5. Quality gate
+
+Before invoking `speckit.specify`, verify internally that the gathered context is solid enough to produce a good spec. Check all of the following:
+
+- [ ] **Outcome is concrete** — not just "users can do X". There is an observable result, a behavioral change, or a measurable indicator.
+- [ ] **At least one end-to-end scenario is clear** — we know who does what, and what happens.
+- [ ] **Scope has at least one explicit exclusion** — "Out of Scope" is not empty or "nothing".
+- [ ] **No unanswered product ambiguity** — every question raised in step 3d has been answered.
+
+If any check fails: go back to step 3a for the failing dimension. Ask a targeted follow-up using `AskUserQuestion`, update `gathered-context.md`, write the corresponding PR comment, and re-run the gate.
+
+If all checks pass: continue.
+
+---
+
+### 6. Write spec (delegate to speckit.specify)
 
 Show:
 ```
 📋 Writing feature spec...
 ```
 
-Invoke `/product-flow:speckit.specify` passing `GATHERED_CONTEXT.full_description` as the feature description. Also inject `GATHERED_CONTEXT` (visual assets, external docs, product clarifications) as additional context so the spec is written with the full picture gathered in step 2.
+Invoke `/product-flow:speckit.specify` passing `GATHERED_CONTEXT.full_description` as the feature description. Also inject `GATHERED_CONTEXT` (product framing, visual assets, external docs, product clarifications) as additional context so the spec is written with the full picture gathered in step 3.
 
 **Asset availability**: All downstream skills can access persisted assets:
 - **Images**: `specs/$BRANCH_NAME/images/` — read and reference these in specs and implementations
@@ -381,13 +549,11 @@ Invoke `/product-flow:speckit.specify` passing `GATHERED_CONTEXT.full_descriptio
 - **External links**: `specs/$BRANCH_NAME/images/sources.md` and `specs/$BRANCH_NAME/docs/sources.md`
 - **Full context**: `specs/$BRANCH_NAME/gathered-context.md` — complete reference for all gathered information
 
-**Important — skip redundant clarification steps in `speckit.specify`:** since step 2 already asked the user for context, visual assets, external docs, and all product ambiguities, instruct `speckit.specify` to:
+**Important — skip redundant clarification steps in `speckit.specify`:** since step 3 already asked the user for context, visual assets, external docs, and all product ambiguities, instruct `speckit.specify` to:
 - Skip its step 3.6b (business terminology clarification) for any term already defined in `GATHERED_CONTEXT.product_clarifications`.
-- Skip its step 3.7 (fill gaps and confirm understanding) entirely — the understanding was already validated in step 2.
+- Skip its step 3.7 (fill gaps and confirm understanding) entirely — the understanding was already validated in step 3.
 - Use `GATHERED_CONTEXT.visual_assets` and `GATHERED_CONTEXT.external_docs` as primary references alongside `collaborative-design.md`.
-- **Read `specs/$BRANCH_NAME/gathered-context.md`** as the authoritative source for all context (visual assets, external docs, product decisions already made).
-
-**Note**: The branch `$BRANCH_NAME` has already been created and pushed. When `speckit.specify` runs, it will detect the existing feature branch and skip branch creation, proceeding directly to writing the spec.
+- Read `specs/$BRANCH_NAME/gathered-context.md` as the authoritative source for all context.
 
 **Question classification** — when `speckit.specify` identifies `[NEEDS CLARIFICATION]` markers, classify each one before presenting it:
 
@@ -399,7 +565,7 @@ Invoke `/product-flow:speckit.specify` passing `GATHERED_CONTEXT.full_descriptio
 2. If there is sufficient information: make the decision and record it internally as **AI-proposed decision**.
 3. If there is not sufficient information: record it internally as **Unresolved question** and continue.
 
-Merge any new technical decisions with those already captured in `GATHERED_CONTEXT.technical_decisions`. Save the combined list internally for step 7.
+Merge any new technical decisions with those already captured in `GATHERED_CONTEXT.technical_decisions`. Save the combined list internally for step 8.
 
 `speckit.specify` will:
 - Detect the existing branch and skip branch creation
@@ -410,7 +576,9 @@ Merge any new technical decisions with those already captured in `GATHERED_CONTE
 **Wait for `speckit.specify` to finish completely before continuing.**
 If it produces an ERROR: propagate and stop.
 
-### 6. Update PR — mark spec created
+---
+
+### 7. Update PR — mark spec created
 
 Update the PR body to reflect spec completion:
 
@@ -455,7 +623,7 @@ EOF
 )"
 ```
 
-### 6b. Update status.json
+### 7b. Update status.json
 
 ```bash
 BRANCH=$(git branch --show-current)
@@ -483,9 +651,11 @@ Then run /product-flow:start again.
 ```
 **STOP.**
 
-### 7. Record decisions and clarifications in the PR
+---
 
-#### 7a. Product clarifications (from step 2d)
+### 8. Record decisions in the PR
+
+#### 8a. Product clarifications (from step 3d)
 
 For each question → answer pair in `GATHERED_CONTEXT.product_clarifications`, invoke `/product-flow:pr-comments write`:
 
@@ -499,7 +669,9 @@ For each question → answer pair in `GATHERED_CONTEXT.product_clarifications`, 
 
 Skip if `GATHERED_CONTEXT.product_clarifications` is empty.
 
-#### 7b. Technical decisions (from step 2d and step 5)
+> Note: PR comments for the Product Framing dimensions (step 3a) were already written inline during facilitation. This step only covers additional clarifications from step 3d.
+
+#### 8b. Technical decisions (from step 3d and step 6)
 
 For each technical decision in the combined list, invoke `/product-flow:pr-comments write`:
 
@@ -526,14 +698,18 @@ For each technical decision in the combined list, invoke `/product-flow:pr-comme
 
 Skip if no technical decisions were made.
 
-### 8. Phase retro
+---
+
+### 9. Phase retro
 
 Invoke `/product-flow:speckit.retro` with context: "after specify phase".
 
 **Wait for `speckit.retro` to finish before continuing.**
 If it returns a **Blocked** status: do not show the final report until the user resolves the blockers.
 
-### 9. Final report
+---
+
+### 10. Final report
 
 ```
 ✅ Feature started

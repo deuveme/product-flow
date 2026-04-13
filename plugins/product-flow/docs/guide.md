@@ -72,7 +72,7 @@ Each feature branch has a corresponding folder under `specs/<branch>/`:
 ```
 specs/<branch>/
 ├── status.json            ← workflow state machine (source of truth)
-├── gathered-context.md    ← all context collected during /start: description, clarifications, technical decisions, asset references
+├── gathered-context.md    ← all context collected during /start: product framing (outcome, scenario, scope, constraints), description, clarifications, technical decisions, asset references
 ├── spec.md                ← feature specification (created by speckit.specify)
 ├── plan.md                ← technical plan: data model, contracts, research (created by speckit.plan)
 ├── tasks.md               ← ordered task breakdown (created by speckit.tasks)
@@ -89,7 +89,7 @@ specs/<branch>/
 
 | Command | Internal call chain |
 |---|---|
-| `/product-flow:start` | gather context + visual assets + docs → create branch + Draft PR → [`praxis.collaborative-design` if vague] → `speckit.specify` → `speckit.retro` |
+| `/product-flow:start` | create branch + Draft PR → facilitated product framing (4 dimensions) + visual assets + docs → quality gate → [`praxis.collaborative-design` if vague] → `speckit.specify` → `speckit.retro` |
 | `/product-flow:continue` | `inbox-sync` → state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` / `TASKS_PENDING` → `tasks` / `CHECKLIST_PENDING` → `checklist` (dispatched by state machine) |
 | `/product-flow:build` | `inbox-sync` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `speckit.retro`) → directs to open a new session for `speckit.verify-tasks` |
 | `/product-flow:submit` | `inbox-sync` → `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → optional git add/commit/push (only if local changes exist) → `gh pr ready` on first run (exits DRAFT) → proposes ADRs in PR body |
@@ -268,7 +268,7 @@ On the next run of any public command (`/product-flow:continue`, `/product-flow:
 2. Apply only the intended change (update a checkbox, add a history row, replace a marked block, insert a section).
 3. Pass the full updated body — with all other sections intact — to `gh pr edit --body`.
 
-**Never reconstruct the body from scratch** unless this is `start` step 3e (initial creation) or `start` step 6 (first edit, which always runs immediately after step 3e with no other edits possible yet).
+**Never reconstruct the body from scratch** unless this is `start` step 2f (initial creation) or `start` step 7 (first edit, which always runs immediately after step 2f with no other edits possible yet).
 
 **Critical sections that must always be preserved:**
 - `## Feature` — spec path

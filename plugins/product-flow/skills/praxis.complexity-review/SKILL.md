@@ -64,6 +64,11 @@ dimension that applies, ask: **"Do we have data showing we need this?"**
 - Debugging and observability difficulty
 - Long-term evolution flexibility
 
+### Category 7 — Delivery Risk
+- **Incremental delivery**: Can the feature be split into phases (e.g. MVP → full) where each phase delivers independent value? If yes, identify the natural cut point.
+- **Delivery risks**: Are there unresolved technical unknowns, missing external contracts, or ambiguous requirements that could block implementation mid-sprint?
+- **Reversibility**: If the feature fails in production, can it be rolled back cleanly? Consider: feature flags, backward-compatible data migrations, stateless vs. stateful changes, blast radius of a rollback.
+
 ---
 
 ## Basal Cost Analysis
@@ -121,7 +126,11 @@ Produce:
 4. **Recommended Alternative** — which of the three simplified alternatives you
    recommend, and why
 5. **Deferral List** — components that can be added later with clear triggers
-6. **Open Questions** — assumptions that need data before the design is locked
+6. **Delivery Risk** — one of: `LOW` / `MEDIUM` / `HIGH`, with:
+   - Incremental delivery: proposed phase cut (or "ships as a single unit")
+   - Delivery risks: list of blockers/unknowns, or "none identified"
+   - Reversibility: `clean` / `partial` / `risky` with a one-line rationale
+7. **Open Questions** — assumptions that need data before the design is locked
 
 End with a recommendation: proceed with original / proceed with simplified /
 gather more data before deciding.
