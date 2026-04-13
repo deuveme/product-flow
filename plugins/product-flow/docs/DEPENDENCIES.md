@@ -152,4 +152,5 @@ The `pr-comments write` operation determines the next question number by queryin
 |---|---|---|
 | `speckit.*` | [github/spec-kit](https://github.com/github/spec-kit) | Do NOT modify upstream skills. New forks use `withX` suffix (e.g., `speckit.implement.withTDD`). |
 | `praxis.*` | [acunap/praxis](https://github.com/acunap/praxis) | Same rule — do not modify; fork with `withX` suffix if needed. |
+| `bugmagnet` | [gojko/bugmagnet](https://github.com/gojko/bugmagnet) | Adapted as an internal skill; freely modifiable. |
 | PM commands & orchestrators | This repo | Freely modifiable following the constitution. |
