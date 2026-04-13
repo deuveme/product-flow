@@ -98,6 +98,7 @@ Close the terminal and reopen Claude Code.
 
 - **SpecKit** — spec-driven development engine, upstream at [github/spec-kit](https://github.com/github/spec-kit)
 - **Praxis** — engineering skills by [Antonio Acuña](https://github.com/acunap/praxis)
+- **Bugmagnet** — exploratory testing heuristics by [Gojko Adzic](https://github.com/gojko/bugmagnet)
 - **Test Desiderata** — Kent Beck framework
 - **ZOMBIES** — TDD test ordering heuristic by James Grenning
 - **Retro SpecKit + more ideas** - skills by [Alex Fernández](https://github.com/alexfdz)
