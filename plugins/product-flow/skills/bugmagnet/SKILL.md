@@ -91,6 +91,18 @@ For each entity in `data-model.md`, verify that these cases are tested:
 - Optimistic locking violations
 - Retry storms on transient failures
 
+### 8. Security
+Apply only to code that handles external input, sensitive data, or HTTP responses.
+
+- **Injection**: user-controlled input reaching a query, shell command, or template without sanitization (SQL, NoSQL, command injection)
+- **Secrets in code or logs**: hardcoded API keys, tokens, passwords, or connection strings; sensitive fields (password, token, card number) appearing in log output
+- **Sensitive data in API responses**: endpoints returning fields that should not be exposed (password hashes, internal IDs, PII not required by the caller)
+- **XSS** *(frontend only)*: user-supplied content rendered as raw HTML without escaping
+- **CSRF** *(frontend only)*: state-changing requests (POST/PUT/DELETE) missing CSRF token or SameSite cookie protection
+- **Secure headers** *(HTTP handlers only)*: missing `Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options` on responses that serve HTML or sensitive data
+
+Skip this category entirely for pure domain logic, in-memory utilities, or code with no external input or HTTP surface.
+
 ---
 
 ## Case Classification
@@ -98,11 +110,11 @@ For each entity in `data-model.md`, verify that these cases are tested:
 For each missing test case identified, classify it along two dimensions:
 
 **Type:**
-- **Technical** — implementation detail: boundary values, error conditions, state transitions, authorization rules, CRUD edge cases, data quality, concurrency. Resolved autonomously.
+- **Technical** — implementation detail: boundary values, error conditions, state transitions, authorization rules, CRUD edge cases, data quality, concurrency, security. Resolved autonomously.
 - **Product** — depends on business intent: expected behavior for an undocumented edge case, priority of covering a scenario, acceptable data range not specified in the spec. Escalated to the PM.
 
 **Priority:**
-- **HIGH** — likely to cause a production bug or security issue (authorization failures, state transition violations, boundary overflows, missing error handling for known failure modes)
+- **HIGH** — likely to cause a production bug or security issue (authorization failures, state transition violations, boundary overflows, missing error handling for known failure modes, injection, secrets exposure, sensitive data leaks)
 - **MEDIUM** — important for correctness, lower immediate risk (CRUD edge cases, data quality, duplicate submission handling)
 - **LOW** — nice-to-have (extreme boundary values, non-critical concurrency, cosmetic data formatting)
 
@@ -162,7 +174,7 @@ Show progress and results to the user:
 
 ✅ Bugmagnet complete
 
-Found N cases: M HIGH (written), L MEDIUM (written), K LOW (written)
+Found N cases: M HIGH (written), L MEDIUM (written), K LOW (written) [security: S cases]
 [if product cases escalated: P product cases — awaiting PM answers]
 
 All tests written. PR comments posted.

@@ -69,6 +69,18 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Create parallel execution examples per user story
    - Validate task completeness (each user story has all needed tasks, independently testable)
 
+4b. **Detect observability signals**: Before generating tasks, scan the loaded documents for signals that require explicit observability tasks. For each signal found, record it — it will produce one or more tasks in the Polish phase.
+
+   | Signal | Where to detect | Tasks to generate |
+   |--------|----------------|-------------------|
+   | External service call (payment, email, SMS, third-party API) | plan.md integrations, research.md, contracts/ | Structured logging on call + response (success and failure paths) |
+   | Auth / authentication flow | spec.md user stories, contracts/ | Log auth failures with context (no credentials in log) |
+   | Critical data mutation (CREATE/UPDATE/DELETE on a core entity) | data-model.md state transitions, spec.md | Log mutation entry + outcome with entity ID (no PII in payload) |
+   | Background job or AUTOMATION slice | spec.md, event-model.md | Log job start, completion, and failure with correlation ID |
+   | New service entry point (new Lambda, new HTTP handler) | plan.md file structure, contracts/ | Health check endpoint or readiness signal |
+
+   If no signals are detected: skip observability tasks entirely — do not generate them.
+
 5. **Generate tasks.md**: Use `$REPO_ROOT/.specify/templates/tasks-template.md` as structure if it exists (otherwise use the Task Generation Rules below as the canonical structure), fill with:
    - Correct feature name from plan.md
    - Phase 1: Setup tasks (project initialization)
@@ -164,3 +176,9 @@ Every task MUST strictly follow this format:
   - Within each story: Tests (if requested) → Models → Services → Endpoints → Integration
   - Each phase should be a complete, independently testable increment
 - **Final Phase**: Polish & Cross-Cutting Concerns
+  - If observability signals were detected in step 4b: generate one task per signal, using the exact file paths from plan.md where the logging should be added. Follow the `.agents/rules/base.md` logging conventions if present; otherwise default to structured JSON logs.
+  - Observability task rules:
+    - One task per signal — do not group unrelated signals into a single task
+    - Always reference the exact file path (use case, handler, or service where the log goes)
+    - Task description must state: what to log, where, and what NOT to log (e.g. no PII, no credentials)
+    - Example: `- [ ] T047 Add structured logging to PaymentUseCase entry and exit in src/components/billing/application/processPayment/processPaymentUseCase.ts — log amount and result status; never log card number or CVV`

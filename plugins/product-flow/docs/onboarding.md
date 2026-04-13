@@ -245,8 +245,8 @@ No. Everything you submit is saved forever with date and time. Even if something
 **What do I do if Claude tells me there is a "conflict"?**
 Contact the development team. It's the only situation where you need their direct technical help.
 
-**After `/product-flow:build`, Claude asks me something about "verify-tasks". What is that?**
-It's an optional quality check that confirms every completed task has real code behind it — not empty stubs or placeholders. You can run it immediately, open a new session and run it later, or skip it. If you're unsure, choose "run now" — it only takes a moment and catches problems before the team reviews the code.
+**After `/product-flow:build`, what is "verify-tasks"?**
+It's a mandatory quality check that runs automatically after the code is generated. It confirms every completed task has real code behind it — not empty stubs or placeholders. It runs without any input from you and catches problems before the team reviews the code.
 
 **During `/product-flow:build`, Claude is asking me questions before writing code. Is that normal?**
 Yes. Before generating code, Claude runs a requirements quality check that may ask up to 5 clarification questions to make sure the spec, plan and tasks are clear and complete. Answer them as best you can — they are quick and help prevent implementation mistakes. Once the questions are done, code generation continues automatically.

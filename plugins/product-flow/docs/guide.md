@@ -92,7 +92,7 @@ specs/<branch>/
 |---|---|
 | `/product-flow:start` | create branch + Draft PR → facilitated product framing (4 dimensions) + visual assets + docs → quality gate → [epic scope check: split into N branches if epic signals detected] → [`praxis.collaborative-design` if vague] → `speckit.specify` → `speckit.retro` |
 | `/product-flow:continue` | `inbox-sync` → state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` / `TASKS_PENDING` → `tasks` / `CHECKLIST_PENDING` → `checklist` (dispatched by state machine) |
-| `/product-flow:build` | `inbox-sync` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `bugmagnet` → `speckit.retro`) → directs to open a new session for `speckit.verify-tasks` |
+| `/product-flow:build` | `inbox-sync` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `bugmagnet` → `speckit.retro`) → `speckit.verify-tasks` → `speckit.verify` |
 | `/product-flow:submit` | `inbox-sync` → `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → optional git add/commit/push (only if local changes exist) → `gh pr ready` on first run (exits DRAFT) → proposes ADRs in PR body |
 | `/product-flow:deploy-to-stage` | [ADR consolidation: ask user → generate in memory if yes] → `gh pr merge --squash --delete-branch` → [write ADRs to `docs/adr/` + commit if yes] → mark published |
 
@@ -315,7 +315,7 @@ Bot comments are tracked via invisible HTML markers on the first line:
 3. Calls `/product-flow:praxis.test-desiderata` → validates test quality against Kent Beck's 12 properties
 4. Calls `/product-flow:bugmagnet` → adversarial coverage pass: applies exploratory testing heuristics to find untested cases; writes HIGH priority tests automatically
 5. Calls `/product-flow:speckit.retro` → phase retrospective and artifact sync
-6. Proposes `/product-flow:speckit.verify-tasks` → user chooses: run now, open new session, or skip
+6. Calls `/product-flow:speckit.verify-tasks` → detects phantom completions (tasks marked done with no real implementation); fixes or escalates findings before continuing
 
 **`consolidate-spec` skill:**
 1. Reads pending PR comments and user answers via `pr-comments pending` + `pr-comments read-answers`
@@ -367,7 +367,7 @@ orchestrators decide when to run them:
 | Skill | Triggered by | Behaviour |
 |---|---|---|
 | `speckit.verify` | `/product-flow:submit` (always) | Validates implementation against spec, plan, tasks, constitution. CRITICAL findings block submit; HIGH/MEDIUM/LOW ask the user; clean pass is silent |
-| `speckit.verify-tasks` | `/product-flow:build` (proposed) | Proposed at the end of implement. User chooses: run now, open a new session, or skip |
+| `speckit.verify-tasks` | `/product-flow:build` (mandatory) | Runs automatically after implement. Detects phantom completions — tasks marked done with no real implementation — before the verification gate |
 | `speckit.reconcile` | `speckit.verify` (user opt-in on CRITICAL) | When verify finds CRITICAL drift, the user is offered two options: fix manually (A) or reconcile (B). Only invoked if the user chooses B and provides a gap description |
 
 ### Optional praxis skills

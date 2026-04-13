@@ -25,8 +25,8 @@ build
   ├─ inbox-sync                        (internal inbox orchestration)
   ├─ pr-comments pending               (pre-implement gate: resolve UNANSWERED before code)
   ├─ implement           (if code not yet generated)
-  ├─ speckit.verify-tasks              (re-entry shortcut only)
-  ├─ speckit.verify                    (verification gate after implement)
+  ├─ speckit.verify-tasks              (mandatory after implement; re-entry shortcut if code already written)
+  ├─ speckit.verify                    (verification gate after verify-tasks)
   └─ speckit.reconcile                 (optional, if spec/plan need updating after verify)
 
 submit
@@ -71,7 +71,7 @@ implement
   ├─ praxis.test-desiderata
   ├─ bugmagnet
   ├─ speckit.retro
-  └─ speckit.verify-tasks          (optional, user choice)
+  └─ speckit.verify-tasks          (mandatory after implement)
 
 checklist
   └─ speckit.checklist

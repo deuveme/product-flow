@@ -183,21 +183,11 @@ Invoke `/product-flow:speckit.retro` with context: "after implement phase".
 **Wait for `speckit.retro` to finish before continuing.**
 If it returns a **Blocked** status: do not show the final report until the user resolves the blockers.
 
-### 10. Propose verify-tasks
+### 10. Transition to verify-tasks
 
 > **Entry condition for this step**: runs after `speckit.implement.withTDD` completes normally (not skipped).
 
-After the retro completes, output:
-
-```
-🔍 Final quality check
-
-Open a new Claude Code session and run /product-flow:build — it will detect
-that the code is already generated and run the verification automatically
-with a clean context.
-```
-
-Then continue to step 11.
+After the retro completes, continue to step 11.
 
 ### 11. Final report
 

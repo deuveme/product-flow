@@ -96,7 +96,7 @@ Determine entry point using these mutually exclusive cases (check in order):
 
 1. **All done** — `CODE_VERIFIED` is set in `status.json` AND `verify-tasks-report.md` exists: skip all work and go directly to the final report.
 
-2. **Re-entry shortcut** — `CODE_WRITTEN` is set in `status.json` AND `CODE_VERIFIED` is NOT set AND `verify-tasks-report.md` does NOT exist: the user chose option B ("open a new session") from the verify-tasks proposal. **Skip directly to step 4b** without re-running implement.
+2. **Re-entry shortcut** — `CODE_WRITTEN` is set in `status.json` AND `CODE_VERIFIED` is NOT set AND `verify-tasks-report.md` does NOT exist: a previous build session was interrupted after implement but before verify-tasks completed. **Skip directly to step 4b** without re-running implement.
 
 2.5. **Partial implementation** — `CODE_WRITTEN` is NOT set in `status.json` AND uncommitted changes exist in files **outside** `specs/` (i.e., source code or test files): this is a previous interrupted implementation run.
 
@@ -221,10 +221,19 @@ If it produces an ERROR: propagate and stop.
 
 Show:
 ```
-⚙️ Code generated. Running verification...
+⚙️ Code generated. Checking that all tasks are complete...
 ```
 
-### 4b. Verify-tasks (re-entry from new session)
+Invoke `/product-flow:speckit.verify-tasks`.
+
+**Wait for `speckit.verify-tasks` to finish before continuing.**
+
+- If it flags **NOT_FOUND** or **PARTIAL** tasks: surface the interactive
+  walkthrough and wait for the user to resolve each item.
+- When the walkthrough finishes (or if no items are flagged): continue to
+  step 5.
+
+### 4b. Verify-tasks (re-entry)
 
 **Entry condition** (must match exactly — both required):
 - `CODE_WRITTEN` is set in `status.json` AND `CODE_VERIFIED` is NOT set, AND
@@ -232,9 +241,6 @@ Show:
 
 This step runs only when the re-entry shortcut was triggered in step 3:
 code is already generated AND `verify-tasks-report.md` does NOT exist.
-
-The user opened a new session specifically to run verify-tasks with a clean
-context — execute it directly without re-proposing.
 
 Show:
 ```
@@ -249,10 +255,6 @@ Invoke `/product-flow:speckit.verify-tasks`.
   walkthrough and wait for the user to resolve each item.
 - When the walkthrough finishes (or if no items are flagged): continue to
   step 5.
-
-### 4c. verify-tasks complete
-
-Runs after step 4 or step 4b completes successfully (verify-tasks passed or no flagged items). Continue to step 5.
 
 ### 5. Verification gate
 
