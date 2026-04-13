@@ -44,7 +44,7 @@ Execution steps:
    - `IMPL_PLAN`    = `$FEATURE_DIR/plan.md`
    - `TASKS`        = `$FEATURE_DIR/tasks.md`
 
-   If `FEATURE_SPEC` does not exist: ERROR "spec.md not found. Run /product-flow:speckit.specify first." and stop.
+   If `FEATURE_SPEC` does not exist: ERROR "spec.md not found. Run /product-flow:start first." and stop.
 
 1b. **Terminology validation** — runs before the main scan.
 
@@ -252,7 +252,7 @@ If no questions were asked (no critical ambiguities found), skip this step entir
 Behavior rules:
 
 - If no meaningful ambiguities found (or all potential questions would be low-impact), respond: "No critical ambiguities detected worth formal clarification." and suggest proceeding.
-- If spec file missing, instruct user to run `/product-flow:speckit.specify` first (do not create a new spec here).
+- If spec file missing, instruct user to run `/product-flow:start` first (do not create a new spec here).
 - Never ask the PM technical questions — resolve them autonomously and write to PR.
 - Avoid speculative tech stack questions unless the absence blocks functional clarity.
 - Respect user early termination signals ("stop", "done", "proceed").

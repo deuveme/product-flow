@@ -28,7 +28,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    Derive `FEATURE_DIR` = `$REPO_ROOT/specs/$CURRENT_BRANCH`.
 
    Validate:
-   - If `$FEATURE_DIR/plan.md` does not exist: ERROR "plan.md not found. Run /product-flow:plan first." and stop.
+   - If `$FEATURE_DIR/plan.md` does not exist: ERROR "plan.md not found. Run /product-flow:continue first." and stop.
    - If `$FEATURE_DIR/tasks.md` does not exist: ERROR "tasks.md not found. Run /product-flow:build first." and stop.
 
    Build `AVAILABLE_DOCS` list (optional files present in `FEATURE_DIR`):

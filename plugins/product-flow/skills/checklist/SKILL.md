@@ -42,7 +42,7 @@ Invoke `/product-flow:pr-comments pending`. If it returns any `UNANSWERED` comme
 ```
 🚫 There are unanswered questions on the PR that must be resolved before running the checklist.
 
-Please reply on the PR for each open question, then run /product-flow:checklist again.
+Please reply on the PR for each open question, then run /product-flow:continue again.
 ```
 
 **STOP.**

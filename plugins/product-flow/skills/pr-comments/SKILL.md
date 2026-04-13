@@ -103,7 +103,12 @@ _(none)_
 
 Do not commit — the calling skill's `git add specs/` will include this file.
 
-5. Output: the comment ID and the `<N>` used.
+5. Output: the comment ID and the `<N>` used. If `status` is `UNANSWERED`, also show:
+
+```
+💬 A question has been added to the PR awaiting your reply.
+   🔗 <PR_URL>
+```
 
 ---
 

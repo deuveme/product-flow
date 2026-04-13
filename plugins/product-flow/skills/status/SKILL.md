@@ -307,7 +307,19 @@ cat "specs/$branch/status.json" 2>/dev/null || echo "{}"
 
 Track branches with no PR but with at least `spec.md` as **SPEC-only branches**.
 
-### 2b. Validate naming consistency and numbering
+### 2b. Check for unanswered PR questions
+
+Only run this if the current branch has an open PR. Invoke `/product-flow:pr-comments pending`.
+
+Store the result as `PENDING_COMMENTS`:
+- If it returns `NO_PENDING_COMMENTS`: `PENDING_COMMENTS = []`
+- Otherwise: store the list of UNANSWERED comments (question number, type, short body)
+
+This will be surfaced in step 3.
+
+---
+
+### 2c. Validate naming consistency and numbering
 
 For every feature branch that has a SPEC (with or without PR), perform these checks in order. Collect all issues before surfacing them.
 
@@ -473,6 +485,14 @@ On a feature branch with PR:
   ⚫ Published
 
   ➡️  ***​/product-flow:continue***
+```
+
+If `PENDING_COMMENTS` is non-empty, append a warning block after the step list:
+```
+  ⚠️  <N> unanswered question(s) on the PR — reply before continuing:
+     · Q<N> (<type>) — <short summary of the question>
+     · Q<N> (<type>) — <short summary of the question>
+     🔗 <PR_URL>
 ```
 
 On a feature branch with no PR and no spec:

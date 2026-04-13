@@ -21,10 +21,13 @@
 #   • eval, process substitution, or fully dynamic command construction.
 #   These require human review during code approval.
 
+JQ=$(command -v jq 2>/dev/null || command -v /usr/local/bin/jq 2>/dev/null || command -v /opt/homebrew/bin/jq 2>/dev/null || command -v /usr/bin/jq 2>/dev/null)
+[ -z "$JQ" ] && { echo "product-flow: jq not found — hook skipped." >&2; exit 0; }
+
 set -euo pipefail
 
 INPUT=$(cat)
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
+TOOL_NAME=$(echo "$INPUT" | $JQ -r '.tool_name // empty')
 [[ -z "$TOOL_NAME" ]] && exit 0
 
 # Resolve project root via git
@@ -57,7 +60,7 @@ block() {
 # Soft check — asks the user for confirmation before proceeding.
 ask() {
   local reason="$1"
-  jq -n \
+  $JQ -n \
     --arg reason "$reason" \
     '{
       hookSpecificOutput: {
@@ -74,19 +77,19 @@ ask() {
 case "$TOOL_NAME" in
 
   Edit)
-    p=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
+    p=$(echo "$INPUT" | $JQ -r'.tool_input.file_path // empty')
     [[ -n "$p" ]] && ! in_project "$p" && \
       block "Edit is not allowed outside the project repository." "$p"
     ;;
 
   Write)
-    p=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
+    p=$(echo "$INPUT" | $JQ -r'.tool_input.file_path // empty')
     [[ -n "$p" ]] && ! in_project "$p" && \
       block "Write is not allowed outside the project repository." "$p"
     ;;
 
   NotebookEdit)
-    p=$(echo "$INPUT" | jq -r '.tool_input.notebook_path // empty')
+    p=$(echo "$INPUT" | $JQ -r'.tool_input.notebook_path // empty')
     [[ -n "$p" ]] && ! in_project "$p" && \
       block "NotebookEdit is not allowed outside the project repository." "$p"
     ;;
@@ -94,7 +97,7 @@ case "$TOOL_NAME" in
 # ── Bash: hard blocks ─────────────────────────────────────────────────────────
 
   Bash)
-    cmd=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
+    cmd=$(echo "$INPUT" | $JQ -r'.tool_input.command // empty')
     [[ -z "$cmd" ]] && exit 0
 
     # Extract all absolute paths found in a string.

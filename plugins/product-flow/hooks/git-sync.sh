@@ -14,10 +14,13 @@
 # PUBLIC SKILLS (user-invocable)
 #   start · continue · build · submit · deploy-to-stage · status · context
 
+JQ=$(command -v jq 2>/dev/null || command -v /usr/local/bin/jq 2>/dev/null || command -v /opt/homebrew/bin/jq 2>/dev/null || command -v /usr/bin/jq 2>/dev/null)
+[ -z "$JQ" ] && { echo "product-flow: jq not found — hook skipped." >&2; exit 0; }
+
 set -uo pipefail
 
 INPUT=$(cat)
-PROMPT=$(echo "$INPUT" | jq -r '.prompt // empty')
+PROMPT=$(echo "$INPUT" | $JQ -r '.prompt // empty')
 
 # Only act when the user is invoking a public product-flow skill.
 if ! echo "$PROMPT" | grep -qE '/product-flow:(start|continue|build|submit|deploy-to-stage|status|context)(\s|$)'; then

@@ -28,7 +28,7 @@ Consider any user input above (e.g. a hint about where to split) before proceedi
 
 1. Run `git branch --show-current` to get BRANCH_NAME.
 2. Derive FEATURE_DIR = `specs/$BRANCH_NAME`.
-3. Read `$FEATURE_DIR/spec.md`. If the file does not exist: stop with `ERROR: No spec found on branch '$BRANCH_NAME'. Run /product-flow:speckit.specify first.`
+3. Read `$FEATURE_DIR/spec.md`. If the file does not exist: stop with `ERROR: No spec found on branch '$BRANCH_NAME'. Run /product-flow:start first.`
 
 ### Step 2 — Split analysis
 
@@ -233,7 +233,7 @@ If the commit fails with a GPG or signing error (output contains `gpg`, `signing
 To fix it, run in your terminal:
   git config commit.gpgsign false
 
-Then run /product-flow:speckit.split again.
+Then run /product-flow:continue again.
 ```
 **STOP.**
 
@@ -311,7 +311,7 @@ If the commit fails with a GPG or signing error (output contains `gpg`, `signing
 To fix it, run in your terminal:
   git config commit.gpgsign false
 
-Then run /product-flow:speckit.split again.
+Then run /product-flow:continue again.
 ```
 **STOP.**
 

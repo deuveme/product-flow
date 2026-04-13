@@ -33,7 +33,7 @@ If `TASKS_DONE` is `false`:
 🚫 BLOCKED
 
 The tasks have not been generated yet.
-Run /product-flow:tasks first.
+Run /product-flow:continue first.
 ```
 
 **STOP.**

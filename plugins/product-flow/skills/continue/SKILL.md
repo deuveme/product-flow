@@ -14,6 +14,7 @@ effort: medium
 | `PLAN_PENDING` | `/product-flow:plan` |
 | `PLAN_REVIEW` | `/product-flow:consolidate-plan` |
 | `TASKS_PENDING` | `/product-flow:tasks` |
+| `LATE_REVIEW` | `/product-flow:consolidate-plan` |
 | `CHECKLIST_PENDING` | `/product-flow:checklist` |
 
 If a transition requires work that has no dedicated sub-skill, stop and surface the gap — do not implement it inline.
@@ -55,8 +56,17 @@ If a transition requires work that has no dedicated sub-skill, stop and surface 
             ┌───────────────────────┐
             │     TASKS_PENDING     │◄── auto: /product-flow:tasks runs here
             └───────────┬───────────┘
-                        │ (auto-proceed)
-                        ▼
+                        │
+              has comments?  no comments?
+                  │                  │
+                  ▼                  │
+       ┌──────────────────┐          │
+       │   LATE_REVIEW    │          │
+       │  apply answers   │          │
+       └────────┬─────────┘          │
+                └──────────────┬─────┘
+                               │ (auto-proceed)
+                               ▼
             ┌───────────────────────┐
             │   CHECKLIST_PENDING   │◄── auto: /product-flow:checklist runs here
             └───────────┬───────────┘
@@ -114,6 +124,7 @@ Map to state using `SPEC_CREATED`, `PLAN_GENERATED`, and `TASKS_GENERATED` field
 | ✓ | ✗ | - | - | ✗ | `PLAN_PENDING` → auto-generate plan |
 | ✓ | ✓ | - | - | ✓ | `PLAN_REVIEW` |
 | ✓ | ✓ | ✗ | - | ✗ | `TASKS_PENDING` → auto-generate tasks |
+| ✓ | ✓ | ✓ | ✗ | ✓ | `LATE_REVIEW` → process pending answers then run checklist |
 | ✓ | ✓ | ✓ | ✗ | ✗ | `CHECKLIST_PENDING` → auto-validate requirements |
 | ✓ | ✓ | ✓ | ✓ | ✗ | `READY_TO_BE_BUILT` |
 
@@ -132,6 +143,7 @@ Always show the active state before doing anything, using the exact message for 
 | `PLAN_PENDING` | `🗺️ Spec ready. Generating the technical plan...` |
 | `PLAN_REVIEW` | `📋 Integrating plan feedback from the team...` |
 | `TASKS_PENDING` | `✂️ Plan ready. Breaking down into development tasks...` |
+| `LATE_REVIEW` | `📋 Processing pending answers before running the checklist...` |
 | `CHECKLIST_PENDING` | `✅ Tasks ready. Validating requirements...` |
 | `READY_TO_BE_BUILT` | `🚀 Everything is ready. Run /product-flow:build to start building.` |
 
@@ -191,6 +203,49 @@ Invoke `/product-flow:tasks`.
 If it produces an ERROR: propagate and stop.
 
 Then **within this same invocation**, proceed immediately to the `CHECKLIST_PENDING` transition below.
+
+#### `LATE_REVIEW` (process answers posted after tasks were generated)
+
+This state is reached when `TASKS_GENERATED=✓` but there are still UNANSWERED bot comments on the PR.
+
+1. **Verify tasks actually exist:**
+
+```bash
+BRANCH=$(git branch --show-current)
+ls "specs/$BRANCH/tasks.md" 2>/dev/null
+```
+
+   - If `tasks.md` **does not exist**: `TASKS_GENERATED` is stale (e.g. a manual rollback was done without cleaning `status.json`). Remove it:
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE")
+echo "$EXISTING" | jq 'del(.TASKS_GENERATED)' > "$STATUS_FILE"
+git add "$STATUS_FILE"
+git commit -m "chore: remove stale TASKS_GENERATED flag"
+git push origin HEAD
+```
+
+Then re-evaluate state from step 2 with the corrected `status.json`.
+
+   - If `tasks.md` **exists**: invoke `/product-flow:inbox-sync` to get the latest state from the PR before evaluating answers. Then proceed to step 2 below.
+
+2. Re-run `/product-flow:pr-comments pending` and `/product-flow:pr-comments read-answers` in parallel with fresh data:
+   - If it returned **new unprocessed answers**: invoke `/product-flow:consolidate-plan` to apply them and resolve the comments. Wait for it to finish. If ERROR: propagate and stop. Then proceed immediately to the `CHECKLIST_PENDING` transition below.
+   - If it returned **`NO_USER_RESPONSES`** (UNANSWERED comments exist but no user answers found): list the pending questions and STOP:
+
+```
+🚫 There are unanswered questions on the PR that must be resolved before running the checklist.
+
+**Pending questions:**
+
+<list each UNANSWERED comment with its question number, type, and content>
+
+Please reply on the PR for each open question, then run `/product-flow:continue` again.
+
+Link: <PR_URL>
+```
 
 #### `CHECKLIST_PENDING` (auto-validate)
 

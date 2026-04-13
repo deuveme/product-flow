@@ -20,14 +20,17 @@
 #   /product-flow:deploy-to-stage — raw git shortcuts that bypass the workflow
 #   are blocked at the agent level.
 
+JQ=$(command -v jq 2>/dev/null || command -v /usr/local/bin/jq 2>/dev/null || command -v /opt/homebrew/bin/jq 2>/dev/null || command -v /usr/bin/jq 2>/dev/null)
+[ -z "$JQ" ] && { echo "product-flow: jq not found — hook skipped." >&2; exit 0; }
+
 set -euo pipefail
 
 INPUT=$(cat)
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
+TOOL_NAME=$(echo "$INPUT" | $JQ -r '.tool_name // empty')
 [[ -z "$TOOL_NAME" ]] && exit 0
 [[ "$TOOL_NAME" != "Bash" ]] && exit 0
 
-cmd=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
+cmd=$(echo "$INPUT" | $JQ -r '.tool_input.command // empty')
 [[ -z "$cmd" ]] && exit 0
 
 # product-flow branch convention: NNN-kebab-name  (e.g. 001-user-auth)

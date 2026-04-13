@@ -55,7 +55,7 @@ Derive absolute paths:
 
 Validate that `spec.md` and `plan.md` exist. If either is missing, stop with:
 > ⚠️ Missing required files in `FEATURE_DIR`. Expected: spec.md, plan.md.
-> Run `/product-flow:speckit.specify` and `/product-flow:speckit.plan` first.
+> Run `/product-flow:start` first.
 
 If `tasks.md` does not exist, create it with a `## Remediation: Gaps` heading
 before appending new tasks.
