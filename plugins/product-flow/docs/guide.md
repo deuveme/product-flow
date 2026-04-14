@@ -91,7 +91,7 @@ specs/<branch>/
 | Command | Internal call chain |
 |---|---|
 | `/product-flow:start` | create branch + Draft PR → facilitated product framing (4 dimensions) + visual assets + docs → quality gate → [epic scope check: split into N branches if epic signals detected] → [`praxis.collaborative-design` if vague] → `speckit.specify` → `speckit.retro` |
-| `/product-flow:continue` | `inbox-sync` → state machine: `SPEC_REVIEW` → `consolidate-spec` / `PLAN_PENDING` → `plan` / `PLAN_REVIEW` → `consolidate-plan` / `TASKS_PENDING` → `tasks` / `CHECKLIST_PENDING` → `checklist` (dispatched by state machine) |
+| `/product-flow:continue` | `inbox-sync` → flag-based routing: `consolidate-spec` + `speckit.split` (if SPLIT_DONE absent) / `plan` (if PLAN_GENERATED absent) / `consolidate-plan` (if comments) / `tasks` (if TASKS_GENERATED absent) / `checklist` (if CHECKLIST_DONE absent) — dispatched by reading `status.json` flags |
 | `/product-flow:build` | `inbox-sync` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `bugmagnet` → `speckit.retro`) → `speckit.verify-tasks` → `speckit.verify` |
 | `/product-flow:submit` | `inbox-sync` → `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → optional git add/commit/push (only if local changes exist) → `gh pr ready` on first run (exits DRAFT) → proposes ADRs in PR body |
 | `/product-flow:deploy-to-stage` | [ADR consolidation: ask user → generate in memory if yes] → `gh pr merge --squash --delete-branch` → [write ADRs to `docs/adr/` + commit if yes] → mark published |
@@ -170,26 +170,25 @@ Expected: `📍 main  ·  no active feature`
 
 ### `/product-flow:continue` state machine
 
+State is determined by reading `specs/<branch>/status.json` flags + a live `has_comments` check on the PR. First matching row in the routing table wins.
+
 ```
 /product-flow:start
-  │
+  │  writes: FEATURE_STARTED → DESIGN_DONE → SPEC_CREATED
   ▼
-SPEC_CREATED  ←──── /product-flow:consolidate-spec ←──── SPEC_REVIEW  (team adds comments)
-  │ (no comments)
-  ▼
-PLAN_PENDING  ──── speckit.clarify runs first (ambiguity check) ──── /product-flow:plan auto-runs ──┐
-                                                                                                    │
-  (team adds comments on plan)                                                                       ▼
-PLAN_REVIEW   ←──── /product-flow:consolidate-plan ───────────────────────────────────────── PLAN_PENDING
-  │ (no comments)
-  ▼
-TASKS_PENDING ──── /product-flow:tasks auto-runs
-  │ (auto-proceed)
-  ▼
-CHECKLIST_PENDING ──── /product-flow:checklist auto-runs
-  │ (auto-proceed)
-  ▼
-READY_TO_BE_BUILT ──── redirect to /product-flow:build
+
+SPEC_CREATED + SPLIT_DONE absent + has_comments  →  consolidate-spec  (clears SPLIT_DONE, auto-proceeds)
+SPEC_CREATED + SPLIT_DONE absent + no comments   →  speckit.split     (writes SPLIT_DONE, auto-proceeds)
+SPEC_CREATED + SPLIT_DONE + PLAN_GENERATED absent →  speckit.clarify → plan  (writes PLAN_GENERATED)
+
+PLAN_GENERATED + TASKS_GENERATED absent + has_comments  →  consolidate-plan
+PLAN_GENERATED + TASKS_GENERATED absent + no comments   →  tasks  (writes TASKS_GENERATED, auto-proceeds to checklist)
+
+TASKS_GENERATED + CHECKLIST_DONE absent + has_comments  →  consolidate-plan
+TASKS_GENERATED + CHECKLIST_DONE absent + no comments   →  checklist  (writes CHECKLIST_DONE)
+
+CHECKLIST_DONE + CODE_WRITTEN absent + has_comments  →  consolidate-plan  (clears CHECKLIST_DONE)
+CHECKLIST_DONE + CODE_WRITTEN absent + no comments   →  ready for /product-flow:build
 ```
 
 ### PR draft lifecycle

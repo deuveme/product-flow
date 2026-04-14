@@ -15,11 +15,15 @@ start
 
 continue
   ├─ inbox-sync                              (internal inbox orchestration)
-  ├─ [SPEC_REVIEW]       → consolidate-spec → (then auto-proceeds to PLAN_PENDING)
-  ├─ [PLAN_PENDING]      → speckit.clarify → plan
-  ├─ [PLAN_REVIEW]       → consolidate-plan → (then auto-proceeds to TASKS_PENDING)
-  ├─ [TASKS_PENDING]     → tasks            → (then auto-proceeds to CHECKLIST_PENDING)
-  └─ [CHECKLIST_PENDING] → checklist        → (then auto-proceeds to READY_TO_BE_BUILT)
+  ├─ [SPEC_CREATED, SPLIT_DONE absent, has_comments]      → consolidate-spec → speckit.split (auto-proceed)
+  ├─ [SPEC_CREATED, SPLIT_DONE absent, no comments]       → speckit.split → plan (auto-proceed)
+  ├─ [SPLIT_DONE, PLAN_GENERATED absent]                  → speckit.clarify → plan
+  ├─ [PLAN_GENERATED, TASKS_GENERATED absent, has_comments] → consolidate-plan
+  ├─ [PLAN_GENERATED, TASKS_GENERATED absent, no comments]  → tasks → checklist (auto-proceed)
+  ├─ [TASKS_GENERATED, CHECKLIST_DONE absent, has_comments] → consolidate-plan
+  ├─ [TASKS_GENERATED, CHECKLIST_DONE absent, no comments]  → checklist
+  ├─ [CHECKLIST_DONE, CODE_WRITTEN absent, has_comments]    → consolidate-plan (clears CHECKLIST_DONE)
+  └─ [CHECKLIST_DONE, CODE_WRITTEN absent, no comments]     → ready for /build
 
 build
   ├─ inbox-sync                        (internal inbox orchestration)
@@ -112,7 +116,7 @@ inbox-sync
 |-------|----------------------|
 | `start` | Clean working tree; on main/master |
 | `continue` | On a feature branch; PR exists |
-| `build` | PR exists; `PLAN_GENERATED` in status.json; feature directory exists |
+| `build` | PR exists; `TASKS_GENERATED` + `CHECKLIST_DONE` in status.json; feature directory exists |
 | `submit` | On a feature branch; PR exists; `CODE_VERIFIED` in status.json |
 | `deploy-to-stage` | `IN_REVIEW` in status.json; PR approved by team |
 | `plan` | `SPEC_CREATED` in status.json; no pending UNANSWERED comments |

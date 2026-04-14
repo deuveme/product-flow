@@ -149,6 +149,18 @@ Feature B — [proposed-slug] (extract): [one-line goal] — [why independent] �
 **Decision: [User's answer verbatim — e.g. "Yes, split it" / "No, keep as-is" / "Adjust the split boundary" / "No split proposed"]**
 ```
 
+Then write `SPLIT_DONE` to `status.json` — this must run in every exit path (score 0, split executed, split declined):
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"SPLIT_DONE": $ts}' > "$STATUS_FILE"
+git add "$STATUS_FILE"
+git commit -m "chore: record split_done"
+git push origin HEAD
+```
+
 ### Step 4 — Execute split (only if user confirmed Yes)
 
 Run steps 4a through 4g in order. Do not skip any.

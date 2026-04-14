@@ -141,6 +141,15 @@ Skip if no technical decisions were made.
 
 ### 6. Commit the updated spec
 
+Clear `SPLIT_DONE` from `status.json` — the spec may have changed and split analysis must re-run on the next `/product-flow:continue`:
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq 'del(.SPLIT_DONE)' > "$STATUS_FILE"
+```
+
 ```bash
 git add specs/
 git commit -m "docs: update spec with team feedback"

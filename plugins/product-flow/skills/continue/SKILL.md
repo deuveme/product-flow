@@ -8,77 +8,47 @@ effort: medium
 
 **Every state transition MUST delegate to a named sub-skill. Never perform work inline.**
 
-| State | Sub-skill invoked |
-|-------|-------------------|
-| `SPEC_REVIEW` | `/product-flow:consolidate-spec` |
-| `PLAN_PENDING` | `/product-flow:plan` |
-| `PLAN_REVIEW` | `/product-flow:consolidate-plan` |
-| `TASKS_PENDING` | `/product-flow:tasks` |
-| `LATE_REVIEW` | `/product-flow:consolidate-plan` |
-| `CHECKLIST_PENDING` | `/product-flow:checklist` |
+| Condition | Sub-skill invoked |
+|-----------|-------------------|
+| `SPEC_CREATED` ✓, `SPLIT_DONE` ✗, `PLAN_GENERATED` ✗, `has_comments` true | `/product-flow:consolidate-spec` |
+| `SPEC_CREATED` ✓, `SPLIT_DONE` ✗, `PLAN_GENERATED` ✗, `has_comments` false | `/product-flow:speckit.split` |
+| `SPEC_CREATED` ✓, `SPLIT_DONE` ✓, `PLAN_GENERATED` ✗ | `/product-flow:plan` |
+| `PLAN_GENERATED` ✓, `TASKS_GENERATED` ✗, `has_comments` true | `/product-flow:consolidate-plan` |
+| `PLAN_GENERATED` ✓, `TASKS_GENERATED` ✗, `has_comments` false | `/product-flow:tasks` |
+| `TASKS_GENERATED` ✓, `CHECKLIST_DONE` ✗, `has_comments` true | `/product-flow:consolidate-plan` |
+| `TASKS_GENERATED` ✓, `CHECKLIST_DONE` ✗, `has_comments` false | `/product-flow:checklist` |
+| `CHECKLIST_DONE` ✓, `CODE_WRITTEN` ✗, `has_comments` true | `/product-flow:consolidate-plan` (clears `CHECKLIST_DONE`) |
+| `CHECKLIST_DONE` ✓, `CODE_WRITTEN` ✗, `has_comments` false | → ready for `/product-flow:build` |
 
 If a transition requires work that has no dedicated sub-skill, stop and surface the gap — do not implement it inline.
 
 ## State Machine
 
+The workflow state is determined entirely by the flags present in `specs/<branch>/status.json` plus the dynamic `has_comments` check. There are no named virtual states — the flag combination IS the state.
+
+**Lifecycle order of flags:**
+
 ```
-                /product-flow:start
-                        │
-                        ▼
-            ┌───────────────────────┐
-            │      SPEC_CREATED     │◄── after consolidating feedback
-            └───────────┬───────────┘
-                        │
-              has comments?  no comments?
-                  │                  │
-                  ▼                  │
-       ┌──────────────────┐          │
-       │   SPEC_REVIEW    │          │
-       │   consolidate    │          │
-       └────────┬─────────┘          │
-                └──────────────┬─────┘
-                               │ (auto-proceed)
-                               ▼
-            ┌───────────────────────┐
-            │     PLAN_PENDING      │◄── auto: /product-flow:plan runs here
-            └───────────┬───────────┘
-                        │
-              has comments?  no comments?
-                  │                  │
-                  ▼                  │
-       ┌──────────────────┐          │
-       │   PLAN_REVIEW    │          │
-       │   consolidate    │          │
-       └────────┬─────────┘          │
-                └──────────────┬─────┘
-                               │ (auto-proceed)
-                               ▼
-            ┌───────────────────────┐
-            │     TASKS_PENDING     │◄── auto: /product-flow:tasks runs here
-            └───────────┬───────────┘
-                        │
-              has comments?  no comments?
-                  │                  │
-                  ▼                  │
-       ┌──────────────────┐          │
-       │   LATE_REVIEW    │          │
-       │  apply answers   │          │
-       └────────┬─────────┘          │
-                └──────────────┬─────┘
-                               │ (auto-proceed)
-                               ▼
-            ┌───────────────────────┐
-            │   CHECKLIST_PENDING   │◄── auto: /product-flow:checklist runs here
-            └───────────┬───────────┘
-                        │ (auto-proceed)
-                        ▼
-            ┌───────────────────────┐
-            │    READY_TO_BE_BUILT  │──── blocked: redirect to /product-flow:build
-            └───────────────────────┘
+FEATURE_STARTED → DESIGN_DONE → SPEC_CREATED → SPLIT_DONE → PLAN_GENERATED
+→ TASKS_GENERATED → CHECKLIST_DONE → CODE_WRITTEN → VERIFY_TASKS_DONE
+→ CODE_VERIFIED → IN_REVIEW → PUBLISHED
 ```
 
-**Blocked states** (invalid transitions):
-- Any state where required preconditions are not met → ERROR with explanation
+**Routing table** (evaluated top-to-bottom, first match wins):
+
+| SPEC_CREATED | SPLIT_DONE | PLAN_GENERATED | TASKS_GENERATED | CHECKLIST_DONE | CODE_WRITTEN | has_comments | → Action |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---|
+| ✓ | ✗ | ✗ | - | - | - | ✓ | `consolidate-spec` |
+| ✓ | ✗ | ✗ | - | - | - | ✗ | `speckit.split` |
+| ✓ | ✓ | ✗ | - | - | - | ✗ | `plan` |
+| ✓ | ✓ | ✓ | ✗ | - | - | ✓ | `consolidate-plan` |
+| ✓ | ✓ | ✓ | ✗ | - | - | ✗ | `tasks` |
+| ✓ | ✓ | ✓ | ✓ | ✗ | - | ✓ | `consolidate-plan` |
+| ✓ | ✓ | ✓ | ✓ | ✗ | - | ✗ | `checklist` |
+| ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | `consolidate-plan` (clears `CHECKLIST_DONE`) |
+| ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ready for `/build` |
+
+**Backward-compatibility note:** Branches created before `SPLIT_DONE` existed will have `PLAN_GENERATED` set but no `SPLIT_DONE`. Evaluate `PLAN_GENERATED` before the split rows — if `PLAN_GENERATED` is already present, skip directly to the post-split rows. This prevents forcing in-flight branches through `speckit.split` retroactively.
 
 ---
 
@@ -109,54 +79,55 @@ Invoke `/product-flow:inbox-sync`.
 
 ### 2. Determine current state
 
-Read `specs/<branch>/status.json` to check which steps are completed:
+Read `specs/<branch>/status.json`:
 
 ```bash
 BRANCH=$(git branch --show-current)
 cat "specs/$BRANCH/status.json" 2>/dev/null || echo "{}"
 ```
 
-Map to state using `SPEC_CREATED`, `PLAN_GENERATED`, and `TASKS_GENERATED` fields:
-
-| SPEC_CREATED | PLAN_GENERATED | TASKS_GENERATED | CHECKLIST_DONE | has_comments | → State |
-|:---:|:---:|:---:|:---:|:---:|:---|
-| ✓ | ✗ | - | - | ✓ | `SPEC_REVIEW` |
-| ✓ | ✗ | - | - | ✗ | `PLAN_PENDING` → auto-generate plan |
-| ✓ | ✓ | - | - | ✓ | `PLAN_REVIEW` |
-| ✓ | ✓ | ✗ | - | ✗ | `TASKS_PENDING` → auto-generate tasks |
-| ✓ | ✓ | ✓ | ✗ | ✓ | `LATE_REVIEW` → process pending answers then run checklist |
-| ✓ | ✓ | ✓ | ✗ | ✗ | `CHECKLIST_PENDING` → auto-validate requirements |
-| ✓ | ✓ | ✓ | ✓ | ✗ | `READY_TO_BE_BUILT` |
+Extract flags: `SPEC_CREATED`, `SPLIT_DONE`, `PLAN_GENERATED`, `TASKS_GENERATED`, `CHECKLIST_DONE`, `CODE_WRITTEN`.
 
 For `has_comments`: invoke `/product-flow:pr-comments pending` and `/product-flow:pr-comments read-answers` in parallel.
 - If `pending` returns non-empty UNANSWERED comments → `has_comments = true`.
 - If `read-answers` returns any new unprocessed answers → `has_comments = true`.
 - If both return empty/`NO_USER_RESPONSES` → `has_comments = false`.
 
+Apply the routing table from the State Machine section above. Evaluate rows top-to-bottom — first match wins.
+
+**Backward-compatibility check:** If `PLAN_GENERATED` is present but `SPLIT_DONE` is absent, treat `SPLIT_DONE` as implicitly set for routing purposes (the feature predates the split step).
+
 ### 3. Display current state
 
-Always show the active state before doing anything, using the exact message for each state:
+Show the active action before doing anything:
 
-| State | Message |
-|-------|---------|
-| `SPEC_REVIEW` | `📝 Integrating spec feedback from the team...` |
-| `PLAN_PENDING` | `🗺️ Spec ready. Generating the technical plan...` |
-| `PLAN_REVIEW` | `📋 Integrating plan feedback from the team...` |
-| `TASKS_PENDING` | `✂️ Plan ready. Breaking down into development tasks...` |
-| `LATE_REVIEW` | `📋 Processing pending answers before running the checklist...` |
-| `CHECKLIST_PENDING` | `✅ Tasks ready. Validating requirements...` |
-| `READY_TO_BE_BUILT` | `🚀 Everything is ready. Run /product-flow:build to start building.` |
+| Action | Message |
+|--------|---------|
+| `consolidate-spec` | `📝 Integrating spec feedback from the team...` |
+| `speckit.split` | `✂️ Checking spec scope before planning...` |
+| `plan` | `🗺️ Spec ready. Generating the technical plan...` |
+| `consolidate-plan` | `📋 Integrating plan feedback from the team...` |
+| `tasks` | `✂️ Plan ready. Breaking down into development tasks...` |
+| `checklist` | `✅ Tasks ready. Validating requirements...` |
+| ready for `/build` | `🚀 Everything is ready. Run /product-flow:build to start building.` |
 
-### 4. Execute state transition
+### 4. Execute transition
 
-#### `SPEC_REVIEW`
+#### → consolidate-spec
 
 Invoke `/product-flow:consolidate-spec`.
 Wait for it to finish. If ERROR: propagate and stop.
 
-Then **within this same invocation**, proceed immediately to the `PLAN_PENDING` transition below — do not stop and wait for a new user command.
+Then **within this same invocation**, re-evaluate the routing table from step 2 — `consolidate-spec` cleared `SPLIT_DONE`, so the next action is `speckit.split`. Proceed immediately to `→ speckit.split` below.
 
-#### `PLAN_PENDING` (auto-generate)
+#### → speckit.split
+
+Invoke `/product-flow:speckit.split`.
+Wait for it to finish. If ERROR: propagate and stop.
+
+Then **within this same invocation**, proceed immediately to `→ plan` below.
+
+#### → plan
 
 Before generating the plan, check for unresolved spec ambiguities:
 
@@ -168,8 +139,8 @@ Invoke `/product-flow:speckit.clarify`.
 
 **Wait for `speckit.clarify` to finish before continuing.**
 
-- If it reports **no critical ambiguities** (all categories Clear or Deferred): continue silently.
-- If it resolves ambiguities (technical via PR comments, product via PM questions): continue after answers are applied.
+- If it reports **no critical ambiguities**: continue silently.
+- If it resolves ambiguities: continue after answers are applied.
 - If it produces an ERROR: propagate and stop.
 
 Invoke `/product-flow:plan`.
@@ -188,34 +159,16 @@ or add comments on the PR first if changes are needed.
 ─────────────────────────────────────────
 ```
 
-#### `PLAN_REVIEW`
+#### → consolidate-plan
 
-Invoke `/product-flow:consolidate-plan`.
-Wait for it to finish. If ERROR: propagate and stop.
-
-Then **within this same invocation**, proceed immediately to the `TASKS_PENDING` transition below — do not stop and wait for a new user command.
-
-#### `TASKS_PENDING` (auto-generate)
-
-Invoke `/product-flow:tasks`.
-
-**Wait for `/product-flow:tasks` to finish completely before continuing.**
-If it produces an ERROR: propagate and stop.
-
-Then **within this same invocation**, proceed immediately to the `CHECKLIST_PENDING` transition below.
-
-#### `LATE_REVIEW` (process answers posted after tasks were generated)
-
-This state is reached when `TASKS_GENERATED=✓` but there are still UNANSWERED bot comments on the PR.
-
-1. **Verify tasks actually exist:**
+Before invoking, check whether `TASKS_GENERATED` is set and `tasks.md` actually exists:
 
 ```bash
 BRANCH=$(git branch --show-current)
 ls "specs/$BRANCH/tasks.md" 2>/dev/null
 ```
 
-   - If `tasks.md` **does not exist**: `TASKS_GENERATED` is stale (e.g. a manual rollback was done without cleaning `status.json`). Remove it:
+If `TASKS_GENERATED` is set but `tasks.md` does **not** exist (stale flag from a manual rollback):
 
 ```bash
 BRANCH=$(git branch --show-current)
@@ -229,14 +182,14 @@ git push origin HEAD
 
 Then re-evaluate state from step 2 with the corrected `status.json`.
 
-   - If `tasks.md` **exists**: invoke `/product-flow:inbox-sync` to get the latest state from the PR before evaluating answers. Then proceed to step 2 below.
+Otherwise, invoke `/product-flow:inbox-sync` to get the latest state from the PR before evaluating answers.
 
-2. Re-run `/product-flow:pr-comments pending` and `/product-flow:pr-comments read-answers` in parallel with fresh data:
-   - If it returned **new unprocessed answers**: invoke `/product-flow:consolidate-plan` to apply them and resolve the comments. Wait for it to finish. If ERROR: propagate and stop. Then proceed immediately to the `CHECKLIST_PENDING` transition below.
-   - If it returned **`NO_USER_RESPONSES`** (UNANSWERED comments exist but no user answers found): list the pending questions and STOP:
+Re-run `/product-flow:pr-comments pending` and `/product-flow:pr-comments read-answers` in parallel:
+- If new unprocessed answers found: invoke `/product-flow:consolidate-plan`. Wait for it to finish. If ERROR: propagate and stop.
+- If `NO_USER_RESPONSES` (UNANSWERED comments exist but no user answers found): list the pending questions and STOP:
 
 ```
-🚫 There are unanswered questions on the PR that must be resolved before running the checklist.
+🚫 There are unanswered questions on the PR that must be resolved before continuing.
 
 **Pending questions:**
 
@@ -247,7 +200,18 @@ Please reply on the PR for each open question, then run `/product-flow:continue`
 Link: <PR_URL>
 ```
 
-#### `CHECKLIST_PENDING` (auto-validate)
+Then **within this same invocation**, re-evaluate the routing table — `consolidate-plan` may have cleared `CHECKLIST_DONE` if it was set. Proceed to the next matching action.
+
+#### → tasks
+
+Invoke `/product-flow:tasks`.
+
+**Wait for `/product-flow:tasks` to finish completely before continuing.**
+If it produces an ERROR: propagate and stop.
+
+Then **within this same invocation**, proceed immediately to `→ checklist` below.
+
+#### → checklist
 
 Invoke `/product-flow:checklist`.
 
@@ -290,7 +254,7 @@ or add comments on the PR first if changes are needed.
 ─────────────────────────────────────────
 ```
 
-#### `READY_TO_BE_BUILT`
+#### → ready for /build
 
 Show reminder about AI-answered comments:
 
@@ -302,16 +266,11 @@ Show reminder about AI-answered comments:
    Link: <PR_URL>
 ```
 
-Output:
+Use the `AskUserQuestion` tool to ask:
 
 ```
-📋 Plan ready. You can review it at your own pace in the PR:
-<GitHub URL to specs/<feature-dir>/plan.md on the current branch>
-
 Do you want to start building, or would you like to make adjustments first?
 ```
-
-Use the `AskUserQuestion` tool to ask this.
 
 - If the user wants adjustments: apply them to the relevant artifacts (`plan.md`, `research.md`, `data-model.md`), commit, push, and show the updated plan again repeating this block.
 - If the user confirms they want to continue:

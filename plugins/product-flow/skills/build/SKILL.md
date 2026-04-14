@@ -83,8 +83,8 @@ cat "specs/$BRANCH/status.json" 2>/dev/null || echo "{}"
 ```
 
 - Code written? → `CODE_WRITTEN` is set in `status.json`
+- Verify-tasks done? → `VERIFY_TASKS_DONE` is set in `status.json`
 - Code verified? → `CODE_VERIFIED` is set in `status.json`
-- Verify-tasks done? → `specs/<feature-dir>/verify-tasks-report.md` exists
 
 Also check for uncommitted changes:
 
@@ -94,9 +94,9 @@ git status --porcelain
 
 Determine entry point using these mutually exclusive cases (check in order):
 
-1. **All done** — `CODE_VERIFIED` is set in `status.json` AND `verify-tasks-report.md` exists: skip all work and go directly to the final report.
+1. **All done** — `CODE_VERIFIED` is set in `status.json`: skip all work and go directly to the final report.
 
-2. **Re-entry shortcut** — `CODE_WRITTEN` is set in `status.json` AND `CODE_VERIFIED` is NOT set AND `verify-tasks-report.md` does NOT exist: a previous build session was interrupted after implement but before verify-tasks completed. **Skip directly to step 4b** without re-running implement.
+2. **Re-entry shortcut** — `CODE_WRITTEN` is set in `status.json` AND `VERIFY_TASKS_DONE` is NOT set AND `CODE_VERIFIED` is NOT set: a previous build session was interrupted after implement but before verify-tasks completed. **Skip directly to step 4b** without re-running implement.
 
 2.5. **Partial implementation** — `CODE_WRITTEN` is NOT set in `status.json` AND uncommitted changes exist in files **outside** `specs/` (i.e., source code or test files): this is a previous interrupted implementation run.
 
@@ -236,11 +236,10 @@ Invoke `/product-flow:speckit.verify-tasks`.
 ### 4b. Verify-tasks (re-entry)
 
 **Entry condition** (must match exactly — both required):
-- `CODE_WRITTEN` is set in `status.json` AND `CODE_VERIFIED` is NOT set, AND
-- `verify-tasks-report.md` does NOT exist in FEATURE_DIR
+- `CODE_WRITTEN` is set in `status.json` AND `VERIFY_TASKS_DONE` is NOT set AND `CODE_VERIFIED` is NOT set
 
 This step runs only when the re-entry shortcut was triggered in step 3:
-code is already generated AND `verify-tasks-report.md` does NOT exist.
+code is already generated AND `VERIFY_TASKS_DONE` is NOT set in `status.json`.
 
 Show:
 ```

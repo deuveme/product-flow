@@ -137,6 +137,17 @@ If an inconsistency cannot be resolved without PM input, stop and surface it as 
 
 ### 5. Commit and push
 
+If `CHECKLIST_DONE` is present in `status.json`, clear it — the plan changed and requirements must be re-validated before building:
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+if echo "$EXISTING" | jq -e '.CHECKLIST_DONE' > /dev/null 2>&1; then
+  echo "$EXISTING" | jq 'del(.CHECKLIST_DONE)' > "$STATUS_FILE"
+fi
+```
+
 ```bash
 git add specs/<feature-dir>/
 git commit -m "plan: integrate team feedback"

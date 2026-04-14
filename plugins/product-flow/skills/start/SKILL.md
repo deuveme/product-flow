@@ -488,12 +488,27 @@ First, check if design exploration was already completed in a previous run:
 ls "specs/$BRANCH_NAME/collaborative-design.md" 2>/dev/null
 ```
 
-If the file exists, load it as `collaborative-design.md` and skip the rest of this step — use its contents as context in step 6.
+If the file exists, load it as `collaborative-design.md` and skip the rest of this step — use its contents as context in step 6. Write `DESIGN_DONE` to `status.json` before continuing:
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"DESIGN_DONE": $ts}' > "$STATUS_FILE"
+```
 
 Otherwise, assess the feature description using `GATHERED_CONTEXT.full_description`. Also check `GATHERED_CONTEXT.visual_assets` — if the user provided designs or Figma links, factor them into the assessment:
 
 - **Always run this step** if the description contains visual or UX redesign intent (keywords: "redesign", "rediseño", "new look", "new design", "visual overhaul", "UI revamp", "rework the UI/UX", "visual refresh", "new interface", "change the look", "new layout") — regardless of description length. Redesigns need visual scenario exploration even when described in detail.
-- **Skip this step** if the description is detailed and clear (clear actor, action, and expected outcome, typically 15+ words) and no redesign intent is detected.
+- **Skip this step** if the description is detailed and clear (clear actor, action, and expected outcome, typically 15+ words) and no redesign intent is detected. Write `DESIGN_DONE` to `status.json` before continuing:
+
+  ```bash
+  BRANCH=$(git branch --show-current)
+  STATUS_FILE="specs/$BRANCH/status.json"
+  EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+  echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"DESIGN_DONE": $ts}' > "$STATUS_FILE"
+  ```
+
 - **Run this step** if the description is vague, very short (< 15 words), or lacks a clear user action or expected outcome.
 
 If running: invoke `/product-flow:praxis.collaborative-design` passing `GATHERED_CONTEXT.full_description` as input, and attach any visual assets from `GATHERED_CONTEXT.visual_assets` as additional context.

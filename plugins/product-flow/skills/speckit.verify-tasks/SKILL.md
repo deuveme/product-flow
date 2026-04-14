@@ -189,6 +189,15 @@ Write `FEATURE_DIR/verify-tasks-report.md` (overwrite if exists). Include:
 
 Output: `✅ Report written to: {FEATURE_DIR}/verify-tasks-report.md`
 
+Write `VERIFY_TASKS_DONE` to `status.json` — no commit needed here, `build` will include it when committing `CODE_VERIFIED`:
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"VERIFY_TASKS_DONE": $ts}' > "$STATUS_FILE"
+```
+
 ### 6. Handle flagged items
 
 If no flagged items:
