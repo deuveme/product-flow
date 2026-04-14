@@ -487,6 +487,15 @@ On a feature branch with PR:
   ➡️  ***​/product-flow:continue***
 ```
 
+The `➡️` next step line adapts to the current state:
+
+| State (highest flag present) | Next step shown |
+|---|---|
+| up to `CHECKLIST_DONE` | `***​/product-flow:continue***` |
+| `CODE_VERIFIED` (no `IN_REVIEW`) | `***​/product-flow:submit***` + hint: *Found issues? Run /product-flow:fix* |
+| `IN_REVIEW` | `***​/product-flow:deploy-to-stage***` (when PR approved) + hint: *Team found issues? Run /product-flow:fix* |
+| `PUBLISHED` | *(no next step — feature complete)* |
+
 If `PENDING_COMMENTS` is non-empty, append a warning block after the step list:
 ```
   ⚠️  <N> unanswered question(s) on the PR — reply before continuing:

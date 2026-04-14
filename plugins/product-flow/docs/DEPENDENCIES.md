@@ -36,6 +36,16 @@ build
 submit
   └─ inbox-sync                        (internal inbox orchestration)
 
+fix
+  ├─ inbox-sync                        (internal inbox orchestration)
+  ├─ pr-comments new-comments          (surface unprocessed review feedback)
+  ├─ pr-comments write                 (post confirmed diagnosis summary)
+  ├─ speckit.implement.withTDD [IDs]   (filtered mode — fix-tasks only)
+  ├─ speckit.verify-tasks [IDs]        (filtered mode — fix-tasks only)
+  ├─ speckit.verify                    (full verification gate)
+  ├─ speckit.retro                     (gap retrospective)
+  └─ context
+
 deploy-to-stage
   (no sub-skill calls — direct git/gh operations)
 
@@ -118,6 +128,7 @@ inbox-sync
 | `continue` | On a feature branch; PR exists |
 | `build` | PR exists; `TASKS_GENERATED` + `CHECKLIST_DONE` in status.json; feature directory exists |
 | `submit` | On a feature branch; PR exists; `CODE_VERIFIED` in status.json |
+| `fix` | On a feature branch; PR exists; `CODE_VERIFIED` or `IN_REVIEW` in status.json |
 | `deploy-to-stage` | `IN_REVIEW` in status.json; PR approved by team |
 | `plan` | `SPEC_CREATED` in status.json; no pending UNANSWERED comments |
 | `tasks` | `SPEC_CREATED` + `PLAN_GENERATED` in status.json; `plan.md` and `spec.md` exist in FEATURE_DIR |

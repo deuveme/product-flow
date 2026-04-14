@@ -373,7 +373,7 @@ gh pr edit --body "<updated-body>"
 
 Show:
 ```
-🔒 Code verified. Run /product-flow:submit to send for review.
+🔒 Code verified.
 ```
 
 ### 6. Final report
@@ -385,9 +385,11 @@ Show:
 ➡️  NEXT STEP
 ─────────────────────────────────────────
 Run: /product-flow:submit
+  → Saves the code and sends it for team review.
 
-It will save the code and leave it ready
-for the development team's review.
+Tested the feature and found issues?
+  Run: /product-flow:fix
+  → Fix cycle with full TDD guarantees.
 ─────────────────────────────────────────
 ```
 

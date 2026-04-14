@@ -94,6 +94,7 @@ specs/<branch>/
 | `/product-flow:continue` | `inbox-sync` → flag-based routing: `consolidate-spec` + `speckit.split` (if SPLIT_DONE absent) / `plan` (if PLAN_GENERATED absent) / `consolidate-plan` (if comments) / `tasks` (if TASKS_GENERATED absent) / `checklist` (if CHECKLIST_DONE absent) — dispatched by reading `status.json` flags |
 | `/product-flow:build` | `inbox-sync` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `bugmagnet` → `speckit.retro`) → `speckit.verify-tasks` → `speckit.verify` |
 | `/product-flow:submit` | `inbox-sync` → `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → optional git add/commit/push (only if local changes exist) → `gh pr ready` on first run (exits DRAFT) → proposes ADRs in PR body |
+| `/product-flow:fix` | `inbox-sync` → `pr-comments new-comments` → diagnosis (4 dimensions, iterative) → confirmed summary → save `fixes/fix-N.md` + PR comment → clear `CODE_VERIFIED`+`VERIFY_TASKS_DONE` → append fix-tasks to `tasks.md` → `speckit.implement.withTDD [IDs]` → `speckit.verify-tasks [IDs]` → `speckit.verify` → re-set `CODE_VERIFIED`+`VERIFY_TASKS_DONE` → `spec-amendments.md` (if Ambiguity/Omission) → `speckit.retro` |
 | `/product-flow:deploy-to-stage` | [ADR consolidation: ask user → generate in memory if yes] → `gh pr merge --squash --delete-branch` → [write ADRs to `docs/adr/` + commit if yes] → mark published |
 
 ---

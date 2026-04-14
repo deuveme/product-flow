@@ -74,6 +74,15 @@ The first time you run this, the review room **exits DRAFT** and the team receiv
 
 ---
 
+### `/product-flow:fix`
+**When to use it:** When you test the feature and find something that doesn't work as expected — or when the team's code review finds issues that need correcting.
+
+Claude walks you through the diagnosis: what's wrong, where in the spec or plan it comes from, and why it happened. Once you confirm, it fixes the code using the same TDD standards as the original build and re-verifies everything. You can run it as many times as needed — one fix cycle per issue. When all fixes are done, run `/product-flow:submit` to update the team.
+
+Can be called after `/product-flow:build` (before submitting) or after `/product-flow:submit` (if the team found issues during review).
+
+---
+
 ### `/product-flow:deploy-to-stage`
 **When to use it:** When the team has approved the code and you want to send it to internal testing.
 
@@ -266,6 +275,9 @@ Yes. After `/product-flow:start` writes the first spec, run `/product-flow:speck
 
 **Can I work on two features at the same time?**
 Yes, but it's better to finish one before starting another. If you need to do it, notify the development team first.
+
+**I tested the feature and something doesn't work. What do I do?**
+Run `/product-flow:fix`. Claude will ask you to describe what's wrong, cross-reference it with the spec and plan to understand where the gap is, and implement the correction using the same TDD standards as the original build. Everything is re-verified before finishing. When all fixes are done, run `/product-flow:submit` to update the team.
 
 **How do I know if the team has reviewed what I submitted?**
 `/product-flow:status` will tell you. You can also look at your review room on GitHub — the team's comments appear there.

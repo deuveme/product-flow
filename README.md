@@ -39,6 +39,7 @@ Close the terminal and reopen Claude Code.
 - `/product-flow:continue` — advance to next step (repeatable)
 - `/product-flow:build` — generate code (when plan is ready)
 - `/product-flow:submit` — share code for review
+- `/product-flow:fix` — fix issues found during testing or code review (TDD guaranteed)
 - `/product-flow:deploy-to-stage` — publish to staging
 - `/product-flow:status` — see where you are
 - `/product-flow:context` — see memory usage
@@ -47,6 +48,9 @@ Close the terminal and reopen Claude Code.
 ```
 /product-flow:start → /product-flow:continue (repeat) → /product-flow:build → /product-flow:submit → /product-flow:deploy-to-stage
   (DRAFT PR)            (spec → plan, team feedback)       (code, TDD)           (exit DRAFT, review)    (approved → merge)
+                                                                ↕ issues found?
+                                                         /product-flow:fix
+                                                           (TDD fix cycle)
 ```
 
 ---

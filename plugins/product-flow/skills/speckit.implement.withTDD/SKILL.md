@@ -144,9 +144,17 @@ If any are found, set `REDESIGN_MODE = true` and apply these rules throughout im
    - **Task details**: ID, description, file paths, parallel markers [P]
    - **Execution flow**: Order and dependency requirements
 
+   **If `$ARGUMENTS` is non-empty**: parse as a space/comma-separated list of task IDs. After extracting all tasks, filter the execution set to include only the tasks whose IDs match the provided list. If any provided ID is not found in `tasks.md`, stop with:
+   ```
+   ERROR: Task [ID] not found in tasks.md. Verify the fix-task was appended correctly.
+   ```
+   All subsequent steps apply only to this filtered set. This is called **filtered mode**.
+
+   If `$ARGUMENTS` is empty: include all tasks. This is **full mode** (default behavior).
+
 6. Execute implementation following the task plan with **mandatory TDD**:
 
-   For **each task** (unless it is a setup/config task with no testable behavior):
+   For **each task in the active set** (filtered or full; unless it is a setup/config task with no testable behavior):
 
    ### a. Plan tests (before writing any code)
 
@@ -207,7 +215,9 @@ If any are found, set `REDESIGN_MODE = true` and apply these rules throughout im
 
 9. Update PR — mark implementation complete
 
-   Count total tasks from `tasks.md`. Update the checklist block in the PR body: replace the Implementation line with the completed count and mark it checked.
+   **Skip this step entirely if running in filtered mode** (task IDs were passed as arguments). The calling skill manages the PR update in that case.
+
+   In full mode: count total tasks from `tasks.md`. Update the checklist block in the PR body: replace the Implementation line with the completed count and mark it checked.
 
    ```
    - [x] **Implementation** — <N>/<N> tasks complete
@@ -218,7 +228,7 @@ If any are found, set `REDESIGN_MODE = true` and apply these rules throughout im
    ```
 
 10. Completion validation:
-   - Verify all required tasks are completed
+   - Verify all tasks in the active set are completed
    - Check that implemented features match the original specification
    - Validate that tests pass and coverage meets requirements
    - Confirm the implementation follows the technical plan

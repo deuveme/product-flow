@@ -43,6 +43,8 @@ git status --porcelain
     ```
     ℹ️  No new local changes to save.
     The code is already created in this branch/PR, so we'll continue and move the PR to review.
+
+    Found issues during testing or review? Run /product-flow:fix instead.
     ```
   - Skip steps 4 and 5 and continue directly to step 6.
 
@@ -250,10 +252,11 @@ gh pr edit --body "<updated-body>"
 ─────────────────────────────────────────
 The development team will review the code.
 
-If you need to make more changes:
-  Run /product-flow:submit again
+If the team finds issues during review:
+  Run /product-flow:fix
+  → Fix cycle with full TDD guarantees.
 
-When the dev approves the PR, run:
+When the team approves the PR, run:
   /product-flow:deploy-to-stage
 ─────────────────────────────────────────
 ```

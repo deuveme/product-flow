@@ -70,6 +70,7 @@
     "./skills/continue",
     "./skills/build",
     "./skills/submit",
+    "./skills/fix",
     "./skills/deploy-to-stage",
     "./skills/status",
     "./skills/context",
