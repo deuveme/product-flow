@@ -41,7 +41,7 @@ plugins/product-flow/
         │   ├── speckit.implement.withTDD
         │   ├── speckit.retro, speckit.checklist
         │   ├── speckit.verify, speckit.verify-tasks, speckit.reconcile
-        │   ├── speckit.split                          (optional pre-tasks: split over-scoped specs)
+        │   ├── speckit.split                          (mandatory pre-plan + post-plan: scope analysis, iterative debate, vertical slice enforcement)
         │
         └── [Praxis engineering skills]
             ├── praxis.complexity-review        (called in plan: challenge design)
@@ -91,7 +91,7 @@ specs/<branch>/
 | Command | Internal call chain |
 |---|---|
 | `/product-flow:start` | create branch + Draft PR → facilitated product framing (4 dimensions) + visual assets + docs → quality gate → [epic scope check: split into N branches if epic signals detected] → [`praxis.collaborative-design` if vague] → `speckit.specify` → `speckit.retro` |
-| `/product-flow:continue` | `inbox-sync` → flag-based routing: `consolidate-spec` + `speckit.split` (if SPLIT_DONE absent) / `plan` (if PLAN_GENERATED absent) / `consolidate-plan` (if comments) / `tasks` (if TASKS_GENERATED absent) / `checklist` (if CHECKLIST_DONE absent) — dispatched by reading `status.json` flags |
+| `/product-flow:continue` | `inbox-sync` → flag-based routing: `consolidate-spec` + `speckit.split` pre-plan (if SPLIT_PREPLAN_ANALIZED absent) / `plan` (if PLAN_GENERATED absent) / `speckit.split` post-plan (if SPLIT_POSTPLAN_ANALIZED absent) / `consolidate-plan` (if comments) / `tasks` (if TASKS_GENERATED absent) / `checklist` (if CHECKLIST_DONE absent) — dispatched by reading `status.json` flags |
 | `/product-flow:build` | `inbox-sync` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `bugmagnet` → `speckit.retro`) → `speckit.verify-tasks` → `speckit.verify` |
 | `/product-flow:submit` | `inbox-sync` → `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → optional git add/commit/push (only if local changes exist) → `gh pr ready` on first run (exits DRAFT) → proposes ADRs in PR body |
 | `/product-flow:fix` | `inbox-sync` → `pr-comments new-comments` → diagnosis (4 dimensions, iterative) → confirmed summary → save `fixes/fix-N.md` + PR comment → clear `CODE_VERIFIED`+`VERIFY_TASKS_DONE` → append fix-tasks to `tasks.md` → `speckit.implement.withTDD [IDs]` → `speckit.verify-tasks [IDs]` → `speckit.verify` → re-set `CODE_VERIFIED`+`VERIFY_TASKS_DONE` → `spec-amendments.md` (if Ambiguity/Omission) → `speckit.retro` |
@@ -178,12 +178,14 @@ State is determined by reading `specs/<branch>/status.json` flags + a live `has_
   │  writes: FEATURE_STARTED → DESIGN_DONE → SPEC_CREATED
   ▼
 
-SPEC_CREATED + SPLIT_DONE absent + has_comments  →  consolidate-spec  (clears SPLIT_DONE, auto-proceeds)
-SPEC_CREATED + SPLIT_DONE absent + no comments   →  speckit.split     (writes SPLIT_DONE, auto-proceeds)
-SPEC_CREATED + SPLIT_DONE + PLAN_GENERATED absent →  speckit.clarify → plan  (writes PLAN_GENERATED)
+SPEC_CREATED + SPLIT_PREPLAN_ANALIZED absent + has_comments  →  consolidate-spec  (clears SPLIT_PREPLAN_ANALIZED, auto-proceeds)
+SPEC_CREATED + SPLIT_PREPLAN_ANALIZED absent + no comments   →  speckit.split     (writes SPLIT_PREPLAN_ANALIZED, auto-proceeds)
+SPEC_CREATED + SPLIT_PREPLAN_ANALIZED + PLAN_GENERATED absent →  speckit.clarify → plan  (writes PLAN_GENERATED)
 
-PLAN_GENERATED + TASKS_GENERATED absent + has_comments  →  consolidate-plan
-PLAN_GENERATED + TASKS_GENERATED absent + no comments   →  tasks  (writes TASKS_GENERATED, auto-proceeds to checklist)
+PLAN_GENERATED + SPLIT_POSTPLAN_ANALIZED absent + has_comments  →  consolidate-plan → speckit.split  (post-plan, writes SPLIT_POSTPLAN_ANALIZED)
+PLAN_GENERATED + SPLIT_POSTPLAN_ANALIZED absent + no comments   →  speckit.split  (post-plan, writes SPLIT_POSTPLAN_ANALIZED)
+PLAN_GENERATED + SPLIT_POSTPLAN_ANALIZED + TASKS_GENERATED absent + has_comments  →  consolidate-plan
+PLAN_GENERATED + SPLIT_POSTPLAN_ANALIZED + TASKS_GENERATED absent + no comments   →  tasks  (writes TASKS_GENERATED, auto-proceeds to checklist)
 
 TASKS_GENERATED + CHECKLIST_DONE absent + has_comments  →  consolidate-plan
 TASKS_GENERATED + CHECKLIST_DONE absent + no comments   →  checklist  (writes CHECKLIST_DONE)
@@ -370,6 +372,17 @@ orchestrators decide when to run them:
 | `speckit.verify-tasks` | `/product-flow:build` (mandatory) | Runs automatically after implement. Detects phantom completions — tasks marked done with no real implementation — before the verification gate |
 | `speckit.reconcile` | `speckit.verify` (user opt-in on CRITICAL) | When verify finds CRITICAL drift, the user is offered two options: fix manually (A) or reconcile (B). Only invoked if the user chooses B and provides a gap description |
 
+### Mandatory scope analysis
+
+`/product-flow:speckit.split` runs at two mandatory points in every workflow, triggered automatically by `/product-flow:continue`:
+
+| Point | When | Flag written |
+|---|---|---|
+| Pre-plan | After spec creation, before plan generation | `SPLIT_PREPLAN_ANALIZED` |
+| Post-plan | After plan generation, before task breakdown | `SPLIT_POSTPLAN_ANALIZED` |
+
+Default posture is to split — the feature must justify staying together. Analysis uses a scored debate (0–10 reasons to NOT split) with hard signals that force a mandatory split. Each analysis is recorded in `split-analysis.md` with the full debate history. Can also be triggered manually via handoff buttons in `speckit.specify`, `speckit.clarify`, and `speckit.plan`.
+
 ### Optional praxis skills
 
 Some are invoked automatically under certain conditions; others require explicit invocation.
@@ -386,7 +399,6 @@ Some are invoked automatically under certain conditions; others require explicit
 | Skill | When to use | How to invoke |
 |---|---|---|
 | `/product-flow:praxis.expand-contract` | Plan includes breaking changes (rename DB column, change API contract, replace service) — use to define the three migration phases | Say: "Apply expand-contract to this migration" |
-| `/product-flow:speckit.split` | Spec covers too many bounded contexts, user personas, or independent deliverables — use after `speckit.specify`, `speckit.clarify`, or `speckit.plan` and before `speckit.tasks` to extract the excess scope into a new branch with its own draft PR. Also offered automatically as a handoff button at the end of those three skills. | Say: "Analyze if this spec should be split" or use the handoff button |
 
 ---
 

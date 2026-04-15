@@ -10,11 +10,13 @@ effort: medium
 
 | Condition | Sub-skill invoked |
 |-----------|-------------------|
-| `SPEC_CREATED` ✓, `SPLIT_DONE` ✗, `PLAN_GENERATED` ✗, `has_comments` true | `/product-flow:consolidate-spec` |
-| `SPEC_CREATED` ✓, `SPLIT_DONE` ✗, `PLAN_GENERATED` ✗, `has_comments` false | `/product-flow:speckit.split` |
-| `SPEC_CREATED` ✓, `SPLIT_DONE` ✓, `PLAN_GENERATED` ✗ | `/product-flow:plan` |
-| `PLAN_GENERATED` ✓, `TASKS_GENERATED` ✗, `has_comments` true | `/product-flow:consolidate-plan` |
-| `PLAN_GENERATED` ✓, `TASKS_GENERATED` ✗, `has_comments` false | `/product-flow:tasks` |
+| `SPEC_CREATED` ✓, `SPLIT_PREPLAN_ANALIZED` ✗, `PLAN_GENERATED` ✗, `has_comments` true | `/product-flow:consolidate-spec` |
+| `SPEC_CREATED` ✓, `SPLIT_PREPLAN_ANALIZED` ✗, `PLAN_GENERATED` ✗, `has_comments` false | `/product-flow:speckit.split` |
+| `SPEC_CREATED` ✓, `SPLIT_PREPLAN_ANALIZED` ✓, `PLAN_GENERATED` ✗ | `/product-flow:plan` |
+| `PLAN_GENERATED` ✓, `SPLIT_POSTPLAN_ANALIZED` ✗, `has_comments` true | `/product-flow:consolidate-plan` → then `/product-flow:speckit.split` |
+| `PLAN_GENERATED` ✓, `SPLIT_POSTPLAN_ANALIZED` ✗, `has_comments` false | `/product-flow:speckit.split` |
+| `PLAN_GENERATED` ✓, `SPLIT_POSTPLAN_ANALIZED` ✓, `TASKS_GENERATED` ✗, `has_comments` true | `/product-flow:consolidate-plan` |
+| `PLAN_GENERATED` ✓, `SPLIT_POSTPLAN_ANALIZED` ✓, `TASKS_GENERATED` ✗, `has_comments` false | `/product-flow:tasks` |
 | `TASKS_GENERATED` ✓, `CHECKLIST_DONE` ✗, `has_comments` true | `/product-flow:consolidate-plan` |
 | `TASKS_GENERATED` ✓, `CHECKLIST_DONE` ✗, `has_comments` false | `/product-flow:checklist` |
 | `CHECKLIST_DONE` ✓, `CODE_WRITTEN` ✗, `has_comments` true | `/product-flow:consolidate-plan` (clears `CHECKLIST_DONE`) |
@@ -29,26 +31,31 @@ The workflow state is determined entirely by the flags present in `specs/<branch
 **Lifecycle order of flags:**
 
 ```
-FEATURE_STARTED → DESIGN_DONE → SPEC_CREATED → SPLIT_DONE → PLAN_GENERATED
-→ TASKS_GENERATED → CHECKLIST_DONE → CODE_WRITTEN → VERIFY_TASKS_DONE
+FEATURE_STARTED → DESIGN_DONE → SPEC_CREATED → SPLIT_PREPLAN_ANALIZED → PLAN_GENERATED
+→ SPLIT_POSTPLAN_ANALIZED → TASKS_GENERATED → CHECKLIST_DONE → CODE_WRITTEN → VERIFY_TASKS_DONE
 → CODE_VERIFIED → IN_REVIEW → PUBLISHED
 ```
 
 **Routing table** (evaluated top-to-bottom, first match wins):
 
-| SPEC_CREATED | SPLIT_DONE | PLAN_GENERATED | TASKS_GENERATED | CHECKLIST_DONE | CODE_WRITTEN | has_comments | → Action |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---|
-| ✓ | ✗ | ✗ | - | - | - | ✓ | `consolidate-spec` |
-| ✓ | ✗ | ✗ | - | - | - | ✗ | `speckit.split` |
-| ✓ | ✓ | ✗ | - | - | - | ✗ | `plan` |
-| ✓ | ✓ | ✓ | ✗ | - | - | ✓ | `consolidate-plan` |
-| ✓ | ✓ | ✓ | ✗ | - | - | ✗ | `tasks` |
-| ✓ | ✓ | ✓ | ✓ | ✗ | - | ✓ | `consolidate-plan` |
-| ✓ | ✓ | ✓ | ✓ | ✗ | - | ✗ | `checklist` |
-| ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | `consolidate-plan` (clears `CHECKLIST_DONE`) |
-| ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ready for `/build` |
+| SPEC_CREATED | SPLIT_PREPLAN_ANALIZED | PLAN_GENERATED | SPLIT_POSTPLAN_ANALIZED | TASKS_GENERATED | CHECKLIST_DONE | CODE_WRITTEN | has_comments | → Action |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---|
+| ✓ | ✗ | ✗ | - | - | - | - | ✓ | `consolidate-spec` |
+| ✓ | ✗ | ✗ | - | - | - | - | ✗ | `speckit.split` |
+| ✓ | ✓ | ✗ | - | - | - | - | ✗ | `plan` |
+| ✓ | ✓ | ✓ | ✗ | - | - | - | ✓ | `consolidate-plan` → then `speckit.split` |
+| ✓ | ✓ | ✓ | ✗ | - | - | - | ✗ | `speckit.split` |
+| ✓ | ✓ | ✓ | ✓ | ✗ | - | - | ✓ | `consolidate-plan` |
+| ✓ | ✓ | ✓ | ✓ | ✗ | - | - | ✗ | `tasks` |
+| ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | - | ✓ | `consolidate-plan` |
+| ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | - | ✗ | `checklist` |
+| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | `consolidate-plan` (clears `CHECKLIST_DONE`) |
+| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ready for `/build` |
 
-**Backward-compatibility note:** Branches created before `SPLIT_DONE` existed will have `PLAN_GENERATED` set but no `SPLIT_DONE`. Evaluate `PLAN_GENERATED` before the split rows — if `PLAN_GENERATED` is already present, skip directly to the post-split rows. This prevents forcing in-flight branches through `speckit.split` retroactively.
+**Backward-compatibility note:** Branches created before the new split flags existed may have `SPLIT_DONE` (old flag) instead of `SPLIT_PREPLAN_ANALIZED`, or may have `PLAN_GENERATED` set but no `SPLIT_PREPLAN_ANALIZED` or `SPLIT_POSTPLAN_ANALIZED`. Apply these rules:
+- If `SPLIT_DONE` is present: treat it as `SPLIT_PREPLAN_ANALIZED` for routing purposes.
+- If `PLAN_GENERATED` is present but `SPLIT_PREPLAN_ANALIZED` is absent: treat `SPLIT_PREPLAN_ANALIZED` as implicitly set (feature predates the pre-plan split step).
+- If `PLAN_GENERATED` is present but `SPLIT_POSTPLAN_ANALIZED` is absent and `TASKS_GENERATED` is also present: treat `SPLIT_POSTPLAN_ANALIZED` as implicitly set (feature predates the post-plan split step).
 
 ---
 
@@ -86,16 +93,37 @@ BRANCH=$(git branch --show-current)
 cat "specs/$BRANCH/status.json" 2>/dev/null || echo "{}"
 ```
 
-Extract flags: `SPEC_CREATED`, `SPLIT_DONE`, `PLAN_GENERATED`, `TASKS_GENERATED`, `CHECKLIST_DONE`, `CODE_WRITTEN`.
+Extract flags: `SPEC_CREATED`, `SPLIT_PREPLAN_ANALIZED`, `PLAN_GENERATED`, `SPLIT_POSTPLAN_ANALIZED`, `TASKS_GENERATED`, `CHECKLIST_DONE`, `CODE_WRITTEN`.
 
 For `has_comments`: invoke `/product-flow:pr-comments pending` and `/product-flow:pr-comments read-answers` in parallel.
 - If `pending` returns non-empty UNANSWERED comments → `has_comments = true`.
 - If `read-answers` returns any new unprocessed answers → `has_comments = true`.
 - If both return empty/`NO_USER_RESPONSES` → `has_comments = false`.
 
-Apply the routing table from the State Machine section above. Evaluate rows top-to-bottom — first match wins.
+**Backward-compatibility normalization** — run before routing:
 
-**Backward-compatibility check:** If `PLAN_GENERATED` is present but `SPLIT_DONE` is absent, treat `SPLIT_DONE` as implicitly set for routing purposes (the feature predates the split step).
+```bash
+# Rule 1: SPLIT_DONE (old flag) → SPLIT_PREPLAN_ANALIZED
+if echo "$EXISTING" | jq -e '.SPLIT_DONE' > /dev/null 2>&1 && \
+   ! echo "$EXISTING" | jq -e '.SPLIT_PREPLAN_ANALIZED' > /dev/null 2>&1; then
+  EXISTING=$(echo "$EXISTING" | jq '.SPLIT_PREPLAN_ANALIZED = .SPLIT_DONE | del(.SPLIT_DONE)')
+fi
+
+# Rule 2: PLAN_GENERATED present but SPLIT_PREPLAN_ANALIZED absent → treat as implicitly set
+if echo "$EXISTING" | jq -e '.PLAN_GENERATED' > /dev/null 2>&1 && \
+   ! echo "$EXISTING" | jq -e '.SPLIT_PREPLAN_ANALIZED' > /dev/null 2>&1; then
+  EXISTING=$(echo "$EXISTING" | jq '.SPLIT_PREPLAN_ANALIZED = "implicit"')
+fi
+
+# Rule 3: PLAN_GENERATED + TASKS_GENERATED present but SPLIT_POSTPLAN_ANALIZED absent → treat as implicitly set
+if echo "$EXISTING" | jq -e '.PLAN_GENERATED' > /dev/null 2>&1 && \
+   echo "$EXISTING" | jq -e '.TASKS_GENERATED' > /dev/null 2>&1 && \
+   ! echo "$EXISTING" | jq -e '.SPLIT_POSTPLAN_ANALIZED' > /dev/null 2>&1; then
+  EXISTING=$(echo "$EXISTING" | jq '.SPLIT_POSTPLAN_ANALIZED = "implicit"')
+fi
+```
+
+Apply the routing table from the State Machine section above. Evaluate rows top-to-bottom — first match wins.
 
 ### 3. Display current state
 
@@ -104,7 +132,8 @@ Show the active action before doing anything:
 | Action | Message |
 |--------|---------|
 | `consolidate-spec` | `📝 Integrating spec feedback from the team...` |
-| `speckit.split` | `✂️ Checking spec scope before planning...` |
+| `speckit.split` (pre-plan) | `✂️ Checking spec scope before planning...` |
+| `speckit.split` (post-plan) | `✂️ Checking plan scope before breaking into tasks...` |
 | `plan` | `🗺️ Spec ready. Generating the technical plan...` |
 | `consolidate-plan` | `📋 Integrating plan feedback from the team...` |
 | `tasks` | `✂️ Plan ready. Breaking down into development tasks...` |
@@ -118,14 +147,35 @@ Show the active action before doing anything:
 Invoke `/product-flow:consolidate-spec`.
 Wait for it to finish. If ERROR: propagate and stop.
 
-Then **within this same invocation**, re-evaluate the routing table from step 2 — `consolidate-spec` cleared `SPLIT_DONE`, so the next action is `speckit.split`. Proceed immediately to `→ speckit.split` below.
+Then **within this same invocation**, re-evaluate the routing table from step 2 — `consolidate-spec` cleared `SPLIT_PREPLAN_ANALIZED`, so the next action is `speckit.split`. Proceed immediately to `→ speckit.split (pre-plan)` below.
 
-#### → speckit.split
+#### → speckit.split (pre-plan)
 
 Invoke `/product-flow:speckit.split`.
 Wait for it to finish. If ERROR: propagate and stop.
 
 Then **within this same invocation**, proceed immediately to `→ plan` below.
+
+#### → speckit.split (post-plan)
+
+Invoke `/product-flow:speckit.split`.
+Wait for it to finish. If ERROR: propagate and stop.
+
+If the split was executed (a new branch was created): the parent plan was reset. Show:
+
+```
+✂️ Post-plan split complete. Plan has been reset for the reduced scope.
+
+─────────────────────────────────────────
+➡️  NEXT STEP
+─────────────────────────────────────────
+Run /product-flow:continue to regenerate the plan for the trimmed feature.
+─────────────────────────────────────────
+```
+
+**STOP.** (Do not auto-proceed to tasks — the plan must be regenerated first.)
+
+If no split was executed: proceed immediately to `→ tasks` below.
 
 #### → plan
 
@@ -200,7 +250,7 @@ Please reply on the PR for each open question, then run `/product-flow:continue`
 Link: <PR_URL>
 ```
 
-Then **within this same invocation**, re-evaluate the routing table — `consolidate-plan` may have cleared `CHECKLIST_DONE` if it was set. Proceed to the next matching action.
+Then **within this same invocation**, re-evaluate the routing table — `consolidate-plan` may have cleared `CHECKLIST_DONE` if it was set, or the routing may now point to `speckit.split` (post-plan) if `SPLIT_POSTPLAN_ANALIZED` is not yet set. Proceed to the next matching action.
 
 #### → tasks
 

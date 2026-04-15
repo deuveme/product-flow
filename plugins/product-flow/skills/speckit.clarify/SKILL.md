@@ -46,7 +46,22 @@ Execution steps:
 
    If `FEATURE_SPEC` does not exist: ERROR "spec.md not found. Run /product-flow:start first." and stop.
 
-1b. **Terminology validation** — runs before the main scan.
+1b. **Load split context (if available)**:
+
+   ```bash
+   cat "$FEATURE_DIR/split-analysis.md" 2>/dev/null
+   ```
+
+   If `split-analysis.md` exists: load it as SPLIT_CONTEXT. Read the "Feature Context" section to determine:
+   - Whether this is a child feature (if "Original feature" is not "This is the original feature.")
+   - What scope boundaries were debated and decided in the split analysis
+   - What was deliberately excluded from this feature's scope
+
+   Use this context throughout the clarification: do not re-debate scope boundaries already decided in the split. When a potential ambiguity touches a boundary that was explicitly resolved in the split debate, respect that decision instead of re-opening it.
+
+   If this is a child feature, also load the parent's split analysis (referenced in the "Inherited from parent" section) as additional background context.
+
+1c. **Terminology validation** — runs before the main scan.
 
 Load the spec and extract all domain-specific business terms: nouns that carry industry, company, or product-specific meaning and could be interpreted differently outside this context. Examples: financial instruments, process names, role names, product-specific states, business events.
 

@@ -82,7 +82,7 @@ Close the terminal and reopen Claude Code.
 - **Drift reconciliation**: `speckit.reconcile` surgically updates spec, plan, and tasks when implementation diverges from the original design.
 - **ADR proposals**: At submit time, the agent analyzes `research.md` and `decisions.md` and proposes which decisions are worth promoting to project-level Architecture Decision Records. Proposals appear in the PR body under `## For Developers` so the team can review them alongside the code.
 - **ADR consolidation**: At deploy time, if the PR has proposed ADRs the agent asks the user whether to write them. If confirmed, each ADR is written to `docs/adr/NNNN-<slug>.md` in standard format (Context / Decision / Consequences) and committed to main alongside the merge.
-- **Scope splitting**: `speckit.split` analyzes a spec for scope creep using scope, size, and language signals. If a split is warranted, it trims the current spec and creates a new branch with a draft PR for the extracted feature — with vertical-slice validation and expand-contract warnings when features share entities.
+- **Scope splitting**: `speckit.split` runs at two mandatory points in every workflow — pre-plan (after spec creation) and post-plan (after plan generation). Default posture is to split: the feature must justify staying together using a scored debate. When a split is confirmed, it trims the current spec, validates both resulting features as independent vertical slices, creates a new branch with a draft PR for the extracted feature, and records the full analysis and debate in `split-analysis.md`. Expand-contract warnings are surfaced when features share entities.
 
 ---
 

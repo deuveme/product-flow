@@ -1,12 +1,12 @@
 ---
-description: "Analyzes a spec for scope creep, proposes a split, and creates a new branch+PR for the extracted feature."
+description: "Analyzes a spec (pre-plan) or plan (post-plan) for scope creep using an iterative debate, then creates a new branch+PR for any extracted feature. Default posture is to split — the feature must justify staying together."
 user-invocable: false
 model: opus
 effort: high
 handoffs:
   - label: Continue Current Feature
     agent: continue
-    prompt: Continue with the reduced spec
+    prompt: Continue with the reduced scope
     send: true
   - label: Run Split Analysis Again
     agent: speckit.split
@@ -24,170 +24,251 @@ Consider any user input above (e.g. a hint about where to split) before proceedi
 
 ## Outline
 
-### Step 1 — Setup
+### Step 1 — Setup and context loading
 
 1. Run `git branch --show-current` to get BRANCH_NAME.
 2. Derive FEATURE_DIR = `specs/$BRANCH_NAME`.
-3. Read `$FEATURE_DIR/spec.md`. If the file does not exist: stop with `ERROR: No spec found on branch '$BRANCH_NAME'. Run /product-flow:start first.`
+3. Read `$FEATURE_DIR/spec.md`. If it does not exist: stop with `ERROR: No spec found on branch '$BRANCH_NAME'. Run /product-flow:start first.`
+4. **Detect mode**:
+   - If `$FEATURE_DIR/plan.md` does not exist → **MODE = pre-plan**
+   - If `$FEATURE_DIR/plan.md` exists → **MODE = post-plan**
+   - If post-plan: read `plan.md`, `research.md` (if present), `data-model.md` (if present)
+5. **Load `split-analysis.md`** if it exists at `$FEATURE_DIR/split-analysis.md`. This contains prior analysis history and, for child features, the full inherited debate from the parent.
+6. **Detect if this is a child feature**: read the "Feature Context" section of `split-analysis.md`. If "Original feature" is NOT "This is the original feature." → this is a child feature. Load `specs/[parent-branch]/split-analysis.md` as additional context.
+7. If user provided input (e.g. "split out the payments part"), treat it as a strong override signal — skip scoring and proceed directly to proposing the split they described.
 
-### Step 2 — Split analysis
+### Step 2 — Analysis and scoring
 
-Carefully read the entire spec and evaluate it against the three signal groups below.
+**Core philosophy**: the default posture is split. The scoring accumulates reasons to keep the feature together. A feature that cannot justify a high score should be split.
 
-**Scope signals** — score 1 point if ANY of these fire:
-- More than 4 user stories where at least 2 have no dependency on each other
-- Two or more distinct user personas with completely different journeys (not just different permissions on the same journey)
-- Requirements that could ship independently in separate releases and provide value on their own
-- The spec spans multiple bounded contexts (e.g. "payments" alongside "notifications", or "user profile" alongside "audit log")
-- The Overview section implies more than one standalone product decision
+**Score scale: 0–10 reasons to NOT split**
+- 0–2 → mandatory split
+- 3–5 → recommended split
+- 6–8 → optional split
+- 9–10 → no split (must be explicitly justified)
 
-**Size signals** — score 1 point if ANY of these fire:
-- Functional requirements section lists more than 8 distinct requirements
-- Success criteria address more than 2 unrelated outcomes
+#### Hard signals — trigger mandatory split regardless of score
 
-**Language signals** — score 1 point if ANY of these fire in user stories or requirements:
-- Coordinating conjunctions bundling distinct actions: *"and, or, but, yet"* (e.g. "User can create and manage and export reports")
-- Catch-all verbs that hide multiple operations: *"manage, handle, support, administer"*
-- Sequence words implying separate flows: *"before, after, then, once X is done"*
-- Scope accretion words: *"including, additionally, plus, as well as"*
-- Option indicators: *"either/or, optionally, if the user wants"*
-- Exception carve-outs: *"except when, unless, however in the case of"*
+Fire these before scoring. If any hard signal fires, skip scoring and go directly to Step 3 with "mandatory split":
 
-**Split worthiness score (0–3):**
-- Score 0 → no split needed
-- Score 1 → optional split
-- Score 2–3 → recommended split
+- Two bounded contexts with zero dependencies between them
+- Two completely distinct user journeys with no shared touchpoint
+- (Post-plan only) No phase in the plan produces user-testable output
 
-If the user provided input (e.g. "split out the notifications part"), treat that as a strong override signal and proceed directly to proposing the split they described — skip the scoring.
+#### Pre-plan signals (scored against spec)
 
-### Step 2b — Vertical slice validation (only if score ≥ 1)
+Each signal subtracts from the reasons-to-keep-together score. Evaluate individually — within a group, each fired signal contributes its own weight:
 
-Before proposing the split, validate that each resulting feature would form a true vertical slice — end-to-end usable by someone, not a horizontal layer (e.g. "only the backend" or "only the admin screen").
+**Scope signals:**
+- More than 4 independent user stories (-2)
+- Two or more distinct user personas with completely different journeys (-2)
+- Requirements that could ship independently and provide standalone value (-3)
+- Spec spans multiple bounded contexts (-3)
+- Overview implies more than one standalone product decision (-2)
 
-For each proposed feature, ask:
-- Does it deliver something a real user or stakeholder can use on day one?
-- Does it work end-to-end without depending on the other feature being built first?
-- Could it be deployed and provide value independently in production?
+**Size signals:**
+- More than 8 distinct functional requirements (-2)
+- More than 2 unrelated success criteria (-1)
 
-If a proposed Feature B fails these checks, reconsider the split boundary until both features pass. A horizontal split (e.g. "data layer now, UI later") is not a valid split — it's just deferred work.
+**Language signals** (each instance found):
+- Coordinating conjunctions bundling distinct actions: "and, or, but, yet" (-1 each)
+- Catch-all verbs hiding multiple operations: "manage, handle, support, administer" (-1 each)
+- Sequence words implying separate flows: "before, after, then, once X is done" (-1 each)
+- Scope accretion words: "including, additionally, plus, as well as" (-1 each)
+- Option indicators: "either/or, optionally, if the user wants" (-1 each)
+- Exception carve-outs: "except when, unless, however in the case of" (-1 each)
 
-### Step 2c — Expand-contract warning (only if score ≥ 1)
+**If post-plan mode**: before scoring pre-plan signals, read `split-analysis.md` and exclude any signals already debated and decided in the pre-plan analysis. Only score signals that the plan reveals as new.
 
-Check whether the two proposed features share entities from the spec's data model or key requirements. Shared entities create integration risk at the boundary.
+#### Post-plan signals (scored against plan artifacts)
 
-Flag expand-contract needed if:
-- Both features read or write the same core entity (e.g. both touch `Order`, `User`, `Payment`)
-- One feature produces data the other consumes (producer/consumer relationship)
-- A requirement in Feature B depends on state managed by Feature A
+**Testability gap signals:**
+- Phase 1 produces no user-visible output (pure infrastructure/scaffolding) (-3)
+- First possible Given/When/Then for a real user action falls in Phase 2 or later (-2)
+- A phase must complete in full before any other phase can begin testing (serial bottleneck, not user-facing) (-2)
 
-If any flag fires, note it — this will be surfaced in the report and in the PR comment so the team knows to apply the expand-contract pattern when implementing.
+**Independent workstream signals:**
+- Two or more phases with no dependency between them, deployable independently (-3)
+- Data model shows two distinct entity clusters with no shared foreign keys (-2)
+- `research.md` describes two technically separate subsystems (-2)
+- Two separate external integrations, each delivering standalone value without the other (-2)
 
-### Step 3 — Present analysis and ask the user
+**Complexity signals:**
+- Plan has more than 4 phases (-1)
+- Any single phase spans more than one bounded context (-2)
+- Plan implies more than 15 discrete implementation tasks at leaf level (-1)
+- Dedicated "cleanup" or "refinement" phase present (-1)
 
-Print a structured report. Be specific: name the actual user stories, requirements, and language patterns found — don't use placeholders.
+### Step 3 — Present analysis and open debate
+
+Print a structured report. Reference actual user stories, requirements, phase names, and entities from the artifacts — no placeholders.
 
 ```
-## Split Analysis: [Feature name from spec]
+## Split Analysis: [Feature name from spec] — [Pre-plan | Post-plan]
 
-**Score: N/3** — [No split needed | Optional split | Recommended split]
+**Score: N/10 reasons to keep together** — [Mandatory split | Recommended split | Optional split | No split]
+
+### Hard signals fired
+[List with reasoning referencing specific parts of the spec/plan. Or: "None."]
 
 ### Signals detected
-[List each fired signal concisely, referencing specific parts of the spec. If none: "None detected."]
+| Signal | Weight | Why it matters here |
+|--------|--------|---------------------|
+| [specific signal referencing actual content] | -N | [reasoning in context] |
 
-### Proposed split   ← only show this section if score ≥ 1
+### Proposed split   ← only if score ≤ 8 or hard signal fired
 **Feature A — [BRANCH_NAME] (keep)**
 - Goal: [one sentence]
-- User stories retained: [list]
-- Key requirements kept: [2–4 bullet points]
-- Vertical slice: [one sentence confirming it's end-to-end usable]
+- What stays: [user stories / phases retained]
+- Given/When/Then (day 1 test): Given [precondition] / When [action] / Then [outcome]
+- Why this is a valid vertical slice: [one sentence]
 
 **Feature B — [proposed-slug] (extract)**
 - Goal: [one sentence]
-- User stories extracted: [list]
-- Key requirements moved: [2–4 bullet points]
-- Why independent: [one sentence confirming they can ship separately]
-- Vertical slice: [one sentence confirming it's end-to-end usable]
+- What moves: [user stories / phases extracted]
+- Given/When/Then (day 1 test): Given [precondition] / When [action] / Then [outcome]
+- Why independent: [one sentence]
+- Why this boundary and not another: [reasoning]
+- Alternatives considered and discarded: [list with reasons]
 
-⚠️ Expand-contract needed: [list shared entities, or omit this line if none]
+⚠️ Expand-contract needed: [shared entities, or omit if none]
 ```
 
-Then, depending on the score:
-
-- **Score 0**: Tell the user the spec looks well-scoped and stop. No further action.
-- **Score 1**: Ask via AskUserQuestion — "Optional split detected. Want to proceed?"
-  - Options: `Yes, split it` / `No, keep as-is` (Recommended)
-- **Score 2–3**: Ask via AskUserQuestion — "Split recommended. Proceed?"
-  - Options: `Yes, split it` (Recommended) / `No, keep as-is` / `Adjust the split boundary`
-
-If the user selects **Adjust the split boundary**: ask a free-text follow-up question asking how they want to redraw the split (e.g. "Which user stories or requirements should move to the new feature?"). Then re-run Steps 2–2c with their guidance and loop back to Step 3.
-
-If the user selects **No** (or score was 0): confirm the spec stays intact and stop.
-
-### Step 3b — Record the analysis and decision as a PR comment
-
-After receiving the user's answer (including the score-0 case), post a comment on the current PR via `/product-flow:pr-comments write` so the decision is traceable.
-
-If no PR exists yet for this branch, skip this step silently (check with `gh pr view --json number` first).
-
-Invoke `/product-flow:pr-comments write` with:
-- `type: product`
-- `status: ANSWERED`
-- `body`:
+Then open the debate. Do not ask a yes/no question — invite the user to engage:
 
 ```
-**Split analysis — Score: N/3** — [No split needed | Optional split | Recommended split]
+This analysis is a starting point for discussion, not a final verdict.
 
-**Signals detected:**
-[same list as shown to the user, or "None — spec is well-scoped."]
+You can:
+- Accept the proposed split as-is
+- Challenge a specific signal ("I don't think X is a separate concern because...")
+- Propose a different boundary ("What if we split at Y instead?")
+- Question the score ("Feature B still depends on Feature A because...")
 
-**Proposed split:**
-Feature A — [BRANCH_NAME] (keep): [one-line goal] · Vertical slice: ✅
-Feature B — [proposed-slug] (extract): [one-line goal] — [why independent] · Vertical slice: ✅
-⚠️ Expand-contract needed: [list shared entities, or omit if none]
-[Omit the "Proposed split" block entirely if score was 0]
-
-**Decision: [User's answer verbatim — e.g. "Yes, split it" / "No, keep as-is" / "Adjust the split boundary" / "No split proposed"]**
+What do you think?
 ```
 
-Then write `SPLIT_DONE` to `status.json` — this must run in every exit path (score 0, split executed, split declined):
+Use **AskUserQuestion** with options as starting points:
+- `Yes, split as proposed` (mark as Recommended if score ≤ 5 or hard signal)
+- `Adjust the boundary`
+- `Challenge a signal`
+- `No, keep as-is` (mark as Recommended if score ≥ 9)
 
-```bash
-BRANCH=$(git branch --show-current)
-STATUS_FILE="specs/$BRANCH/status.json"
-EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"SPLIT_DONE": $ts}' > "$STATUS_FILE"
-git add "$STATUS_FILE"
-git commit -m "chore: record split_done"
-git push origin HEAD
+Record each exchange in `split-analysis.md` as it happens (Step 5 below) — update the file after each message so the debate is durable even if the session is interrupted.
+
+If the user challenges a signal or proposes a different boundary: re-evaluate with their input, update the analysis, and present a revised proposal. Repeat until a decision is reached.
+
+If the user selects **No / keep as-is**: confirm the spec stays intact, record the decision, and stop at Step 5.
+
+### Step 4 — Vertical slice validation (before any commit)
+
+Before executing the split, validate that each resulting feature forms a true vertical slice:
+
+For each proposed feature:
+- The Given/When/Then test can be executed without the other feature being built
+- It deploys independently and provides value in production on its own
+- It does not leave a half-built domain entity that only becomes useful when the other feature ships
+
+If validation fails for any feature: return to Step 3, adjust the boundary, and re-debate. Never commit an invalid split.
+
+### Step 5 — Record in `split-analysis.md`
+
+Update (or create) `$FEATURE_DIR/split-analysis.md` after every exchange during the debate — not just at the end.
+
+#### File structure
+
+```markdown
+# Split Analysis — [BRANCH_NAME]
+
+## Feature Context
+**This feature:** `specs/[BRANCH_NAME]/spec.md`
+**Original feature:** This is the original feature. | `specs/[parent-branch]/spec.md`
+**Features split from this:** None. |
+- `specs/[child-branch]/spec.md` — [one-line reason extracted]
+
+---
+
+## [Pre-plan | Post-plan] analysis
+**Date:** ISO timestamp
+**Mode:** pre-plan | post-plan
+
+### Score: N/10 → [Mandatory split | Recommended | Optional | No split]
+
+### Hard signals fired
+[list with reasoning, or "None"]
+
+### Signals detected
+| Signal | Weight | Why it matters here |
+
+### Proposed split
+**Feature A — [BRANCH_NAME] (keep)**
+- Goal: ...
+- What stays: ...
+- Given/When/Then: ...
+- Vertical slice: ...
+
+**Feature B — [slug] (extract)**
+- Goal: ...
+- What moves: ...
+- Given/When/Then: ...
+- Why independent: ...
+- Boundary reasoning: ...
+- Alternatives discarded: ...
+
+⚠️ Expand-contract: [entities, or omit]
+
+### Debate
+**[ISO timestamp] Skill:** [proposal or response with full reasoning]
+**[ISO timestamp] User:** [response or argument]
+[... each exchange appended as it happens ...]
+
+### Decision
+[Decision verbatim] — [reasoning]
+
+---
+
+## [Next analysis section if applicable]
 ```
 
-### Step 4 — Execute split (only if user confirmed Yes)
+**For child features**: the file starts with Feature Context, then embeds the full parent debate verbatim (copy of the parent's relevant analysis section), then has its own empty analysis sections for pre-plan and post-plan.
 
-Run steps 4a through 4g in order. Do not skip any.
+If this is the first time running on this branch: initialize the file with Feature Context, then the current analysis section. Set "Original feature" and "Features split from this" correctly.
 
-**Important sequencing rule**: create and populate the new branch first (4a–4d), then return to the original branch to trim it (4e–4g). This avoids uncommitted changes being lost during branch switches.
+If the file already exists: append the new analysis section. Do not modify previous sections.
 
-#### 4a. Determine the new branch identity
+### Step 6 — Execute split (only if user confirmed)
 
-- Derive a 2–4 word short name from the extracted feature (kebab-case, action-noun format, e.g. `notifications-engine`, `audit-log`). Set SHORT_NAME.
+Run steps 6a through 6k in order. Do not skip any.
+
+**Sequencing rule**: fully set up the child branch first (6a–6e), then return to the parent to trim it (6f–6k). Never switch branches with uncommitted changes.
+
+#### 6a — Validate the cut (pre-commit check)
+
+Re-read both the content to keep (Feature A) and the content to extract (Feature B). Verify:
+- No requirement appears in both
+- No user story is left without acceptance criteria in either feature
+- Both features have a valid, independent Given/When/Then
+- Any cross-feature dependencies are explicitly documented
+
+If any check fails: correct the cut and re-validate. Do not proceed until all checks pass.
+
+#### 6b — Determine new branch identity
+
+- Derive SHORT_NAME: 2–4 words, kebab-case, action-noun format (e.g. `notifications-engine`, `audit-log`)
 - Run `git fetch --all --prune`
-- Find the highest feature number across all three sources:
+- Find highest feature number across:
   - Remote branches: `git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-'`
   - Local branches: `git branch | grep -E '^[* ]*[0-9]+-'`
   - Specs directories: `ls specs/ 2>/dev/null | grep -E '^[0-9]+-'`
-- Compute next number: highest N + 1, zero-padded to 3 digits (`printf "%03d" $((N+1))`). If nothing found, use `001`. Set BRANCH_NUMBER.
-- Set NEW_BRANCH = `BRANCH_NUMBER-SHORT_NAME` (e.g. `004-notifications-engine`)
-- Derive human-readable PR title (capitalize the first word after the colon):
+- BRANCH_NUMBER = highest N + 1, zero-padded: `printf "%03d" $((N+1))`. If nothing found: `001`.
+- NEW_BRANCH = `BRANCH_NUMBER-SHORT_NAME`
+- PR_TITLE:
   ```bash
   SLUG_WORDS="${SHORT_NAME//-/ }"
   PR_TITLE="$BRANCH_NUMBER: ${SLUG_WORDS^}"
   ```
-  Example: `004-notifications-engine` → `004: Notifications engine`
-- Set NEW_SPEC_PATH = `specs/$NEW_BRANCH/spec.md`
 
-#### 4b. Create the new branch
-
-Switch to main, pull, then create the branch and feature directory directly:
+#### 6c — Create child branch
 
 ```bash
 git checkout main
@@ -198,38 +279,69 @@ git checkout -b "$NEW_BRANCH" || {
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 NEW_FEATURE_DIR="$REPO_ROOT/specs/$NEW_BRANCH"
 mkdir -p "$NEW_FEATURE_DIR"
-NEW_SPEC_PATH="$NEW_FEATURE_DIR/spec.md"
 ```
 
-`NEW_BRANCH` and `NEW_SPEC_PATH` are now confirmed from the steps above.
+#### 6d — Write spec-draft.md on child branch
 
-#### 4c. Write the extracted spec on the new branch
+Write `$NEW_FEATURE_DIR/spec-draft.md` with the extracted content (user stories, requirements, success criteria, assumptions). Use the same section headings as the parent spec. Do NOT write `spec.md` directly — `speckit.specify` will generate it.
 
-Still on `NEW_BRANCH`, write `NEW_SPEC_PATH` with the extracted content. Use the same spec template structure as the original (same section headings). Populate it with:
+Include in the draft:
 - Overview focused on the extracted goal
 - The extracted user stories and their acceptance criteria
 - The extracted requirements
 - Relevant success criteria
-- A `## Related Features` section pointing back to the original branch:
-
+- A `## Related Features` section:
   ```markdown
   ## Related Features
   - **[BRANCH_NAME]**: [one-line description of the parent feature]
   ```
-
-- If expand-contract was flagged, add to the Assumptions section:
-
+- If expand-contract was flagged:
   ```markdown
-  - Shared entities with [BRANCH_NAME] ([entity names]) require expand-contract coordination during implementation. See /product-flow:praxis.expand-contract.
+  ## Assumptions
+  - Shared entities with [BRANCH_NAME] ([entity names]) require expand-contract coordination. See /product-flow:praxis.expand-contract.
   ```
 
-#### 4d. Commit, push, and open a draft PR for the new feature
+#### 6e — Write split-analysis.md on child branch
 
-Write `status.json` for the new feature before committing:
+Write `$NEW_FEATURE_DIR/split-analysis.md`:
+
+```markdown
+# Split Analysis — [NEW_BRANCH]
+
+## Feature Context
+**This feature:** `specs/[NEW_BRANCH]/spec.md`
+**Original feature:** `specs/[BRANCH_NAME]/spec.md`
+**Features split from this:** None.
+
+---
+
+## Inherited from parent: [BRANCH_NAME]
+
+[Copy the full analysis section from the parent's split-analysis.md that produced this split — including signals, proposed split, full debate, and decision. Do not summarize.]
+
+---
+
+## Pre-plan analysis
+[empty — will be filled when /product-flow:continue runs speckit.split on this branch]
+
+## Post-plan analysis
+[empty — will be filled when /product-flow:continue runs speckit.split post-plan on this branch]
+```
+
+#### 6f — Invoke speckit.specify on child branch
+
+Invoke `/product-flow:speckit.specify`. It will detect `spec-draft.md` as input, generate a complete validated `spec.md`, run quality checks, and remove the draft.
+
+Wait for `speckit.specify` to finish. If ERROR: propagate and stop.
+
+#### 6g — Write status.json and commit child branch
 
 ```bash
-STATUS_FILE="specs/$NEW_BRANCH/status.json"
-echo "{}" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"SPEC_CREATED": $ts}' > "$STATUS_FILE"
+STATUS_FILE="$NEW_FEATURE_DIR/status.json"
+echo "{}" | jq \
+  --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+  --arg parent "$BRANCH_NAME" \
+  '. + {"SPEC_CREATED": $ts, "parent": $parent}' > "$STATUS_FILE"
 ```
 
 ```bash
@@ -249,7 +361,7 @@ Then run /product-flow:continue again.
 ```
 **STOP.**
 
-Then open the draft PR. Because the spec is already written at this point, mark it as done immediately:
+#### 6h — Open draft PR for child branch
 
 ```bash
 gh pr create \
@@ -258,7 +370,7 @@ gh pr create \
   --base main \
   --body "$(cat <<EOF
 ## Feature
-Spec: $NEW_SPEC_PATH
+Spec: specs/$NEW_BRANCH/spec.md
 
 ## Status
 - [x] Spec created
@@ -271,7 +383,7 @@ Spec: $NEW_SPEC_PATH
 ## History
 
 | Status | Date | Note |
-|--------|-------|------|
+|--------|------|------|
 | PR created | $(date +%Y-%m-%d) | Extracted from $BRANCH_NAME |
 | Spec created | $(date +%Y-%m-%d) | Spec written during split |
 
@@ -280,11 +392,9 @@ EOF
 )"
 ```
 
-Save the returned URL as `NEW_PR_URL`.
+Save returned URL as NEW_PR_URL.
 
-#### 4e. Return to the original branch and trim the spec
-
-Now that the new branch is fully set up, go back and remove the extracted content from the original spec:
+#### 6i — Return to parent branch and trim spec
 
 ```bash
 git checkout $BRANCH_NAME
@@ -292,27 +402,60 @@ git checkout $BRANCH_NAME
 
 Edit `$FEATURE_DIR/spec.md`:
 - Remove the extracted user stories and their acceptance criteria
-- Remove the requirements that belong exclusively to the extracted feature
+- Remove requirements that belong exclusively to the extracted feature
 - Remove success criteria that address only the extracted feature
-- Preserve everything else: the Overview, all retained user stories, retained requirements, Assumptions
-- Append (or create) a `## Related Features` section at the bottom:
-
+- Preserve: Overview, all retained user stories, retained requirements, Assumptions
+- Append or update `## Related Features`:
   ```markdown
   ## Related Features
   - **[NEW_BRANCH]**: [one-line description of what was extracted]
   ```
-
-- If expand-contract was flagged, add to the Assumptions section:
-
+- If expand-contract was flagged, add to Assumptions:
   ```markdown
-  - Shared entities with [NEW_BRANCH] ([entity names]) require expand-contract coordination during implementation. See /product-flow:praxis.expand-contract.
+  - Shared entities with [NEW_BRANCH] ([entity names]) require expand-contract coordination. See /product-flow:praxis.expand-contract.
   ```
 
-#### 4f. Commit and push the trimmed spec
+#### 6j — Write spec-draft.md on parent and invoke speckit.specify
+
+Write `$FEATURE_DIR/spec-draft.md` with the trimmed spec content. Invoke `/product-flow:speckit.specify`. It will detect the draft, regenerate a complete validated `spec.md` for the reduced scope, and remove the draft.
+
+Wait for `speckit.specify` to finish. If ERROR: propagate and stop.
+
+#### 6k — Update parent split-analysis.md
+
+Update the "Features split from this" line in the Feature Context section:
+
+```markdown
+**Features split from this:**
+- `specs/[NEW_BRANCH]/spec.md` — [one-line reason extracted]
+```
+
+#### 6l — If post-plan mode: reset plan on parent
+
+Clear flags and delete artifacts — the plan was generated for the full scope and is no longer valid:
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE")
+echo "$EXISTING" | jq 'del(.PLAN_GENERATED, .SPLIT_POSTPLAN_ANALIZED, .TASKS_GENERATED, .CHECKLIST_DONE, .CODE_WRITTEN)' > "$STATUS_FILE"
+```
+
+```bash
+REPO_ROOT=$(git rev-parse --show-toplevel)
+rm -f "$REPO_ROOT/specs/$BRANCH_NAME/plan.md"
+rm -f "$REPO_ROOT/specs/$BRANCH_NAME/research.md"
+rm -f "$REPO_ROOT/specs/$BRANCH_NAME/data-model.md"
+rm -rf "$REPO_ROOT/specs/$BRANCH_NAME/contracts/"
+```
+
+Conserve: `SPEC_CREATED` + `SPLIT_PREPLAN_ANALIZED`. The user runs `/product-flow:continue` to regenerate the plan for the reduced scope.
+
+#### 6m — Commit and push parent
 
 ```bash
 git add specs/$BRANCH_NAME/
-git commit -m "feat: remove extracted scope ($NEW_BRANCH) from spec"
+git commit -m "feat: trim spec to reduced scope after split ($NEW_BRANCH extracted)"
 git push
 ```
 
@@ -327,66 +470,83 @@ Then run /product-flow:continue again.
 ```
 **STOP.**
 
-#### 4g. Update the current PR body to record the split in History
+#### 6n — Update parent PR body
 
-If no PR exists for the current branch, skip this step silently.
-
-Get the current PR number and body:
+If no PR exists for the parent branch, skip silently.
 
 ```bash
 ORIG_PR_NUMBER=$(gh pr view --json number -q '.number')
 ORIG_PR_BODY=$(gh pr view --json body -q '.body')
 ```
 
-If `ORIG_PR_BODY` is empty, stop with ERROR "Could not read PR body — check GitHub access and try again."
-
-Reconstruct the body by appending a new row to the History table. Take `ORIG_PR_BODY` as the base, find the History table, and add after the last existing row:
-
+Append to History table:
 ```
 | Scope extracted | $(date -u +%Y-%m-%d\ %H:%M:%S) | @$(gh api user --jq '.login') | $SHORT_NAME split to $NEW_BRANCH — $NEW_PR_URL |
 ```
-
-Then update the PR:
 
 ```bash
 gh pr edit $ORIG_PR_NUMBER --body "<reconstructed body>"
 ```
 
-### Step 5 — Report
+### Step 7 — Write flag and PR comment
 
-Print a clean summary:
+Write the appropriate flag to `status.json` in every exit path (split executed, split declined, score too high):
+
+```bash
+BRANCH=$(git branch --show-current)
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+
+# Pre-plan mode:
+FLAG="SPLIT_PREPLAN_ANALIZED"
+# Post-plan mode:
+FLAG="SPLIT_POSTPLAN_ANALIZED"
+
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" --arg flag "$FLAG" '. + {($flag): $ts}' > "$STATUS_FILE"
+git add "$STATUS_FILE"
+git commit -m "chore: record $FLAG"
+git push origin HEAD
+```
+
+Post a PR comment via `/product-flow:pr-comments write`:
+- `type: product`
+- `status: ANSWERED`
+- `body`: summary of score, signals, proposed split (if any), and decision
+
+### Step 8 — Final report (if split executed)
 
 ```
 ## Split Complete
 
-**$BRANCH_NAME** — spec trimmed, extracted stories removed
-  Spec: specs/$BRANCH_NAME/spec.md
+**[BRANCH_NAME]** — spec trimmed and re-validated
+  Spec: specs/[BRANCH_NAME]/spec.md
+  [If post-plan:] Plan reset — run /product-flow:continue to regenerate for reduced scope.
 
-**$NEW_BRANCH** — new branch created with draft PR
-  Spec: $NEW_SPEC_PATH
-  PR: $NEW_PR_URL
+**[NEW_BRANCH]** — new branch created with draft PR
+  Spec: specs/[NEW_BRANCH]/spec.md
+  PR: [NEW_PR_URL]
 
-[If expand-contract was flagged:]
-⚠️  Shared entities detected: [list]. Apply /product-flow:praxis.expand-contract when implementing both features in parallel.
+[If expand-contract flagged:]
+⚠️  Shared entities: [list]. Apply /product-flow:praxis.expand-contract when implementing both features in parallel.
 
 Next steps:
 - Continue current feature:  /product-flow:continue
-- Start extracted feature:   /product-flow:status  (switch to $NEW_BRANCH)
+- Start extracted feature:   switch to [NEW_BRANCH], then /product-flow:continue
 ```
 
-## Exit state
+## Exit states
 
-After a successful split (steps 4a–4g completed):
-- **Current branch** (`BRANCH_NAME`): you are back on it, spec trimmed, trimmed spec committed and pushed. Status.json is unchanged — its existing workflow state (e.g. `SPEC_CREATED`) is still valid. `/product-flow:continue` can be run immediately.
-- **New branch** (`NEW_BRANCH`): exists on remote with `SPEC_CREATED` recorded in status.json and a draft PR open. Start the new feature's workflow with `/product-flow:continue` after switching to it.
+**Split executed**: parent on BRANCH_NAME with trimmed + re-validated spec, child on NEW_BRANCH with validated spec and draft PR. Flag written. If post-plan: parent plan reset, awaiting /continue.
 
-If the split was declined (score 0 or user chose "No"): you remain on `BRANCH_NAME` with no changes made.
+**Split declined**: no changes to spec or artifacts. Flag written. Workflow advances normally.
 
 ## Key rules
 
-- Never delete content without the user's confirmation — the ask in Step 3 is the gate.
-- Every proposed split must pass vertical slice validation (Step 2b) before being shown to the user — never propose a horizontal cut.
-- The split must be clean: no requirement should appear in both specs after the split.
-- If a requirement is shared (both features need it), keep it in Feature A and reference it from Feature B's spec under a "Dependencies" or "Assumptions" section.
-- Never commit to the original branch until the new branch is fully set up and pushed (steps 4a–4d complete first).
+- Never delete content without the user's confirmation — the debate in Step 3 is the gate.
+- Every proposed split must pass vertical slice validation (Step 4) before any commit.
+- The split must be clean: no requirement appears in both specs after the split.
+- If a requirement is shared, keep it in Feature A and reference it from Feature B's Assumptions.
+- Never commit to the parent branch until the child branch is fully set up and pushed (steps 6b–6h complete first).
+- When post-plan split is executed, always clear PLAN_GENERATED and delete plan artifacts on the parent — a plan for the full scope is invalid for the trimmed scope.
+- `split-analysis.md` is updated after every debate exchange, not just at the end.
 - Use absolute paths when reading or writing files.

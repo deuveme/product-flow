@@ -26,6 +26,27 @@ STATUS_FILE="specs/$BRANCH/status.json"
 
 Verify that `PLAN_GENERATED` is present. If missing: ERROR "Plan has not been generated yet. Run /product-flow:continue first."
 
+### 1a. Load split context (if available)
+
+```bash
+BRANCH=$(git branch --show-current)
+cat "specs/$BRANCH/split-analysis.md" 2>/dev/null
+```
+
+If `split-analysis.md` exists: load it as SPLIT_CONTEXT. Read the "Feature Context" section to determine:
+- Whether this is a child feature (if "Original feature" is not "This is the original feature.")
+- What scope boundaries were debated and decided in the split analysis
+- Whether expand-contract coordination is needed with related features
+
+Also detect the current split phase:
+
+```bash
+cat "specs/$BRANCH/status.json" | jq -e '.SPLIT_POSTPLAN_ANALIZED' > /dev/null 2>&1 && echo "POST_SPLIT" || echo "PRE_SPLIT"
+```
+
+- If `SPLIT_POSTPLAN_ANALIZED` is present → **POST_SPLIT**: scope boundaries are finalized. Feedback that would re-introduce scope extracted to another branch must not be applied autonomously — surface it to the PM.
+- If `SPLIT_POSTPLAN_ANALIZED` is absent → **PRE_SPLIT**: scope may still be refined, but flag any feedback that clearly re-introduces previously extracted scope.
+
 ### 2. Collect pending comments
 
 Invoke `/product-flow:pr-comments pending` and `/product-flow:pr-comments read-answers`.
@@ -41,6 +62,10 @@ From the returned comments and answers, classify each one before acting on it:
 
 - **Product** (scope changes, priority shifts, business rule clarifications, terminology): resolve via **AskUserQuestion** — never apply product changes autonomously.
 - **Technical** (architecture corrections, data model adjustments, API changes, implementation decisions): resolve autonomously.
+- **Scope violation** (only when SPLIT_CONTEXT is loaded and phase is POST_SPLIT): feedback that would re-introduce scope deliberately extracted to a sibling branch. Do NOT apply autonomously — include in the AskUserQuestion call with:
+  - `question`: "This feedback would affect scope that was extracted to [sibling branch] during the post-plan split. Apply the change here anyway?"
+  - `header`: "Scope change"
+  - `options`: A. "Apply here (may require coordination with sibling)" B. "Leave as-is — sibling feature handles this" (Recommended)
 
 If there are product comments, use the **AskUserQuestion** tool to ask the PM in a **single call**:
 - One entry per product comment:
@@ -139,13 +164,25 @@ If an inconsistency cannot be resolved without PM input, stop and surface it as 
 
 If `CHECKLIST_DONE` is present in `status.json`, clear it — the plan changed and requirements must be re-validated before building:
 
+If `SPLIT_POSTPLAN_ANALIZED` is present and the plan changes are substantial (more than 2 artifacts updated, or a scope or data model change), also clear it — the post-plan split analysis was based on the previous plan and must re-run:
+
 ```bash
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+
+# Always clear CHECKLIST_DONE if present
 if echo "$EXISTING" | jq -e '.CHECKLIST_DONE' > /dev/null 2>&1; then
-  echo "$EXISTING" | jq 'del(.CHECKLIST_DONE)' > "$STATUS_FILE"
+  EXISTING=$(echo "$EXISTING" | jq 'del(.CHECKLIST_DONE)')
 fi
+
+# Clear SPLIT_POSTPLAN_ANALIZED if present and changes are substantial
+# (substantial = more than 2 artifacts updated, or scope/data model change)
+if echo "$EXISTING" | jq -e '.SPLIT_POSTPLAN_ANALIZED' > /dev/null 2>&1 && [ "$SUBSTANTIAL_CHANGES" = "true" ]; then
+  EXISTING=$(echo "$EXISTING" | jq 'del(.SPLIT_POSTPLAN_ANALIZED)')
+fi
+
+echo "$EXISTING" > "$STATUS_FILE"
 ```
 
 ```bash

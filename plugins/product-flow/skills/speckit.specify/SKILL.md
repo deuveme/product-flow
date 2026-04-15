@@ -106,6 +106,23 @@ Given that feature description, do this:
    - External links are listed in `images/sources.md` and `docs/sources.md`.
    - When writing the spec, treat uploaded assets and external links as authoritative design and requirements references.
 
+3.4. **Load split context (if available)**:
+
+   ```bash
+   cat specs/$BRANCH_NAME/split-analysis.md 2>/dev/null
+   cat specs/$BRANCH_NAME/spec-draft.md 2>/dev/null
+   ```
+
+   **If `split-analysis.md` exists**: load it as SPLIT_CONTEXT. This contains the boundary reasoning, debate history, and inherited parent context. Use it to understand why this feature has the scope it has and what was deliberately excluded.
+
+   **If `spec-draft.md` exists**: set DRAFT_MODE = true.
+   - Use `spec-draft.md` as primary input instead of `$ARGUMENTS`.
+   - This file was written by `speckit.split` with extracted or trimmed content that needs to be formalized into a proper spec.
+   - After writing `spec.md`, delete `spec-draft.md`:
+     ```bash
+     rm "$REPO_ROOT/specs/$BRANCH_NAME/spec-draft.md"
+     ```
+
 3.5. Load the spec template to understand required sections. Read `$REPO_ROOT/.specify/templates/spec-template.md` if it exists. If it does not exist, proceed without a template — infer the standard section structure from the Quick Guidelines below.
 
 3.5. **Detect redesign intent**:
@@ -142,6 +159,8 @@ If no technical signals are detected: proceed normally.
 
 3.6b. **Clarify business terminology**:
 
+If SPLIT_CONTEXT is loaded: before scanning, extract all business terms already clarified or resolved in the split debate history. Do not ask about these — use the definitions already established there.
+
 Scan the feature description for terms that are central to the feature logic AND whose exact meaning could vary by business context. These include — but are not limited to:
 
 - Financial terms: payment states, debt, interest, fees, balances, amortization schedules, refunds, charges
@@ -166,7 +185,21 @@ If no ambiguous terms are found: output the following message to the user and pr
 
 3.7. **Fill gaps and confirm understanding before writing**:
 
-First, assess whether the description contains the three essential elements:
+If DRAFT_MODE = true: the input comes from `spec-draft.md`, which was extracted from a validated spec during a split. Instead of asking the user to confirm intent from scratch, show a summary of what the draft contains and ask only if something is genuinely ambiguous or missing:
+
+```
+📋 Formalizing spec from split draft:
+
+**Goal:** <extracted goal in one sentence>
+**Scope:** <what this feature covers>
+**Excluded (moved to related feature):** <what was extracted away>
+
+Does this look right, or is anything missing?
+```
+
+Use **AskUserQuestion** to ask this. If the user confirms or has no corrections: proceed to step 4 immediately.
+
+If DRAFT_MODE = false: assess whether the description contains the three essential elements:
 - **Actor**: who performs the action (user, admin, system…)
 - **Action**: what they want to do
 - **Outcome**: why — what value or result it produces
@@ -195,7 +228,7 @@ Use the `AskUserQuestion` tool to ask this. Based on the response:
 - If **yes** or equivalent: proceed to step 4.
 - If the user corrects something: update your understanding and show the summary again. Repeat until confirmed.
 
-Skip this step if `collaborative-design.md` was loaded in step 3.8 — in that case the intent has already been validated through the design session.
+Skip this step entirely if `collaborative-design.md` exists at `specs/$BRANCH_NAME/collaborative-design.md` (regardless of DRAFT_MODE) — the intent was already validated during the design session. Proceed directly to step 4.
 
 3.8. **Load collaborative design context (if available)**:
 

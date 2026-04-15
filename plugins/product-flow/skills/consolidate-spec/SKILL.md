@@ -141,13 +141,13 @@ Skip if no technical decisions were made.
 
 ### 6. Commit the updated spec
 
-Clear `SPLIT_DONE` from `status.json` — the spec may have changed and split analysis must re-run on the next `/product-flow:continue`:
+Clear `SPLIT_PREPLAN_ANALIZED` from `status.json` — the spec may have changed and pre-plan split analysis must re-run on the next `/product-flow:continue`:
 
 ```bash
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq 'del(.SPLIT_DONE)' > "$STATUS_FILE"
+echo "$EXISTING" | jq 'del(.SPLIT_PREPLAN_ANALIZED)' > "$STATUS_FILE"
 ```
 
 ```bash

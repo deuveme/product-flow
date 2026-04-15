@@ -83,6 +83,22 @@ You **MUST** consider the user input before proceeding (if not empty).
 
    If the file exists, use its contents as a head start for Phase 0 research — it contains technical details the user already specified. Do not copy it verbatim into research.md; incorporate it after validating against the project stack and existing decisions.
 
+   Also load split analysis context if available:
+
+   ```bash
+   cat $SPECS_DIR/split-analysis.md 2>/dev/null
+   ```
+
+   If `split-analysis.md` exists: load it as SPLIT_CONTEXT. Read the "Feature Context" section to determine:
+   - Whether this is a child feature (if "Original feature" is not "This is the original feature.")
+   - What boundaries were decided and why (including alternatives discarded)
+   - Whether any expand-contract coordination is needed with related features
+   - What entities or subsystems are shared with sibling or parent features
+
+   Use this when designing the plan: respect the vertical slice boundaries defined by the split analysis, ensure the technical plan does not creep into scope that was deliberately extracted, and coordinate on shared entities where expand-contract was flagged.
+
+   If this is a child feature, the "Inherited from parent" section contains the full parent debate — use it to avoid reintroducing scope that was extracted from the parent.
+
    Also load event model context if available:
 
    ```bash

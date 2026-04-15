@@ -15,11 +15,13 @@ start
 
 continue
   ├─ inbox-sync                              (internal inbox orchestration)
-  ├─ [SPEC_CREATED, SPLIT_DONE absent, has_comments]      → consolidate-spec → speckit.split (auto-proceed)
-  ├─ [SPEC_CREATED, SPLIT_DONE absent, no comments]       → speckit.split → plan (auto-proceed)
-  ├─ [SPLIT_DONE, PLAN_GENERATED absent]                  → speckit.clarify → plan
-  ├─ [PLAN_GENERATED, TASKS_GENERATED absent, has_comments] → consolidate-plan
-  ├─ [PLAN_GENERATED, TASKS_GENERATED absent, no comments]  → tasks → checklist (auto-proceed)
+  ├─ [SPEC_CREATED, SPLIT_PREPLAN_ANALIZED absent, has_comments]      → consolidate-spec → speckit.split (auto-proceed)
+  ├─ [SPEC_CREATED, SPLIT_PREPLAN_ANALIZED absent, no comments]       → speckit.split → plan (auto-proceed)
+  ├─ [SPEC_CREATED, SPLIT_PREPLAN_ANALIZED, PLAN_GENERATED absent]     → speckit.clarify → plan
+  ├─ [PLAN_GENERATED, SPLIT_POSTPLAN_ANALIZED absent, has_comments]   → consolidate-plan → speckit.split (post-plan)
+  ├─ [PLAN_GENERATED, SPLIT_POSTPLAN_ANALIZED absent, no comments]    → speckit.split (post-plan)
+  ├─ [SPLIT_POSTPLAN_ANALIZED, TASKS_GENERATED absent, has_comments]  → consolidate-plan
+  ├─ [SPLIT_POSTPLAN_ANALIZED, TASKS_GENERATED absent, no comments]   → tasks → checklist (auto-proceed)
   ├─ [TASKS_GENERATED, CHECKLIST_DONE absent, has_comments] → consolidate-plan
   ├─ [TASKS_GENERATED, CHECKLIST_DONE absent, no comments]  → checklist
   ├─ [CHECKLIST_DONE, CODE_WRITTEN absent, has_comments]    → consolidate-plan (clears CHECKLIST_DONE)

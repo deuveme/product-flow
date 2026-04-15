@@ -304,6 +304,8 @@ cat "specs/$branch/status.json" 2>/dev/null || echo "{}"
 - `CODE_WRITTEN` in status.json → implementation in progress (not yet verified)
 - `CODE_VERIFIED` in status.json → "Code generated" is done
 - `IN_REVIEW` in status.json → "In code review" is done
+- `SPLIT_PREPLAN_ANALIZED` in status.json → internal routing flag; not displayed as a discrete step (sits between Spec and Plan in the lifecycle — scope split was analyzed before planning)
+- `SPLIT_POSTPLAN_ANALIZED` in status.json → internal routing flag; not displayed as a discrete step (sits between Plan and Tasks in the lifecycle — scope split was analyzed after planning)
 
 Track branches with no PR but with at least `spec.md` as **SPEC-only branches**.
 
