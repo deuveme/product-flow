@@ -489,12 +489,21 @@ On a feature branch with PR:
   ➡️  ***​/product-flow:continue***
 ```
 
-The `➡️` next step line adapts to the current state:
+The `➡️` next step line adapts to the current state.
 
-| State (highest flag present) | Next step shown |
+Flag order (earliest → latest):
+`FEATURE_STARTED` → `DESIGN_DONE` → `SPEC_CREATED` → `SPLIT_PREPLAN_ANALIZED` → `PLAN_GENERATED` → `SPLIT_POSTPLAN_ANALIZED` → `TASKS_GENERATED` → `CHECKLIST_DONE` → `CODE_WRITTEN` → `VERIFY_TASKS_DONE` → `CODE_VERIFIED` → `IN_REVIEW` → `PUBLISHED`
+
+Backward-compat: if `SPLIT_DONE` is present but `SPLIT_PREPLAN_ANALIZED` is absent, treat `SPLIT_DONE` as equivalent to `SPLIT_PREPLAN_ANALIZED` when determining the latest flag.
+
+Non-lifecycle fields (`parent`, `processed_answers`, `processed_comment_ids`) are ignored for routing.
+
+Determine the **latest flag present** in `status.json` using the order above, then apply this table:
+
+| Latest flag present | Next step shown |
 |---|---|
-| up to `CHECKLIST_DONE` | `***​/product-flow:continue***` |
-| `CODE_VERIFIED` (no `IN_REVIEW`) | `***​/product-flow:submit***` + hint: *Found issues? Run /product-flow:fix* |
+| `FEATURE_STARTED`, `DESIGN_DONE`, `SPEC_CREATED`, `SPLIT_PREPLAN_ANALIZED`, `PLAN_GENERATED`, `SPLIT_POSTPLAN_ANALIZED`, `TASKS_GENERATED`, `CHECKLIST_DONE`, `CODE_WRITTEN`, or `VERIFY_TASKS_DONE` | `***​/product-flow:continue***` |
+| `CODE_VERIFIED` | `***​/product-flow:submit***` + hint: *Found issues? Run /product-flow:fix* |
 | `IN_REVIEW` | `***​/product-flow:deploy-to-stage***` (when PR approved) + hint: *Team found issues? Run /product-flow:fix* |
 | `PUBLISHED` | *(no next step — feature complete)* |
 
