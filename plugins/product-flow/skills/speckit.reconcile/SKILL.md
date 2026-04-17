@@ -90,6 +90,8 @@ constraint. Flag conflicts as CRITICAL and include in Step 2 clarification.
 If the gap report is ambiguous (e.g., "the button doesn't work" without
 specifying which button), classify each ambiguity and resolve it:
 
+**Classification rule — when in doubt**: if a decision affects something the user sees, experiences, or can do directly — even if it sounds technical — classify it as **Product**. Only classify as Technical if the decision is completely invisible to users and affects only internal implementation.
+
 - **Technical** (architecture, API contracts, data model, infrastructure): resolve autonomously using existing artifacts and project context. Invoke `/product-flow:pr-comments write` with:
   - `type`: `technical`, `status`: `ANSWERED`
   - `body`:

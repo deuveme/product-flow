@@ -782,6 +782,8 @@ Invoke `/product-flow:speckit.specify` passing `GATHERED_CONTEXT.full_descriptio
 
 **Question classification** — when `speckit.specify` identifies `[NEEDS CLARIFICATION]` markers, classify each one before presenting it:
 
+**Classification rule — when in doubt**: if a decision affects something the user sees, experiences, or can do directly — even if it sounds technical — classify it as **Product**. Only classify as Technical if the decision is completely invisible to users and affects only internal implementation.
+
 - **Product** (ask the PM): business intent, priorities, functional scope, user flows, terminology. **NEVER resolve autonomously. Always surface to the PM via AskUserQuestion.**
 - **Technical** (resolve autonomously): authentication, authorisation, security, compliance, data retention, integration patterns, infrastructure constraints, performance targets, architecture, data model, implementation patterns.
 

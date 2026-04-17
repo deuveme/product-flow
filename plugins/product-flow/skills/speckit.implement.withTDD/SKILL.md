@@ -60,6 +60,8 @@ You **MUST** consider the user input before proceeding (if not empty).
      ```
      For each incomplete item, classify it before acting:
 
+     **Classification rule — when in doubt**: if a decision affects something the user sees, experiences, or can do directly — even if it sounds technical — classify it as **Product**. Only classify as Technical if the decision is completely invisible to users and affects only internal implementation.
+
      **Technical** — architecture, security, auth, compliance, data retention, integration patterns, infrastructure, performance, scalability:
      1. Resolve it autonomously using project context, existing code, and industry standards.
      2. Mark the item as complete in the checklist file.

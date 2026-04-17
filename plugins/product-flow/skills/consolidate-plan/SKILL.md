@@ -60,6 +60,8 @@ If both return empty: show a warning and stop:
 
 From the returned comments and answers, classify each one before acting on it:
 
+**Classification rule — when in doubt**: if a decision affects something the user sees, experiences, or can do directly — even if it sounds technical — classify it as **Product**. Only classify as Technical if the decision is completely invisible to users and affects only internal implementation.
+
 - **Product** (scope changes, priority shifts, business rule clarifications, terminology): resolve via **AskUserQuestion** — never apply product changes autonomously.
 - **Technical** (architecture corrections, data model adjustments, API changes, implementation decisions): resolve autonomously.
 - **Scope violation** (only when SPLIT_CONTEXT is loaded and phase is POST_SPLIT): feedback that would re-introduce scope deliberately extracted to a sibling branch. Do NOT apply autonomously — include in the AskUserQuestion call with:

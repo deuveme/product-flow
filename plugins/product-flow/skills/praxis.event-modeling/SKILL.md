@@ -105,6 +105,8 @@ Then: Owner Registered
 
 Any time a question or decision arises during this session, classify it before acting:
 
+**Classification rule — when in doubt**: if a decision affects something the user sees, experiences, or can do directly — even if it sounds technical — classify it as **Product**. Only classify as Technical if the decision is completely invisible to users and affects only internal implementation.
+
 **Technical** — architecture, integration patterns, infrastructure, data storage, performance, security:
 1. Resolve using project context: existing code, `.agents/rules/base.md`, detected stack, industry standards.
 2. Post a PR comment via `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED`, including the chosen answer and reasoning.

@@ -81,6 +81,17 @@ You **MUST** consider the user input before proceeding (if not empty).
 
    If no signals are detected: skip observability tasks entirely — do not generate them.
 
+4c. **Scope traceability check** — before generating tasks, validate that every planned phase has a corresponding user story in `spec.md`:
+
+   - For each user story phase you plan to generate (Phase 3+), confirm the user story exists in `spec.md`.
+   - For each Setup or Foundational task, confirm it is required by the tech stack in `plan.md` — not added by assumption.
+   - If a task or phase cannot be traced to a user story or a plan decision, **drop it**. Do not include tasks that exist only because they seem logical for the domain.
+
+   If the traceability check removes tasks that were part of your initial plan, note the removed items in a comment at the top of `tasks.md`:
+   ```
+   <!-- Scope guard removed: [item] — no tracing requirement found in spec.md -->
+   ```
+
 5. **Generate tasks.md**: Use `$REPO_ROOT/.specify/templates/tasks-template.md` as structure if it exists (otherwise use the Task Generation Rules below as the canonical structure), fill with:
    - Correct feature name from plan.md
    - Phase 1: Setup tasks (project initialization)
@@ -102,6 +113,15 @@ You **MUST** consider the user input before proceeding (if not empty).
 Context for task generation: $ARGUMENTS
 
 The tasks.md should be immediately executable - each task must be specific enough that an LLM can complete it without additional context.
+
+## Scope Discipline
+
+These rules are invariant — they apply regardless of whether a `constitution.md` exists in the project:
+
+- **Every task must trace to a user story in `spec.md`.** If you cannot point to a specific user story or functional requirement that justifies a task, do not generate it.
+- **Setup and infrastructure tasks are only justified by actual project needs.** Do not generate setup tasks for tools, services, or patterns not referenced in `plan.md` or `spec.md`.
+- **Observability tasks are generated only when signals are detected** (see step 4b). Never generate logging, monitoring, or health check tasks "by default".
+- **Do not generate tasks for features inferred from the domain.** If the spec describes a payment flow, do not generate tasks for a notification system unless notifications appear explicitly in `spec.md`.
 
 ## Task Generation Rules
 

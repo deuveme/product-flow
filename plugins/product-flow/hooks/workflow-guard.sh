@@ -107,8 +107,32 @@ if echo "$cmd" | grep -qE '\bgit[[:space:]]+push\b'; then
     # Allow ref-deletion / branch-rename operations (git push origin :old new)
     # These are used by /product-flow:status when reordering branch numbers.
     if ! echo "$cmd" | grep -qE '\bgit[[:space:]]+push[[:space:]]+\S+[[:space:]]+:'; then
-      block "Direct push from '$branch' is not allowed.
+      # Allow deploy-to-stage post-merge housekeeping commits only.
+      # Two conditions must both be true:
+      #   1. Commit message matches a known deploy-to-stage pattern.
+      #   2. Every file in the commit is within the expected path for that pattern.
+      last_msg=$(git log -1 --format=%s 2>/dev/null || echo "")
+      changed_files=$(git diff HEAD~1 --name-only 2>/dev/null || echo "")
+      is_deploy_push=false
+
+      # chore: record published in status.json — only specs/*/status.json allowed
+      if echo "$last_msg" | grep -qE '^chore: record published in status\.json$'; then
+        if [ -n "$changed_files" ] && ! echo "$changed_files" | grep -qvE '^specs/[^/]+/status\.json$'; then
+          is_deploy_push=true
+        fi
+      fi
+
+      # docs: add ADRs from <branch> — only docs/adr/ allowed
+      if echo "$last_msg" | grep -qE '^docs: add ADRs from .+'; then
+        if [ -n "$changed_files" ] && ! echo "$changed_files" | grep -qvE '^docs/adr/'; then
+          is_deploy_push=true
+        fi
+      fi
+
+      if ! $is_deploy_push; then
+        block "Direct push from '$branch' is not allowed.
   Use /product-flow:deploy-to-stage to publish a feature to main."
+      fi
     fi
   fi
   if echo "$cmd" | grep -qE '\bgit[[:space:]]+push[[:space:]]+[^[:space:]]+[[:space:]]+(main|master)\b'; then

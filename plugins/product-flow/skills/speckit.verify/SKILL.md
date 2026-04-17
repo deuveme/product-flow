@@ -137,6 +137,8 @@ summarize the rest in an overflow note at the end of the report.
 
 Do **not** output a report. Classify and handle each finding silently:
 
+**Classification rule — when in doubt**: if a decision affects something the user sees, experiences, or can do directly — even if it sounds technical — classify it as **Product**. Only classify as Technical if the decision is completely invisible to users and affects only internal implementation.
+
 **Technical** — architecture, security, auth, compliance, data retention, integration patterns, infrastructure, performance, scalability, task completion, file existence, constitution alignment, design consistency:
 1. Resolve autonomously using project context, existing code, and industry standards. If the gap is in the code, fix it. If the gap is in the spec/plan, invoke `/product-flow:speckit.reconcile`.
 2. Post a PR comment via `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED`, documenting the finding, resolution path, and reasoning. If unresolvable, use `status: UNANSWERED`.

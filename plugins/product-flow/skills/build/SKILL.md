@@ -272,6 +272,8 @@ Invoke `/product-flow:speckit.verify`.
   ```
   Then classify and handle each issue autonomously:
 
+  **Classification rule — when in doubt**: if a decision affects something the user sees, experiences, or can do directly — even if it sounds technical — classify it as **Product**. Only classify as Technical if the decision is completely invisible to users and affects only internal implementation.
+
   **Technical** — architecture, security, auth, compliance, data retention, integration patterns, infrastructure, performance, scalability:
   1. Analyze whether the gap is in the **code** (incomplete or incorrect implementation) or in the **spec/plan** (artifacts out of sync with a correct implementation).
   2. If the code needs fixing: apply the fix directly.
@@ -298,6 +300,8 @@ Invoke `/product-flow:speckit.verify`.
   ⚠️ Found some issues — resolving them...
   ```
   Then classify each issue before acting:
+
+  **Classification rule — when in doubt**: if a decision affects something the user sees, experiences, or can do directly — even if it sounds technical — classify it as **Product**. Only classify as Technical if the decision is completely invisible to users and affects only internal implementation.
 
   **Technical** — architecture, security, auth, compliance, data retention, integration patterns, infrastructure, performance, scalability:
   1. Attempt to resolve it autonomously using project context and industry standards.

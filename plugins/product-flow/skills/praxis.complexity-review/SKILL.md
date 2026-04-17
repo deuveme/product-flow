@@ -141,6 +141,8 @@ gather more data before deciding.
 
 After producing the output, resolve all Open Questions before finishing:
 
+**Classification rule — when in doubt**: if a decision affects something the user sees, experiences, or can do directly — even if it sounds technical — classify it as **Product**. Only classify as Technical if the decision is completely invisible to users and affects only internal implementation.
+
 **Technical** (architecture, performance, infrastructure, data model, security):
 1. Resolve autonomously using project context, existing code, and industry standards.
 2. Post a PR comment via `/product-flow:pr-comments write` with `type: technical`, `status: ANSWERED`, including the chosen answer and reasoning. If it cannot be resolved: post with `status: UNANSWERED`.

@@ -252,6 +252,23 @@ Re-read both the content to keep (Feature A) and the content to extract (Feature
 
 If any check fails: correct the cut and re-validate. Do not proceed until all checks pass.
 
+#### 6a.1 — PM confirmation of requirement allocation (mandatory before any file is modified)
+
+Before touching any file, present the exact allocation of every user story and functional requirement to the PM for explicit confirmation. Use **AskUserQuestion**:
+
+- `question`: "Before I execute the split, please confirm that every requirement is going to the right place.\n\n**Stays in [BRANCH_NAME]:**\n[bullet list of user stories and FRs staying]\n\n**Moves to [NEW_BRANCH_SLUG]:**\n[bullet list of user stories and FRs moving]\n\n**Ambiguous (needs your call):**\n[list any requirements that could reasonably belong to either side, or 'None']\n\nDoes this allocation look correct?"
+- `header`: "Split review"
+- `options`:
+  - `"Yes, this is correct — proceed"`
+  - `"No, I need to move something"`
+- `multiSelect`: false
+
+If the PM says **yes**: proceed to step 6b.
+
+If the PM says **no**: ask which requirements need to move (follow-up `AskUserQuestion` with the full list as multi-select options), update the allocation, and repeat this step until the PM confirms. Do not proceed until explicit confirmation is given.
+
+**This is a product gate, not a technical one.** The PM is the only authority on which requirements belong to which feature.
+
 #### 6b — Determine new branch identity
 
 - Derive SHORT_NAME: 2–4 words, kebab-case, action-noun format (e.g. `notifications-engine`, `audit-log`)

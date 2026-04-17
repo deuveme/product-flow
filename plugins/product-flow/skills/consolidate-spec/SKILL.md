@@ -94,6 +94,8 @@ Invoke `/product-flow:speckit.clarify` with the context of the PR comments, appl
 
 **Question classification** — before presenting each question, classify it:
 
+**Classification rule — when in doubt**: if a decision affects something the user sees, experiences, or can do directly — even if it sounds technical — classify it as **Product**. Only classify as Technical if the decision is completely invisible to users and affects only internal implementation.
+
 - **Product** (ask the PM): business intent, priorities, user flow, terminology, functional scope. **NEVER resolve autonomously. Always surface to the PM via AskUserQuestion.**
 - **Technical** (resolve autonomously): architecture, performance, security, integrations, data model, infrastructure constraints, implementation patterns.
 

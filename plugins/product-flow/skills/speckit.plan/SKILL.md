@@ -26,6 +26,16 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+## Scope Discipline
+
+These rules are invariant — they apply regardless of whether a `constitution.md` exists in the project:
+
+- **Design only what the spec requires.** Every entity, contract, service, and architectural decision must trace to a functional requirement in `spec.md`. Do not add components because they are best practice for the domain if no requirement calls for them.
+- **Research informs — it does not expand scope.** If research reveals that "industry standard" for this domain includes a feature not in the spec, document it as a note, not as a design decision. Never let research output become a new requirement.
+- **New dependencies require explicit justification.** Do not add a library or external service unless a specific functional requirement cannot be met without it. If one is needed, flag it explicitly — do not add it silently.
+- **The simplest design that satisfies the spec is the correct design.** Avoid layers, abstractions, or patterns not required by the current feature. Over-engineering is as harmful as under-engineering.
+- **Autonomous decisions stay within scope.** Resolving architecture unknowns autonomously is allowed. Adding subsystems (queues, caches, notification services, etc.) because they seem appropriate for the domain is not — those require a requirement.
+
 ## Outline
 
 1. **Setup**: Resolve feature paths:
@@ -58,6 +68,14 @@ You **MUST** consider the user input before proceeding (if not empty).
    ```
 
 2. **Load context**: Read FEATURE_SPEC and `.specify/memory/constitution.md`. Load IMPL_PLAN template (already copied).
+
+   If `.specify/memory/constitution.md` does not exist, output:
+   ```
+   ⚠️  constitution.md not found at .specify/memory/constitution.md
+      Project-specific governance rules are inactive.
+      Scope discipline rules from this skill apply regardless.
+   ```
+   Continue — the Scope Discipline section above remains in effect.
 
    Also load gathered context if available (visual assets, external documentation, and decisions made during feature kick-off):
 
@@ -165,6 +183,18 @@ If any are found, set `REDESIGN_MODE = true` and apply these rules for the rest 
 ### Phase 1: Design & Contracts
 
 **Prerequisites:** `research.md` complete
+
+0. **Scope guard — trace all design decisions to spec requirements**:
+
+   Before generating any artifact, build a traceability map:
+   - List every entity, service, contract, and external integration you plan to introduce.
+   - For each one, identify the functional requirement(s) in `spec.md` that justify it.
+
+   If any item has no traceable requirement:
+   - **Do not include it** in `data-model.md`, `contracts/`, or `plan.md`.
+   - If you believe it is genuinely necessary, add a `[OUT_OF_SCOPE?]` comment in `research.md` with a one-line explanation of why you think it might be needed, and continue without it. Do not ask the PM — let them discover it during review if needed.
+
+   This check is mandatory. "It is standard for this domain" is not a valid justification — only a functional requirement in `spec.md` is.
 
 1. **Extract entities from feature spec** → `data-model.md`:
    - Entity name, fields, relationships

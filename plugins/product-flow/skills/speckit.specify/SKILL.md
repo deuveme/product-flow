@@ -25,6 +25,16 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+## Scope Discipline
+
+These rules are invariant — they apply regardless of whether a `constitution.md` exists in the project:
+
+- **Write only what was asked.** Every functional requirement you write must trace directly to something the user described. Do not add requirements because they seem standard, logical, or implied by the domain.
+- **No gold-plating.** Do not add features, flows, or scenarios that make the feature "more complete" but were not requested. If you think something is missing, flag it as a question — never add it silently.
+- **Informed guesses are for filling detail, not adding scope.** "Make informed guesses" means resolving ambiguity within what was asked (e.g. which error message to show), not expanding what was asked (e.g. adding a notification system because the domain usually has one).
+- **Reasonable defaults apply to HOW, not WHAT.** Defaulting to OAuth2 for auth flow is valid. Deciding that auth is needed when the user didn't mention it is not.
+- **Autonomous technical decisions stay within scope.** Resolving a `[NEEDS CLARIFICATION]` marker autonomously is allowed only if the resolution does not add a feature or subsystem that was not mentioned in the original description.
+
 ## Outline
 
 The text the user typed after `/product-flow:speckit.specify` in the triggering message **is** the feature description. Assume you always have it available in this conversation even if `$ARGUMENTS` appears literally below. Do not ask the user to repeat it unless they provided an empty command.
@@ -133,7 +143,7 @@ If any are found, set `REDESIGN_MODE = true` and apply these rules for the rest 
 - The **goal** is a new target visual/UX state, not new functionality.
 - The fact that functionality already exists is the **starting baseline** — it does NOT reduce scope or mean there is nothing to do.
 - Functional requirements must describe **what changes** in the user experience (interactions, layout, flows, visual outcomes) — not re-describe how the current system behaves.
-- Success criteria must be UX/visual outcomes (e.g., "users complete the task in X fewer steps", "the interface follows the new design system", "task completion rate improves by X%").
+- Success criteria must be UX/visual outcomes. **Only include quantitative metrics (percentages, time targets, completion rates) if the user explicitly stated them.** Do not invent numbers — a metric like "task completion rate improves by 40%" is a product commitment, not a safe default. If no metric was given, describe the outcome qualitatively: "Users can complete the task with fewer steps" instead of "task completion rate improves by 40%".
 - Do NOT write a spec that merely restates the current system's behavior.
 
 3.6. **Normalize input — separate functional intent from technical detail**:
@@ -266,6 +276,25 @@ Skip this step entirely if `collaborative-design.md` exists at `specs/$BRANCH_NA
 
 5. Write the specification to SPEC_FILE using the template structure, replacing placeholders with concrete details derived from the feature description (arguments) while preserving section order and headings.
 
+5b. **Functional Requirements Scope Review**: After writing the spec, before any quality validation, present the full list of functional requirements to the user for explicit confirmation.
+
+   Extract every requirement from the spec that starts with `FR-` or is listed under a Functional Requirements section. Present them as a numbered list and ask via **AskUserQuestion**:
+
+   - `question`: "Here are the functional requirements I've written. Please confirm that all of them were explicitly requested — or let me know if any should be removed or were not part of your original description.\n\n[numbered FR list]"
+   - `header`: "FR Review"
+   - `options`:
+     - `"All correct — these match exactly what I asked for"`
+     - `"Some need to be removed — I'll tell you which ones"`
+   - `multiSelect`: false
+
+   Based on the response:
+   - If **all correct**: proceed to step 6.
+   - If **some need removal**: ask the user to specify which ones (use a follow-up `AskUserQuestion` with the FR list as options, `multiSelect: true`). Remove the identified requirements from the spec, then repeat this step until the user confirms all remaining FRs are correct.
+
+   **Important**: This step is not about requirement quality — it is about scope origin. The only question being asked is "did you ask for this?", not "is this well written?".
+
+   Skip this step if `gathered-context.md` exists and already contains an explicit list of confirmed functional requirements.
+
 6. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
 
    a. **Create Spec Quality Checklist**: Generate a checklist file at `FEATURE_DIR/checklists/requirements.md` using the checklist template structure with these validation items:
@@ -374,6 +403,7 @@ When creating this spec from a user prompt:
    Do not guess to avoid asking — ask every question that would change the spec if answered differently.
 4. **Prioritize clarifications**: scope > security/privacy > user experience > technical details
 5. **Think like a tester**: Every vague requirement should fail the "testable and unambiguous" checklist item
+6. **Acceptance criteria must not introduce new behavior**: Each acceptance criterion must be directly derivable from its FR's stated behavior. Do not add behaviors in acceptance criteria that were not present in the FR itself — if a new behavior is needed, it belongs in a separate FR.
 6. **Common areas needing clarification** (only if no reasonable default exists):
    - Feature scope and boundaries (include/exclude specific use cases)
    - User types and permissions (if multiple conflicting interpretations possible)

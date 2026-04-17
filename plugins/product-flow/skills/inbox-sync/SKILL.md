@@ -29,6 +29,7 @@ Single internal entry point to process PR inbox activity consistently across wor
    - Invoke `/product-flow:pr-comments new-comments`.
    - If `NO_NEW_COMMENTS`: skip this part silently.
    - For each new comment, classify:
+     - **Classification rule — when in doubt**: if a decision affects something the user sees, experiences, or can do directly — even if it sounds technical — classify it as **Product**. Only classify as Technical if the decision is completely invisible to users and affects only internal implementation.
      - **Technical**: architecture, security, performance, data model, infrastructure, integration patterns.
      - **Product**: business intent, scope, user flow, acceptance criteria, terminology.
      - **Ambiguous**: default to product and ask the PM.
