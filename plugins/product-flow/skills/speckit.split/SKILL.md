@@ -28,7 +28,7 @@ Consider any user input above (e.g. a hint about where to split) before proceedi
 
 1. Run `git branch --show-current` to get BRANCH_NAME.
 2. Derive FEATURE_DIR = `specs/$BRANCH_NAME`.
-3. Read `$FEATURE_DIR/spec.md`. If it does not exist: stop with `ERROR: No spec found on branch '$BRANCH_NAME'. Run /product-flow:start first.`
+3. Read `$FEATURE_DIR/spec.md`. If it does not exist: stop with `ERROR: No spec found on branch '$BRANCH_NAME'. Run /product-flow:start-feature or /product-flow:start-improvement first.`
 4. **Detect mode**:
    - If `$FEATURE_DIR/plan.md` does not exist → **MODE = pre-plan**
    - If `$FEATURE_DIR/plan.md` exists → **MODE = post-plan**

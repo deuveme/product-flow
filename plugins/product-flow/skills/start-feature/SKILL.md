@@ -1,5 +1,5 @@
 ---
-description: "STEP 1 — Starts a new feature. Creates the draft PR and kicks off the specification process."
+description: "STEP 1 — Starts a new feature. Creates the draft PR and kicks off the specification process. Use /product-flow:start-improvement for small changes to already-deployed features."
 model: sonnet
 effort: low
 ---
@@ -11,7 +11,7 @@ $ARGUMENTS
 ```
 
 Feature description in natural language. **Required.**
-If empty: ERROR "Describe the feature. Example: /product-flow:start I want users to be able to reset their password"
+If empty: ERROR "Describe the feature. Example: /product-flow:start-feature I want users to be able to reset their password"
 
 ---
 
@@ -92,7 +92,7 @@ Create `specs/$BRANCH_NAME/gathered-context.md` immediately so facilitation answ
 ```markdown
 # Gathered Context
 
-> Collected during /product-flow:start before spec writing. Use this as authoritative input — do not re-ask any question already answered here.
+> Collected during /product-flow:start-feature before spec writing. Use this as authoritative input — do not re-ask any question already answered here.
 
 ## Product Framing
 
@@ -150,6 +150,8 @@ gh pr create \
   --draft \
   --base main \
   --body "$(cat <<EOF
+**Type:** ✨ Feature
+
 ## Feature
 Spec: $SPEC_PATH
 
@@ -200,7 +202,7 @@ Save the returned PR URL as `PR_URL` and PR number as `PR_NUMBER`.
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"FEATURE_STARTED": $ts}' > "$STATUS_FILE"
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"FEATURE_STARTED": $ts, "flow": "feature"}' > "$STATUS_FILE"
 ```
 
 Commit and push the initial files:
@@ -406,7 +408,7 @@ Write the final `specs/$BRANCH_NAME/gathered-context.md` with all sections compl
 ```markdown
 # Gathered Context
 
-> Collected during /product-flow:start before spec writing. Use this as authoritative input — do not re-ask any question already answered here.
+> Collected during /product-flow:start-feature before spec writing. Use this as authoritative input — do not re-ask any question already answered here.
 
 ## Product Framing
 
@@ -641,7 +643,7 @@ mkdir -p "$NEW_FEATURE_DIR/docs"
 **Write `status.json`:**
 
 ```bash
-echo "{}" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"FEATURE_STARTED": $ts}' > "$NEW_FEATURE_DIR/status.json"
+echo "{}" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"FEATURE_STARTED": $ts, "flow": "feature"}' > "$NEW_FEATURE_DIR/status.json"
 ```
 
 **Commit and push:**
@@ -663,6 +665,8 @@ gh pr create \
   --draft \
   --base main \
   --body "$(cat <<EOF
+**Type:** ✨ Feature
+
 ## Feature
 Spec: specs/$NEW_BRANCH/spec.md
 
@@ -752,7 +756,7 @@ Also update the current PR body History table — add a row:
 [NEW_BRANCH]  — new branch created · PR: [NEW_PR_URL]
 [repeat for each new branch]
 
-Continuing with [BRANCH_NAME]. Run /product-flow:start on each new branch when ready.
+Continuing with [BRANCH_NAME]. Run /product-flow:start-feature on each new branch when ready.
 ```
 
 Then update `GATHERED_CONTEXT` in memory to reflect the trimmed scope before continuing to step 6.
@@ -874,7 +878,7 @@ If the commit fails with a GPG or signing error (output contains `gpg`, `signing
 To fix it, run in your terminal:
   git config commit.gpgsign false
 
-Then run /product-flow:start again.
+Then run /product-flow:start-feature again.
 ```
 **STOP.**
 

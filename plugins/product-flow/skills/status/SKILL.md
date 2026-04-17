@@ -298,6 +298,8 @@ For each feature with a spec directory, read `specs/<branch>/status.json` if it 
 cat "specs/$branch/status.json" 2>/dev/null || echo "{}"
 ```
 
+Extract `flow` field: `"feature"` or `"improvement"`. If absent, treat as `"feature"`.
+
 - `SPEC_CREATED` in status.json (or `spec.md` present) → "Spec created" is done
 - `PLAN_GENERATED` in status.json (or `plan.md` present) → "Plan generated" is done
 - `TASKS_GENERATED` in status.json (or `tasks.md` present) → "Tasks generated" is done
@@ -306,6 +308,10 @@ cat "specs/$branch/status.json" 2>/dev/null || echo "{}"
 - `IN_REVIEW` in status.json → "In code review" is done
 - `SPLIT_PREPLAN_ANALIZED` in status.json → internal routing flag; not displayed as a discrete step (sits between Spec and Plan in the lifecycle — scope split was analyzed before planning)
 - `SPLIT_POSTPLAN_ANALIZED` in status.json → internal routing flag; not displayed as a discrete step (sits between Plan and Tasks in the lifecycle — scope split was analyzed after planning)
+
+For the **next step** recommendation, use the `flow` field:
+- `flow === "improvement"`: use the improvement lifecycle (`IMPROVEMENT_STARTED → SPEC_CREATED → PLAN_GENERATED → TASKS_GENERATED → CODE_WRITTEN → CODE_VERIFIED → IN_REVIEW → PUBLISHED`). No `CHECKLIST_DONE` step.
+- `flow === "feature"` or absent: use the full feature lifecycle as before.
 
 Track branches with no PR but with at least `spec.md` as **SPEC-only branches**.
 
@@ -470,12 +476,17 @@ On main:
 ```
 ─────────────────────────────────────────
   📍 main  ·  no active feature
+
+  💡 /product-flow:start-feature <description>  — new feature
+  💡 /product-flow:start-improvement <description>  — improve something already live
 ```
 
-On a feature branch with PR:
+On a feature branch with PR (show type badge based on `flow` field — `"feature"` or absent → ✨ Feature, `"improvement"` → 🔧 Improvement):
 ```
 ─────────────────────────────────────────
-  📍 Working on: **<feature name in human language>**
+  📍 Working on: **<feature name in human language>**  ✨ Feature
+  (or)
+  📍 Working on: **<feature name in human language>**  🔧 Improvement
 
   🔗 <PR_URL>
 
@@ -539,10 +550,14 @@ On a feature branch with no PR but spec exists:
 
 Each entry can be in one of three states:
 
-**With PR** — inline progress + link:
+**With PR** — inline progress + link (include type badge from `flow` field):
 ```
-  [N]  **<feature name>**
+  [N]  **<feature name>**  ✨ Feature
        ✅ Spec  ✅ Plan  🟡 Tasks  ⚫ Code  ⚫ Review  ⚫ Done
+       🔗 <PR_URL>
+  (or)
+  [N]  **<feature name>**  🔧 Improvement
+       ✅ Spec  🟡 Plan  ⚫ Tasks  ⚫ Code  ⚫ Review  ⚫ Done
        🔗 <PR_URL>
 ```
 
@@ -584,20 +599,23 @@ When other features exist and on a feature branch:
 ```
 ─────────────────────────────────────────
   Switch? Type 1 · 2 · …  or  Enter to stay
-  *💡 /product-flow:start <description>  to start a new feature*
+  *💡 /product-flow:start-feature <description>  to start a new feature*
+  *💡 /product-flow:start-improvement <description>  to improve something already live*
 ```
 
 When other features exist and on main:
 ```
 ─────────────────────────────────────────
   Switch? Type 1 · 2 · …  or  Enter to stay on main
-  *💡 /product-flow:start <description>  to start a new feature*
+  *💡 /product-flow:start-feature <description>  to start a new feature*
+  *💡 /product-flow:start-improvement <description>  to improve something already live*
 ```
 
 When no other features exist (regardless of branch):
 ```
 ─────────────────────────────────────────
-  *💡 /product-flow:start <description>  to start a new feature*
+  *💡 /product-flow:start-feature <description>  to start a new feature*
+  *💡 /product-flow:start-improvement <description>  to improve something already live*
 ```
 
 ---

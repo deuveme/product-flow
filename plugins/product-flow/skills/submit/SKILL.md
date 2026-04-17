@@ -14,7 +14,7 @@ gh pr view --json number,state,url,body,isDraft
 ```
 
 - If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /product-flow:status."
-- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
+- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start-feature or /product-flow:start-improvement?"
 
 ### 1b. Inbox
 

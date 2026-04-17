@@ -7,14 +7,20 @@ This document maps which skills call which other skills, the required preconditi
 ## PM Command → Sub-skill Map
 
 ```
-start
+start-feature
   ├─ praxis.collaborative-design   (if feature description is vague)
   ├─ speckit.specify
   ├─ pr-comments write             (for technical decisions)
   └─ speckit.retro
 
+start-improvement
+  ├─ speckit.specify.improvement   (lean spec, ~1 page + integrated self-validation)
+  └─ pr-comments write             (for technical decisions, if any)
+
 continue
   ├─ inbox-sync                              (internal inbox orchestration)
+  │
+  │  ── Feature flow (flow === "feature" or absent) ──
   ├─ [SPEC_CREATED, SPLIT_PREPLAN_ANALIZED absent, has_comments]      → consolidate-spec → speckit.split (auto-proceed)
   ├─ [SPEC_CREATED, SPLIT_PREPLAN_ANALIZED absent, no comments]       → speckit.split → plan (auto-proceed)
   ├─ [SPEC_CREATED, SPLIT_PREPLAN_ANALIZED, PLAN_GENERATED absent]     → speckit.clarify → plan
@@ -25,7 +31,15 @@ continue
   ├─ [TASKS_GENERATED, CHECKLIST_DONE absent, has_comments] → consolidate-plan
   ├─ [TASKS_GENERATED, CHECKLIST_DONE absent, no comments]  → checklist
   ├─ [CHECKLIST_DONE, CODE_WRITTEN absent, has_comments]    → consolidate-plan (clears CHECKLIST_DONE)
-  └─ [CHECKLIST_DONE, CODE_WRITTEN absent, no comments]     → ready for /build
+  ├─ [CHECKLIST_DONE, CODE_WRITTEN absent, no comments]     → ready for /build
+  │
+  │  ── Improvement flow (flow === "improvement") ──
+  ├─ [SPEC_CREATED, PLAN_GENERATED absent, has_comments]    → consolidate-spec
+  ├─ [SPEC_CREATED, PLAN_GENERATED absent, no comments]     → speckit.plan.improvement
+  ├─ [PLAN_GENERATED, TASKS_GENERATED absent, has_comments] → consolidate-plan
+  ├─ [PLAN_GENERATED, TASKS_GENERATED absent, no comments]  → tasks
+  ├─ [TASKS_GENERATED, CODE_WRITTEN absent, has_comments]   → consolidate-plan
+  └─ [TASKS_GENERATED, CODE_WRITTEN absent, no comments]    → ready for /build  (no checklist phase)
 
 build
   ├─ inbox-sync                        (internal inbox orchestration)
@@ -126,11 +140,12 @@ inbox-sync
 
 | Skill | Required preconditions |
 |-------|----------------------|
-| `start` | Clean working tree; on main/master |
-| `continue` | On a feature branch; PR exists |
-| `build` | PR exists; `TASKS_GENERATED` + `CHECKLIST_DONE` in status.json; feature directory exists |
-| `submit` | On a feature branch; PR exists; `CODE_VERIFIED` in status.json |
-| `fix` | On a feature branch; PR exists; `CODE_VERIFIED` or `IN_REVIEW` in status.json |
+| `start-feature` | Clean working tree; on main/master (or resumption mode: on existing feature branch) |
+| `start-improvement` | Clean working tree; on main/master |
+| `continue` | On a feature/improvement branch; PR exists |
+| `build` | PR exists; `TASKS_GENERATED` in status.json; if `flow !== "improvement"`: also `CHECKLIST_DONE`; feature directory exists |
+| `submit` | On a feature/improvement branch; PR exists; `CODE_VERIFIED` in status.json |
+| `fix` | On a feature/improvement branch; PR exists; `CODE_VERIFIED` or `IN_REVIEW` in status.json |
 | `deploy-to-stage` | `IN_REVIEW` in status.json; PR approved by team |
 | `plan` | `SPEC_CREATED` in status.json; no pending UNANSWERED comments |
 | `tasks` | `SPEC_CREATED` + `PLAN_GENERATED` in status.json; `plan.md` and `spec.md` exist in FEATURE_DIR |
@@ -139,7 +154,9 @@ inbox-sync
 | `consolidate-spec` | `SPEC_CREATED` in status.json; pending comments exist |
 | `consolidate-plan` | `PLAN_GENERATED` in status.json; pending comments exist |
 | `speckit.specify` | On a feature branch, or on main with clean working tree |
+| `speckit.specify.improvement` | On an improvement branch; `improvement-context.md` exists in FEATURE_DIR |
 | `speckit.plan` | `spec.md` exists in FEATURE_DIR |
+| `speckit.plan.improvement` | `spec.md` + `improvement-context.md` exist in FEATURE_DIR |
 | `speckit.tasks` | `plan.md` and `spec.md` exist in FEATURE_DIR |
 | `speckit.implement.withTDD` | `tasks.md`, `plan.md` exist in FEATURE_DIR |
 | `speckit.verify` | `spec.md`, `plan.md`, `tasks.md` exist in FEATURE_DIR |

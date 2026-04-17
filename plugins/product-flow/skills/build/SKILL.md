@@ -13,8 +13,8 @@ git branch --show-current
 gh pr view --json number,state,url,body
 ```
 
-- If the branch is `main` or `master`: ERROR "There is no active feature. Use /product-flow:start to start a new one."
-- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
+- If the branch is `main` or `master`: ERROR "There is no active feature. Use /product-flow:start-feature to start a new feature, or /product-flow:start-improvement for a small change to something already live."
+- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start-feature or /product-flow:start-improvement?"
 
 ### 1b. Inbox
 
@@ -29,6 +29,8 @@ BRANCH=$(git branch --show-current)
 cat "specs/$BRANCH/status.json" 2>/dev/null || echo "{}"
 ```
 
+Extract `flow` field from `status.json`. If absent, treat as `"feature"`.
+
 Check in order — stop at the first failing condition:
 
 1. `TASKS_GENERATED` is present OR `specs/<branch>/tasks.md` exists on disk. If not:
@@ -40,12 +42,14 @@ Check in order — stop at the first failing condition:
    **STOP.**
 
 2. `CHECKLIST_DONE` is present in `status.json`. If not:
-   ```
-   🚫 The checklists have not been completed yet.
+   - If `flow === "improvement"`: skip this check — improvement flow does not require a checklist phase.
+   - Otherwise:
+     ```
+     🚫 The checklists have not been completed yet.
 
-   Run /product-flow:continue to complete the checklist validation first.
-   ```
-   **STOP.**
+     Run /product-flow:continue to complete the checklist validation first.
+     ```
+     **STOP.**
 
 ### 2b. Pre-build comment review
 
@@ -71,7 +75,7 @@ First, verify the feature directory exists:
 ls specs/<feature-dir>/ 2>/dev/null
 ```
 
-If the directory does not exist: ERROR "No feature directory found at specs/<feature-dir>/. Did you run /product-flow:start to initialize this feature?"
+If the directory does not exist: ERROR "No feature directory found at specs/<feature-dir>/. Did you run /product-flow:start-feature or /product-flow:start-improvement to initialize this branch?"
 
 **STOP.**
 

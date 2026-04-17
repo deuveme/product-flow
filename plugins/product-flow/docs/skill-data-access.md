@@ -1,7 +1,7 @@
 # Skill Data Access Guide
 
 Every feature spec folder (`specs/<branch>/`) contains assets and context
-persisted by `/product-flow:start`. This guide explains how any downstream
+persisted by `/product-flow:start-feature` or `/product-flow:start-improvement`. This guide explains how any downstream
 skill can access them across sessions.
 
 ---

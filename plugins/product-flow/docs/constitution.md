@@ -147,7 +147,8 @@ This project uses a spec-driven workflow where PM commands orchestrate internal 
 
 | Command | Internal delegates | Own responsibility |
 |---|---|---|
-| `/product-flow:start` | Internal spec engine | Be on `main` |
+| `/product-flow:start-feature` | Internal spec engine | Be on `main` |
+| `/product-flow:start-improvement` | Internal improvement spec engine | Be on `main` |
 | `/product-flow:continue` | Internal clarify / plan engine | Spec created |
 | `/product-flow:build` | Internal implement engine | Plan approved in PR |
 | `/product-flow:submit` | — | Code generated |
@@ -161,13 +162,21 @@ Fields written by each skill:
 
 | Field | Written by |
 |---|---|
-| `SPEC_CREATED` | `/product-flow:start`, `speckit.split` |
-| `PLAN_GENERATED` | `/product-flow:plan` |
+| `flow` | `/product-flow:start-feature` (`"feature"`), `/product-flow:start-improvement` (`"improvement"`) — absent means `"feature"` for backward compat |
+| `FEATURE_STARTED` | `/product-flow:start-feature` |
+| `IMPROVEMENT_STARTED` | `/product-flow:start-improvement` |
+| `DESIGN_DONE` | `/product-flow:start-feature` (after 4-dimension framing) |
+| `SPEC_CREATED` | `/product-flow:start-feature`, `speckit.specify.improvement` (improvement flow), `speckit.split` |
+| `SPLIT_PREPLAN_ANALIZED` | `speckit.split` (pre-plan pass) — feature flow only |
+| `PLAN_GENERATED` | `/product-flow:plan`, `speckit.plan.improvement` |
+| `SPLIT_POSTPLAN_ANALIZED` | `speckit.split` (post-plan pass) — feature flow only |
 | `TASKS_GENERATED` | `/product-flow:tasks` |
-| `CHECKLIST_DONE` | `/product-flow:checklist` (after artifact commit) |
+| `CHECKLIST_DONE` | `/product-flow:checklist` (after artifact commit) — feature flow only |
 | `CODE_WRITTEN` | `/product-flow:implement` |
+| `VERIFY_TASKS_DONE` | `speckit.verify-tasks` |
 | `CODE_VERIFIED` | `/product-flow:build` (after verify-tasks) |
 | `IN_REVIEW` | `/product-flow:submit` |
+| `PUBLISHED` | `/product-flow:deploy-to-stage` |
 | `processed_answers` | `pr-comments mark-processed` — question numbers already applied (prevents re-processing) |
 | `processed_comment_ids` | `pr-comments mark-comments-processed` — IDs of general user comments already evaluated |
 

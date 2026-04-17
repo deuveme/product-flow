@@ -23,7 +23,7 @@ gh pr view --json number,state,url,body
 ```
 
 - If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /product-flow:status."
-- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
+- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start-feature or /product-flow:start-improvement?"
 
 ### 2. Verify there is something to review
 
@@ -33,7 +33,7 @@ Confirm that at least `spec.md` exists in the feature directory.
 ls specs/<branch-directory>/
 ```
 
-If there is no spec: ERROR "There is no spec to review. Run /product-flow:start first."
+If there is no spec: ERROR "There is no spec to review. Run /product-flow:start-feature or /product-flow:start-improvement first."
 
 ### 2b. Check for unanswered PR questions
 

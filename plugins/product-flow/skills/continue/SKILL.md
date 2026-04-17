@@ -8,6 +8,8 @@ effort: medium
 
 **Every state transition MUST delegate to a named sub-skill. Never perform work inline.**
 
+### Feature flow transitions
+
 | Condition | Sub-skill invoked |
 |-----------|-------------------|
 | `SPEC_CREATED` ✓, `SPLIT_PREPLAN_ANALIZED` ✗, `PLAN_GENERATED` ✗, `has_comments` true | `/product-flow:consolidate-spec` |
@@ -22,13 +24,28 @@ effort: medium
 | `CHECKLIST_DONE` ✓, `CODE_WRITTEN` ✗, `has_comments` true | `/product-flow:consolidate-plan` (clears `CHECKLIST_DONE`) |
 | `CHECKLIST_DONE` ✓, `CODE_WRITTEN` ✗, `has_comments` false | → ready for `/product-flow:build` |
 
+### Improvement flow transitions
+
+| Condition | Sub-skill invoked |
+|-----------|-------------------|
+| `SPEC_CREATED` ✓, `PLAN_GENERATED` ✗, `has_comments` true | `/product-flow:consolidate-spec` |
+| `SPEC_CREATED` ✓, `PLAN_GENERATED` ✗, `has_comments` false | `/product-flow:speckit.plan.improvement` |
+| `PLAN_GENERATED` ✓, `TASKS_GENERATED` ✗, `has_comments` true | `/product-flow:consolidate-plan` |
+| `PLAN_GENERATED` ✓, `TASKS_GENERATED` ✗, `has_comments` false | `/product-flow:tasks` |
+| `TASKS_GENERATED` ✓, `CODE_WRITTEN` ✗, `has_comments` true | `/product-flow:consolidate-plan` |
+| `TASKS_GENERATED` ✓, `CODE_WRITTEN` ✗, `has_comments` false | → ready for `/product-flow:build` |
+
 If a transition requires work that has no dedicated sub-skill, stop and surface the gap — do not implement it inline.
 
 ## State Machine
 
 The workflow state is determined entirely by the flags present in `specs/<branch>/status.json` plus the dynamic `has_comments` check. There are no named virtual states — the flag combination IS the state.
 
-**Lifecycle order of flags:**
+**Read `flow` from `status.json` first** — this determines which routing table to apply:
+- `"flow": "improvement"` → use the improvement routing table
+- `"flow": "feature"` OR field absent → use the feature routing table (backward-compatible default)
+
+**Feature flow — lifecycle order of flags:**
 
 ```
 FEATURE_STARTED → DESIGN_DONE → SPEC_CREATED → SPLIT_PREPLAN_ANALIZED → PLAN_GENERATED
@@ -36,7 +53,7 @@ FEATURE_STARTED → DESIGN_DONE → SPEC_CREATED → SPLIT_PREPLAN_ANALIZED → 
 → CODE_VERIFIED → IN_REVIEW → PUBLISHED
 ```
 
-**Routing table** (evaluated top-to-bottom, first match wins):
+**Feature routing table** (evaluated top-to-bottom, first match wins):
 
 | SPEC_CREATED | SPLIT_PREPLAN_ANALIZED | PLAN_GENERATED | SPLIT_POSTPLAN_ANALIZED | TASKS_GENERATED | CHECKLIST_DONE | CODE_WRITTEN | has_comments | → Action |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---|
@@ -52,10 +69,29 @@ FEATURE_STARTED → DESIGN_DONE → SPEC_CREATED → SPLIT_PREPLAN_ANALIZED → 
 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | `consolidate-plan` (clears `CHECKLIST_DONE`) |
 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ready for `/build` |
 
+**Improvement flow — lifecycle order of flags:**
+
+```
+IMPROVEMENT_STARTED → SPEC_CREATED → PLAN_GENERATED → TASKS_GENERATED
+→ CODE_WRITTEN → VERIFY_TASKS_DONE → CODE_VERIFIED → IN_REVIEW → PUBLISHED
+```
+
+**Improvement routing table** (evaluated top-to-bottom, first match wins):
+
+| SPEC_CREATED | PLAN_GENERATED | TASKS_GENERATED | CODE_WRITTEN | has_comments | → Action |
+|:---:|:---:|:---:|:---:|:---:|:---|
+| ✓ | ✗ | - | - | ✓ | `consolidate-spec` |
+| ✓ | ✗ | - | - | ✗ | `speckit.plan.improvement` |
+| ✓ | ✓ | ✗ | - | ✓ | `consolidate-plan` |
+| ✓ | ✓ | ✗ | - | ✗ | `tasks` |
+| ✓ | ✓ | ✓ | ✗ | ✓ | `consolidate-plan` |
+| ✓ | ✓ | ✓ | ✗ | ✗ | ready for `/build` |
+
 **Backward-compatibility note:** Branches created before the new split flags existed may have `SPLIT_DONE` (old flag) instead of `SPLIT_PREPLAN_ANALIZED`, or may have `PLAN_GENERATED` set but no `SPLIT_PREPLAN_ANALIZED` or `SPLIT_POSTPLAN_ANALIZED`. Apply these rules:
 - If `SPLIT_DONE` is present: treat it as `SPLIT_PREPLAN_ANALIZED` for routing purposes.
 - If `PLAN_GENERATED` is present but `SPLIT_PREPLAN_ANALIZED` is absent: treat `SPLIT_PREPLAN_ANALIZED` as implicitly set (feature predates the pre-plan split step).
 - If `PLAN_GENERATED` is present but `SPLIT_POSTPLAN_ANALIZED` is absent and `TASKS_GENERATED` is also present: treat `SPLIT_POSTPLAN_ANALIZED` as implicitly set (feature predates the post-plan split step).
+- If `flow` field is absent: treat as `"flow": "feature"` (branches created before improvement flow existed).
 
 ---
 
@@ -68,8 +104,8 @@ git branch --show-current
 gh pr view --json number,state,url,body
 ```
 
-- If the branch is `main` or `master`: ERROR "There is no active feature. Use /product-flow:start to start a new one."
-- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
+- If the branch is `main` or `master`: ERROR "There is no active feature. Use /product-flow:start-feature to start a new feature, or /product-flow:start-improvement for a small change to something already live."
+- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start-feature or /product-flow:start-improvement?"
 
 ### 1c. Load gathered context
 
@@ -93,7 +129,13 @@ BRANCH=$(git branch --show-current)
 cat "specs/$BRANCH/status.json" 2>/dev/null || echo "{}"
 ```
 
-Extract flags: `SPEC_CREATED`, `SPLIT_PREPLAN_ANALIZED`, `PLAN_GENERATED`, `SPLIT_POSTPLAN_ANALIZED`, `TASKS_GENERATED`, `CHECKLIST_DONE`, `CODE_WRITTEN`.
+Extract `flow` field first — this determines which routing table to apply:
+- `"flow": "improvement"` → use the improvement routing table
+- `"flow": "feature"` OR field absent → use the feature routing table
+
+For **feature flow**, extract flags: `SPEC_CREATED`, `SPLIT_PREPLAN_ANALIZED`, `PLAN_GENERATED`, `SPLIT_POSTPLAN_ANALIZED`, `TASKS_GENERATED`, `CHECKLIST_DONE`, `CODE_WRITTEN`.
+
+For **improvement flow**, extract flags: `SPEC_CREATED`, `PLAN_GENERATED`, `TASKS_GENERATED`, `CODE_WRITTEN`.
 
 For `has_comments`: invoke `/product-flow:pr-comments pending` and `/product-flow:pr-comments read-answers` in parallel.
 - If `pending` returns non-empty UNANSWERED comments → `has_comments = true`.
@@ -135,6 +177,7 @@ Show the active action before doing anything:
 | `speckit.split` (pre-plan) | `✂️ Checking spec scope before planning...` |
 | `speckit.split` (post-plan) | `✂️ Checking plan scope before breaking into tasks...` |
 | `plan` | `🗺️ Spec ready. Generating the technical plan...` |
+| `speckit.plan.improvement` | `🗺️ Spec ready. Generating the improvement plan...` |
 | `consolidate-plan` | `📋 Integrating plan feedback from the team...` |
 | `tasks` | `✂️ Plan ready. Breaking down into development tasks...` |
 | `checklist` | `✅ Tasks ready. Validating requirements...` |
@@ -176,6 +219,24 @@ Run /product-flow:continue to regenerate the plan for the trimmed feature.
 **STOP.** (Do not auto-proceed to tasks — the plan must be regenerated first.)
 
 If no split was executed: proceed immediately to `→ tasks` below.
+
+#### → speckit.plan.improvement
+
+Invoke `/product-flow:speckit.plan.improvement`.
+Wait for it to finish. If ERROR: propagate and stop.
+
+After generating, show:
+
+```
+✅ Improvement plan generated.
+
+─────────────────────────────────────────
+➡️  NEXT STEP
+─────────────────────────────────────────
+Run /product-flow:continue to proceed to build,
+or add comments on the PR first if changes are needed.
+─────────────────────────────────────────
+```
 
 #### → plan
 

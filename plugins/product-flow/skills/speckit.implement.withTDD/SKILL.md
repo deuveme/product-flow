@@ -23,7 +23,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    CURRENT_BRANCH="${SPECIFY_FEATURE:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
    ```
 
-   If `CURRENT_BRANCH` does not match `^[0-9]{3}-`: ERROR "Not on a feature branch. Run /product-flow:start first." and stop.
+   If `CURRENT_BRANCH` does not match `^[0-9]{3}-`: ERROR "Not on a feature branch. Run /product-flow:start-feature or /product-flow:start-improvement first." and stop.
 
    Derive `FEATURE_DIR` = `$REPO_ROOT/specs/$CURRENT_BRANCH`.
 

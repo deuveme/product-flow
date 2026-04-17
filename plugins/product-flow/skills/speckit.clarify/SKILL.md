@@ -36,7 +36,7 @@ Execution steps:
    CURRENT_BRANCH="${SPECIFY_FEATURE:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
    ```
 
-   If `CURRENT_BRANCH` does not match `^[0-9]{3}-`: ERROR "Not on a feature branch. Run /product-flow:start first." and stop.
+   If `CURRENT_BRANCH` does not match `^[0-9]{3}-`: ERROR "Not on a feature branch. Run /product-flow:start-feature or /product-flow:start-improvement first." and stop.
 
    Derive paths:
    - `FEATURE_DIR`  = `$REPO_ROOT/specs/$CURRENT_BRANCH`
@@ -44,7 +44,7 @@ Execution steps:
    - `IMPL_PLAN`    = `$FEATURE_DIR/plan.md`
    - `TASKS`        = `$FEATURE_DIR/tasks.md`
 
-   If `FEATURE_SPEC` does not exist: ERROR "spec.md not found. Run /product-flow:start first." and stop.
+   If `FEATURE_SPEC` does not exist: ERROR "spec.md not found. Run /product-flow:start-feature or /product-flow:start-improvement first." and stop.
 
 1b. **Load split context (if available)**:
 
@@ -267,7 +267,7 @@ If no questions were asked (no critical ambiguities found), skip this step entir
 Behavior rules:
 
 - If no meaningful ambiguities found (or all potential questions would be low-impact), respond: "No critical ambiguities detected worth formal clarification." and suggest proceeding.
-- If spec file missing, instruct user to run `/product-flow:start` first (do not create a new spec here).
+- If spec file missing, instruct user to run `/product-flow:start-feature` or `/product-flow:start-improvement` first (do not create a new spec here).
 - Never ask the PM technical questions — resolve them autonomously and write to PR.
 - Avoid speculative tech stack questions unless the absence blocks functional clarity.
 - Respect user early termination signals ("stop", "done", "proceed").

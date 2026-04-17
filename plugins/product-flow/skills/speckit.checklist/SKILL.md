@@ -51,13 +51,13 @@ REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 CURRENT_BRANCH="${SPECIFY_FEATURE:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
 ```
 
-If `CURRENT_BRANCH` does not match `^[0-9]{3}-`: ERROR "Not on a feature branch. Run /product-flow:start first." and stop.
+If `CURRENT_BRANCH` does not match `^[0-9]{3}-`: ERROR "Not on a feature branch. Run /product-flow:start-feature or /product-flow:start-improvement first." and stop.
 
 Derive paths (all absolute):
 - `FEATURE_DIR` = `$REPO_ROOT/specs/$CURRENT_BRANCH`
 
 Validate:
-- If `FEATURE_DIR` does not exist: ERROR "Feature directory not found. Run /product-flow:start first." and stop.
+- If `FEATURE_DIR` does not exist: ERROR "Feature directory not found. Run /product-flow:start-feature or /product-flow:start-improvement first." and stop.
 - If `$FEATURE_DIR/plan.md` does not exist: ERROR "plan.md not found. Run /product-flow:continue first." and stop.
 
 Build `AVAILABLE_DOCS` list (optional files present in `FEATURE_DIR`):

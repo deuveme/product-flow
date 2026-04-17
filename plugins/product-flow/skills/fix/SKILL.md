@@ -14,8 +14,8 @@ git branch --show-current
 gh pr view --json number,state,url,body
 ```
 
-- If the branch is `main` or `master`: ERROR "There is no active feature. Use /product-flow:start to start a new one."
-- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start?"
+- If the branch is `main` or `master`: ERROR "There is no active feature. Use /product-flow:start-feature to start a new feature, or /product-flow:start-improvement for a small change to something already live."
+- If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start-feature or /product-flow:start-improvement?"
 
 Read and extract flags from `specs/<branch>/status.json`:
 

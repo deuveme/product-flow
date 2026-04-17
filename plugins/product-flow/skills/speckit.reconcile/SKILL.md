@@ -45,7 +45,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 CURRENT_BRANCH="${SPECIFY_FEATURE:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
 ```
 
-If `CURRENT_BRANCH` does not match `^[0-9]{3}-`: ERROR "Not on a feature branch. Run /product-flow:start first." and stop.
+If `CURRENT_BRANCH` does not match `^[0-9]{3}-`: ERROR "Not on a feature branch. Run /product-flow:start-feature or /product-flow:start-improvement first." and stop.
 
 Derive absolute paths:
 - `FEATURE_DIR`  = `$REPO_ROOT/specs/$CURRENT_BRANCH`
@@ -55,7 +55,7 @@ Derive absolute paths:
 
 Validate that `spec.md` and `plan.md` exist. If either is missing, stop with:
 > ⚠️ Missing required files in `FEATURE_DIR`. Expected: spec.md, plan.md.
-> Run `/product-flow:start` first.
+> Run `/product-flow:start-feature` or `/product-flow:start-improvement` first.
 
 If `tasks.md` does not exist, create it with a `## Remediation: Gaps` heading
 before appending new tasks.

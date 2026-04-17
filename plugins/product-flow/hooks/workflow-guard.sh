@@ -13,10 +13,10 @@
 #   5. gh pr merge must include --squash.
 #      Use /product-flow:deploy-to-stage, which sets --squash --delete-branch.
 #   6. gh pr create only allowed from a product-flow branch (NNN-kebab-name).
-#      Use /product-flow:start to open a feature with the correct structure.
+#      Use /product-flow:start-feature or /product-flow:start-improvement to open a branch with the correct structure.
 #
 # INTENT
-#   Every feature must start with /product-flow:start and end with
+#   Every feature or improvement must start with /product-flow:start-feature (or /product-flow:start-improvement) and end with
 #   /product-flow:deploy-to-stage — raw git shortcuts that bypass the workflow
 #   are blocked at the agent level.
 
@@ -51,8 +51,8 @@ check_branch_name() {
   local name="$1"
   [[ -z "$name" ]] && return 0
   if ! echo "$name" | grep -qE "$BRANCH_PATTERN"; then
-    block "Branch '$name' does not follow the product-flow naming convention (NNN-kebab-name, e.g. 001-user-auth).
-  Use /product-flow:start to create a properly named feature branch."
+    block "Branch '$name' does not follow the product-flow naming convention (NNN-kebab-name, e.g. 001-user-auth or 001-improvement-some-fix).
+  Use /product-flow:start-feature or /product-flow:start-improvement to create a properly named branch."
   fi
 }
 
@@ -165,8 +165,8 @@ fi
 if echo "$cmd" | grep -qE '\bgh[[:space:]]+pr[[:space:]]+create\b'; then
   branch=$(current_branch)
   if ! echo "$branch" | grep -qE "$BRANCH_PATTERN"; then
-    block "Pull requests can only be created from a product-flow branch (NNN-kebab-name, e.g. 001-user-auth).
-  Use /product-flow:start to begin a feature with the correct workflow structure."
+    block "Pull requests can only be created from a product-flow branch (NNN-kebab-name, e.g. 001-user-auth or 001-improvement-some-fix).
+  Use /product-flow:start-feature or /product-flow:start-improvement to begin a branch with the correct workflow structure."
   fi
 fi
 

@@ -20,7 +20,7 @@ Documentation for the development team on how the plugin is built, structured, i
 ```
 plugins/product-flow/
 ├── .claude-plugin/
-│   └── plugin.json           ← manifest: 7 public PM commands
+│   └── plugin.json           ← manifest: PM commands and internal engines
 ├── hooks/
 │   ├── git-sync.sh           ← syncs repo with origin before any public skill (UserPromptSubmit)
 │   ├── intent-router.sh      ← maps short ambiguous phrases to the correct skill via status.json (UserPromptSubmit)
@@ -30,7 +30,8 @@ plugins/product-flow/
 │   └── workflow-guard.sh     ← enforces product-flow git discipline: branch naming, no direct commits/pushes/merges to main, no PRs outside NNN-kebab-name branches, squash-only merges (PreToolUse)
 └── skills/
     ├── [PM Commands — user-facing]
-    │   ├── start, continue, build, submit, deploy-to-stage, status, context
+    │   ├── start-feature, start-improvement
+    │   ├── continue, build, submit, fix, deploy-to-stage, status, context
     │
     └── [Internal engines]
         ├── [Orchestrators]
@@ -38,6 +39,8 @@ plugins/product-flow/
         │
         ├── [Spec-Kit engines]
         │   ├── speckit.specify, speckit.clarify, speckit.plan, speckit.tasks
+        │   ├── speckit.specify.improvement            (lean spec for improvement flow: ~1 page + integrated self-validation)
+        │   ├── speckit.plan.improvement               (lean plan for improvement flow: files to touch + escalation gate)
         │   ├── speckit.implement.withTDD
         │   ├── speckit.retro, speckit.checklist
         │   ├── speckit.verify, speckit.verify-tasks, speckit.reconcile
@@ -72,9 +75,10 @@ Each feature branch has a corresponding folder under `specs/<branch>/`:
 
 ```
 specs/<branch>/
-├── status.json            ← workflow state machine (source of truth)
-├── gathered-context.md    ← all context collected during /start: product framing (outcome, scenario, scope, constraints), description, clarifications, technical decisions, asset references
-├── spec.md                ← feature specification (created by speckit.specify)
+├── status.json            ← workflow state machine (source of truth). Includes "flow": "feature"|"improvement"
+├── gathered-context.md    ← context for feature flow (/start-feature): product framing (outcome, scenario, scope, constraints), description, clarifications, technical decisions, asset references
+├── improvement-context.md ← context for improvement flow (/start-improvement): what to improve, location, change for user, scope, constraints
+├── spec.md                ← feature or improvement specification (created by speckit.specify or speckit.specify.improvement)
 ├── plan.md                ← technical plan: data model, contracts, research (created by speckit.plan)
 ├── tasks.md               ← ordered task breakdown (created by speckit.tasks)
 ├── decisions.md           ← durable log of all PR comments/decisions
@@ -84,13 +88,14 @@ specs/<branch>/
     └── sources.md         ← external doc links (Confluence, Google Docs, etc.) — only if provided
 ```
 
-`gathered-context.md` is written by `/product-flow:start` before spec writing and acts as the authoritative input for `speckit.specify` and `speckit.plan`. It ensures no question already answered is re-asked, and that all visual/documentation assets are accessible throughout the workflow.
+`gathered-context.md` is written by `/product-flow:start-feature` before spec writing and acts as the authoritative input for `speckit.specify` and `speckit.plan`. It ensures no question already answered is re-asked, and that all visual/documentation assets are accessible throughout the workflow.
 
 ### PM command flow
 
 | Command | Internal call chain |
 |---|---|
-| `/product-flow:start` | create branch + Draft PR → facilitated product framing (4 dimensions) + visual assets + docs → quality gate → [epic scope check: split into N branches if epic signals detected] → [`praxis.collaborative-design` if vague] → `speckit.specify` → `speckit.retro` |
+| `/product-flow:start-feature` | create branch + Draft PR → facilitated product framing (4 dimensions) + visual assets + docs → quality gate → [epic scope check: split into N branches if epic signals detected] → [`praxis.collaborative-design` if vague] → `speckit.specify` → `speckit.retro` |
+| `/product-flow:start-improvement` | create branch (`NNN-improvement-<slug>`) + Draft PR → 3-question context gathering → scope analysis (escalate to start-feature if too big) → `speckit.specify.improvement` |
 | `/product-flow:continue` | `inbox-sync` → flag-based routing: `consolidate-spec` + `speckit.split` pre-plan (if SPLIT_PREPLAN_ANALIZED absent) / `plan` (if PLAN_GENERATED absent) / `speckit.split` post-plan (if SPLIT_POSTPLAN_ANALIZED absent) / `consolidate-plan` (if comments) / `tasks` (if TASKS_GENERATED absent) / `checklist` (if CHECKLIST_DONE absent) — dispatched by reading `status.json` flags |
 | `/product-flow:build` | `inbox-sync` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `bugmagnet` → `speckit.retro`) → `speckit.verify-tasks` → `speckit.verify` |
 | `/product-flow:submit` | `inbox-sync` → `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → optional git add/commit/push (only if local changes exist) → `gh pr ready` on first run (exits DRAFT) → proposes ADRs in PR body |
@@ -129,7 +134,7 @@ Without it, PR interactions (comments, status updates) will not work.
 Inside Claude Code in your project:
 
 ```
-/plugin marketplace add git@github.com:deuveme/product-flow.git
+/plugin marketplace add https://github.com/deuveme/product-flow.git
 /plugin install product-flow@product-flow
 ```
 
@@ -173,8 +178,10 @@ Expected: `📍 main  ·  no active feature`
 
 State is determined by reading `specs/<branch>/status.json` flags + a live `has_comments` check on the PR. First matching row in the routing table wins.
 
+**Feature flow** (`flow === "feature"` or absent):
+
 ```
-/product-flow:start
+/product-flow:start-feature
   │  writes: FEATURE_STARTED → DESIGN_DONE → SPEC_CREATED
   ▼
 
@@ -194,9 +201,27 @@ CHECKLIST_DONE + CODE_WRITTEN absent + has_comments  →  consolidate-plan  (cle
 CHECKLIST_DONE + CODE_WRITTEN absent + no comments   →  ready for /product-flow:build
 ```
 
+**Improvement flow** (`flow === "improvement"`):
+
+```
+/product-flow:start-improvement
+  │  writes: IMPROVEMENT_STARTED → SPEC_CREATED (via speckit.specify.improvement)
+  ▼
+
+SPEC_CREATED + PLAN_GENERATED absent + has_comments   →  consolidate-spec
+SPEC_CREATED + PLAN_GENERATED absent + no comments    →  speckit.plan.improvement  (writes PLAN_GENERATED)
+
+PLAN_GENERATED + TASKS_GENERATED absent + has_comments  →  consolidate-plan
+PLAN_GENERATED + TASKS_GENERATED absent + no comments   →  tasks  (writes TASKS_GENERATED)
+
+TASKS_GENERATED + CODE_WRITTEN absent + has_comments  →  consolidate-plan
+TASKS_GENERATED + CODE_WRITTEN absent + no comments   →  ready for /product-flow:build
+                                                          (no checklist phase)
+```
+
 ### PR draft lifecycle
 
-The PR is created as a **Draft** by `/product-flow:start` and stays in Draft through the entire spec → plan → build phase. The team can see the PR and comment on it, but GitHub does not request their review.
+The PR is created as a **Draft** by `/product-flow:start-feature` or `/product-flow:start-improvement` and stays in Draft through the entire spec → plan → build phase. The team can see the PR and comment on it, but GitHub does not request their review.
 
 When `/product-flow:submit` runs for the **first time**, it calls `gh pr ready` to exit Draft mode and trigger a GitHub review request notification. Subsequent `/product-flow:submit` calls only push new commits — they do not call `gh pr ready` again.
 
@@ -391,7 +416,7 @@ Some are invoked automatically under certain conditions; others require explicit
 
 | Skill | Condition | Triggered by |
 |---|---|---|
-| `/product-flow:praxis.collaborative-design` | Feature description is vague or short (< 15 words, no clear actor/action) | `/product-flow:start` step 4 |
+| `/product-flow:praxis.collaborative-design` | Feature description is vague or short (< 15 words, no clear actor/action) | `/product-flow:start-feature` step 4 |
 | `/product-flow:praxis.event-modeling` | Spec contains event-driven signals (domain events, async, webhooks, background processing) | `/product-flow:plan` step 3 |
 
 **Manual invocation only:**
@@ -452,7 +477,7 @@ Invoke `/product-flow:context`.
 1. Create `plugins/product-flow/skills/my-skill/SKILL.md`
 2. Add to `plugins/product-flow/.claude-plugin/plugin.json` — all skills must be registered, both public and internal
 3. Add bash permissions to project's `settings.json` if needed
-4. Update PR template in `/product-flow:start` SKILL.md if adding a workflow step
+4. Update PR template in `/product-flow:start-feature` or `/product-flow:start-improvement` SKILL.md if adding a workflow step
 5. Update `/product-flow:status` SKILL.md if adding a progress indicator
 
 ### Modifying an existing skill

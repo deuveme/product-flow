@@ -11,7 +11,7 @@ Claude Code plugin for spec-driven development. Enables PMs, designers, and deve
 Open your terminal, type `claude` and press Enter. Once it loads, run:
 
 ```
-/plugin marketplace add git@github.com:deuveme/product-flow.git
+/plugin marketplace add https://github.com/deuveme/product-flow.git
 ```
 
 Then, in the same session, run:
@@ -35,7 +35,8 @@ Open your terminal, type `claude` and press Enter. Once it loads, run:
 Close the terminal and reopen Claude Code.
 
 **Commands:**
-- `/product-flow:start` — start a new feature
+- `/product-flow:start-feature` — start a new feature (full flow)
+- `/product-flow:start-improvement` — improve something already live (lighter flow)
 - `/product-flow:continue` — advance to next step (repeatable)
 - `/product-flow:build` — generate code (when plan is ready)
 - `/product-flow:submit` — share code for review
@@ -44,13 +45,18 @@ Close the terminal and reopen Claude Code.
 - `/product-flow:status` — see where you are
 - `/product-flow:context` — see memory usage
 
-**Workflow:**
+**Workflows:**
 ```
-/product-flow:start → /product-flow:continue (repeat) → /product-flow:build → /product-flow:submit → /product-flow:deploy-to-stage
-  (DRAFT PR)            (spec → plan, team feedback)       (code, TDD)           (exit DRAFT, review)    (approved → merge)
-                                                                ↕ issues found?
-                                                         /product-flow:fix
-                                                           (TDD fix cycle)
+New feature:
+/product-flow:start-feature → /product-flow:continue (repeat) → /product-flow:build → /product-flow:submit → /product-flow:deploy-to-stage
+  (DRAFT PR)                    (spec → plan, team feedback)       (code, TDD)           (exit DRAFT, review)    (approved → merge)
+                                                                        ↕ issues found?
+                                                                 /product-flow:fix
+                                                                   (TDD fix cycle)
+
+Small improvement to something already live:
+/product-flow:start-improvement → /product-flow:continue (repeat) → /product-flow:build → /product-flow:submit → /product-flow:deploy-to-stage
+  (DRAFT PR, lean spec+plan)        (spec → plan, team feedback)       (code, TDD)           (exit DRAFT, review)    (approved → merge)
 ```
 
 ---

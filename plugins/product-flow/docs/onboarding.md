@@ -23,7 +23,7 @@ All work exists in one of these four places. At any given moment you can know ex
 
 ### Where is my work right now?
 
-- You just ran `/product-flow:start` → **Review room** (in DRAFT — team can see and comment, but not yet asked to approve)
+- You just ran `/product-flow:start-feature` or `/product-flow:start-improvement` → **Review room** (in DRAFT — team can see and comment, but not yet asked to approve)
 - You ran `/product-flow:submit` → **Review room** (out of DRAFT — team is notified for formal code review)
 - The team approved and you ran `/product-flow:deploy-to-stage` → **Internal testing**
 - The team published → **The real world**
@@ -34,14 +34,29 @@ All work exists in one of these four places. At any given moment you can know ex
 
 These are the only commands you need. Type them in Claude Code exactly as they appear here.
 
-### `/product-flow:start`
-**When to use it:** When you want to start working on something new.
+### `/product-flow:start-feature`
+**When to use it:** When you want to build something new — a feature that doesn't exist yet.
 
-Type `/product-flow:start` followed by a description of what you want to build. Claude takes care of everything else: creates your workspace, opens the review room as a **DRAFT**, and prepares the spec.
+Type `/product-flow:start-feature` followed by a description of what you want to build. Claude takes care of everything else: creates your workspace, opens the review room as a **DRAFT**, and prepares the spec.
 
 ```
-/product-flow:start I want users to be able to reset their password
+/product-flow:start-feature I want users to be able to reset their password
 ```
+
+After this, share the review room link with the team on Slack so they can read and comment on the spec.
+
+---
+
+### `/product-flow:start-improvement`
+**When to use it:** When something already exists in production and you want to make a small change to it — a redesign, a copy update, a behaviour fix, or a UX tweak.
+
+Type `/product-flow:start-improvement` followed by a description of what you want to change. Claude uses a lighter process than `start-feature`: no event modeling, no architecture review, no checklist phase. The result is still a PR with a spec and plan for the team to review.
+
+```
+/product-flow:start-improvement The empty state on the dashboard needs better copy and a call-to-action button
+```
+
+If Claude determines the change is actually a new feature (too large for an improvement), it will tell you and suggest switching to `/product-flow:start-feature` instead.
 
 After this, share the review room link with the team on Slack so they can read and comment on the spec.
 
@@ -143,7 +158,7 @@ Once the review room exits DRAFT, the team does a formal code review. These comm
 The spec is not written by everyone at once. It advances in rounds:
 
 ```
-Round 1 ── The person who opens the feature writes the initial spec draft with /product-flow:start
+Round 1 ── The person who opens the feature writes the initial spec draft with /product-flow:start-feature (or /product-flow:start-improvement)
                ↓
 Round 2 ── The team reads and leaves comments in the review room
            (never edit the file directly)
@@ -167,7 +182,7 @@ Round 4 ── Final review before moving to the technical plan
 Each step shows what happens to the review room and when to comment.
 
 ```
-/product-flow:start "description"
+/product-flow:start-feature "description"   (or /product-flow:start-improvement for small changes)
         ↓
    Review room opens as DRAFT ── team can comment on the spec
         ↓
@@ -189,7 +204,7 @@ Each step shows what happens to the review room and when to comment.
 
 ### What "DRAFT" means
 
-The review room is in **DRAFT** from the moment `/product-flow:start` runs until you run `/product-flow:submit` for the first time. During this time:
+The review room is in **DRAFT** from the moment `/product-flow:start-feature` (or `/product-flow:start-improvement`) runs until you run `/product-flow:submit` for the first time. During this time:
 
 - The team **can see the review room** and leave comments
 - The team **is not asked to approve** anything yet
@@ -201,7 +216,7 @@ When you run `/product-flow:submit`, the review room exits DRAFT and the team re
 
 | Phase | Who comments | What to comment on |
 |---|---|---|
-| After `/product-flow:start` | You and the whole team | The spec — does it describe the right thing? Is anything missing? |
+| After `/product-flow:start-feature` or `/product-flow:start-improvement` | You and the whole team | The spec — does it describe the right thing? Is anything missing? |
 | After plan is generated | Dev team | The technical plan — architecture, data model, APIs |
 | After `/product-flow:submit` | Dev team | The code — logic, naming, edge cases |
 
@@ -220,7 +235,7 @@ Each feature goes through three documents before any code is written. You will s
 **Tasks** — The list of development steps to implement the plan. Generated automatically from the plan. Each task maps to a specific piece of code. You don't need to review these.
 
 ```
-Spec      → What & why    (written with /product-flow:start, refined with /product-flow:continue)
+Spec      → What & why    (written with /product-flow:start-feature (or start-improvement), refined with /product-flow:continue)
 Plan      → How           (generated with /product-flow:continue, reviewed by dev team)
 Tasks     → Step by step  (generated with /product-flow:build, not reviewed)
 ```
@@ -260,7 +275,11 @@ It's a mandatory quality check that runs automatically after the code is generat
 **During `/product-flow:build`, Claude is asking me questions before writing code. Is that normal?**
 Yes. Before generating code, Claude runs a requirements quality check that may ask up to 5 clarification questions to make sure the spec, plan and tasks are clear and complete. Answer them as best you can — they are quick and help prevent implementation mistakes. Once the questions are done, code generation continues automatically.
 
-**How much detail should I give when running `/product-flow:start`?**
+**When should I use `start-feature` vs `start-improvement`?**
+- Use `/product-flow:start-feature` when building something new — a capability that doesn't exist yet.
+- Use `/product-flow:start-improvement` when something already exists in production and you want to make a small change: fix a label, redesign a screen, adjust a behavior. If Claude determines the change is actually bigger than an improvement, it will tell you and suggest switching.
+
+**How much detail should I give when running `/product-flow:start-feature`?**
 Write whatever you know, in your own words. You don't need to find the right level — Claude adjusts automatically:
 - If your description is **vague or short**, Claude will ask you a few focused questions before writing the spec.
 - If your description is **very detailed or technical**, Claude will extract the technical parts automatically and keep only the business intent for the spec. Nothing gets lost — the technical details are saved separately for the development team.
@@ -268,10 +287,10 @@ Write whatever you know, in your own words. You don't need to find the right lev
 The only rule: describe **what you want to achieve and for whom**, not how to build it. The rest is handled for you.
 
 **I want to refine the spec before sharing it with the team. How?**
-Run `/product-flow:speckit.clarify` after `/product-flow:start`. Claude will scan the spec, identify the most important ambiguities, and ask you up to 5 targeted questions to sharpen it. The spec is updated in place. You can then share the PR with the team as usual.
+Run `/product-flow:speckit.clarify` after `/product-flow:start-feature`. Claude will scan the spec, identify the most important ambiguities, and ask you up to 5 targeted questions to sharpen it. The spec is updated in place. You can then share the PR with the team as usual.
 
 **The spec is covering too many things. Can I split it into two features?**
-Yes. After `/product-flow:start` writes the first spec, run `/product-flow:speckit.split`. Claude will analyze the spec, detect whether it covers independent deliverables or different user journeys, and propose a clean split. If you confirm, it trims the current spec and opens a new review room for the extracted feature — ready to continue from where the split happened.
+Yes. After `/product-flow:start-feature` writes the first spec, run `/product-flow:speckit.split`. Claude will analyze the spec, detect whether it covers independent deliverables or different user journeys, and propose a clean split. If you confirm, it trims the current spec and opens a new review room for the extracted feature — ready to continue from where the split happened.
 
 **Can I work on two features at the same time?**
 Yes, but it's better to finish one before starting another. If you need to do it, notify the development team first.
@@ -289,7 +308,7 @@ It's the site where the review room lives. You don't need to go there directly �
 Open your terminal, type `claude` and press Enter. Once it loads, run:
 
 ```
-/plugin marketplace add git@github.com:deuveme/product-flow.git
+/plugin marketplace add https://github.com/deuveme/product-flow.git
 ```
 
 Then, in the same session, run:
