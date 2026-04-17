@@ -1,6 +1,6 @@
 {
   "name": "product-flow",
-  "version": "1.11.4",
+  "version": "1.12.0",
   "description": "Product Flow - PM commands for spec-driven development workflow.",
   "author": { "name": "David Valero" },
   "license": "MIT",
@@ -66,7 +66,8 @@
     ]
   },
   "skills": [
-    "./skills/start",
+    "./skills/start-feature",
+    "./skills/start-improvement",
     "./skills/continue",
     "./skills/build",
     "./skills/submit",
@@ -83,6 +84,8 @@
     "./skills/consolidate-plan",
     "./skills/pr-comments",
     "./skills/speckit.specify",
+    "./skills/speckit.specify.improvement",
+    "./skills/speckit.plan.improvement",
     "./skills/speckit.clarify",
     "./skills/speckit.plan",
     "./skills/speckit.tasks",
