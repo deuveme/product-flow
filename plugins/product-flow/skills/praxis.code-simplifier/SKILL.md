@@ -3,6 +3,7 @@ description: "Simplifies code for clarity without changing behavior."
 user-invocable: false
 icon: ✂️
 model: sonnet
+context: fork
 effort: medium
 ---
 

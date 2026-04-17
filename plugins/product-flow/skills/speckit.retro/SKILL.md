@@ -2,6 +2,7 @@
 description: "Post-phase retrospective. Reviews learnings and syncs artifacts."
 user-invocable: false
 model: sonnet
+context: fork
 effort: low
 ---
 

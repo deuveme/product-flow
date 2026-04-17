@@ -2,6 +2,7 @@
 description: "Generates a lean technical plan for a start-improvement branch. Max 1 page: which files to touch and why. No event modeling, no architecture validation, no contracts."
 user-invocable: false
 model: sonnet
+context: fork
 effort: low
 ---
 

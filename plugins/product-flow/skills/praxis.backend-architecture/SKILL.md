@@ -3,6 +3,7 @@ description: "DDD with hexagonal architecture for backend structure."
 user-invocable: false
 icon: 🏗️
 model: haiku
+context: fork
 effort: low
 ---
 

@@ -3,6 +3,7 @@ description: "Decomposes event-driven features into independently testable slice
 user-invocable: false
 icon: 📊
 model: sonnet
+context: fork
 effort: high
 ---
 

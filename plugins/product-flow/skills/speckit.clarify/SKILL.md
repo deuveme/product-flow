@@ -2,6 +2,7 @@
 description: Resolves ambiguities in the spec — technical ones autonomously, product ones by asking the PM.
 user-invocable: false
 model: sonnet
+context: fork
 effort: high
 handoffs:
   - label: Build Technical Plan

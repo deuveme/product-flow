@@ -2,6 +2,7 @@
 description: "Synchronizes PR inbox state: answers and new comments."
 user-invocable: false
 model: haiku
+context: fork
 effort: low
 ---
 

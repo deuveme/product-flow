@@ -2,6 +2,7 @@
 description: "Analyzes a spec (pre-plan) or plan (post-plan) for scope creep using an iterative debate, then creates a new branch+PR for any extracted feature. Default posture is to split — the feature must justify staying together."
 user-invocable: false
 model: opus
+context: fork
 effort: high
 handoffs:
   - label: Continue Current Feature

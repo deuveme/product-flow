@@ -2,6 +2,7 @@
 description: "Generates the technical plan from the approved spec."
 user-invocable: false
 model: sonnet
+context: fork
 effort: medium
 ---
 

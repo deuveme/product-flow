@@ -3,6 +3,7 @@ description: "Feature-based architecture for React frontends."
 user-invocable: false
 icon: 🧩
 model: haiku
+context: fork
 effort: low
 ---
 

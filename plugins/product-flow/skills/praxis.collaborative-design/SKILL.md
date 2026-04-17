@@ -3,6 +3,7 @@ description: "Explores ambiguous features through visual scenarios before the sp
 user-invocable: false
 icon: 🎨
 model: opus
+context: fork
 effort: high
 ---
 

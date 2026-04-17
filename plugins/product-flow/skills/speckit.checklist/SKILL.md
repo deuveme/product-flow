@@ -2,6 +2,7 @@
 description: Generates a requirements quality checklist for the feature.
 user-invocable: false
 model: sonnet
+context: fork
 effort: medium
 ---
 

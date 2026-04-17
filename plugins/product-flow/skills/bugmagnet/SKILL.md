@@ -3,6 +3,7 @@ description: "Adversarial coverage pass using exploratory testing heuristics to 
 user-invocable: false
 icon: 🐛
 model: sonnet
+context: fork
 effort: medium
 ---
 

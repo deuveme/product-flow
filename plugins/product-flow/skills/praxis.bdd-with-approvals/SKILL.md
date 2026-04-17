@@ -3,6 +3,7 @@ description: "BDD tests written in domain language with approval snapshots."
 user-invocable: false
 icon: 📋
 model: haiku
+context: fork
 effort: low
 ---
 

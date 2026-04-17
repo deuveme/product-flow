@@ -2,6 +2,7 @@
 description: "Writes a lean spec for a start-improvement branch. Max 1 page: what changes for the user + acceptance criteria. Includes integrated self-validation."
 user-invocable: false
 model: sonnet
+context: fork
 effort: low
 ---
 

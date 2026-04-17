@@ -2,6 +2,7 @@
 description: "Breaks the plan into tasks."
 user-invocable: false
 model: sonnet
+context: fork
 effort: medium
 ---
 

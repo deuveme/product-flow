@@ -2,6 +2,7 @@
 description: "Creates or updates the feature spec from a natural language description."
 user-invocable: false
 model: sonnet
+context: fork
 effort: high
 handoffs:
   - label: Build Technical Plan

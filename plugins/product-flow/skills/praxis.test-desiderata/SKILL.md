@@ -3,6 +3,7 @@ description: "Analyzes test quality using Kent Beck's 12 Test Desiderata propert
 user-invocable: false
 icon: 🧪
 model: sonnet
+context: fork
 effort: medium
 ---
 

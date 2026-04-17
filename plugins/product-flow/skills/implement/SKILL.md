@@ -2,6 +2,7 @@
 description: "Generates the feature code using TDD."
 user-invocable: false
 model: sonnet
+context: fork
 effort: medium
 ---
 

@@ -2,6 +2,7 @@
 description: "Manages PR comment lifecycle."
 user-invocable: false
 model: haiku
+context: fork
 effort: low
 ---
 

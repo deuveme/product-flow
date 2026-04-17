@@ -3,6 +3,7 @@ description: "Zero-downtime expand-contract pattern for breaking changes."
 user-invocable: false
 icon: 🔄
 model: haiku
+context: fork
 effort: low
 ---
 
