@@ -62,7 +62,7 @@ fix
   ├─ speckit.retro                     (gap retrospective)
   └─ context
 
-deploy-to-stage
+deploy
   (no sub-skill calls — direct git/gh operations)
 
 status
@@ -146,7 +146,7 @@ inbox-sync
 | `build` | PR exists; `TASKS_GENERATED` in status.json; if `flow !== "improvement"`: also `CHECKLIST_DONE`; feature directory exists |
 | `submit` | On a feature/improvement branch; PR exists; `CODE_VERIFIED` in status.json |
 | `fix` | On a feature/improvement branch; PR exists; `CODE_VERIFIED` or `IN_REVIEW` in status.json |
-| `deploy-to-stage` | `IN_REVIEW` in status.json; PR approved by team |
+| `deploy` | `IN_REVIEW` in status.json; PR approved by team |
 | `plan` | `SPEC_CREATED` in status.json; no pending UNANSWERED comments |
 | `tasks` | `SPEC_CREATED` + `PLAN_GENERATED` in status.json; `plan.md` and `spec.md` exist in FEATURE_DIR |
 | `implement` | `TASKS_GENERATED` in status.json OR `tasks.md` exists in FEATURE_DIR; no UNANSWERED comments |

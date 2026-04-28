@@ -224,7 +224,7 @@ If at least one decision passes the filter, insert a `### Proposed ADRs` subsect
 ### Proposed ADRs
 
 > Decisions from this feature that may be worth consolidating as project-level Architecture Decision Records.
-> Review and confirm before running /product-flow:deploy-to-stage.
+> Review and confirm before running /product-flow:deploy.
 
 - [ ] **<short-title>** — <rationale>
 - [ ] **<short-title>** — <rationale>
@@ -257,7 +257,7 @@ If the team finds issues during review:
   → Fix cycle with full TDD guarantees.
 
 When the team approves the PR, run:
-  /product-flow:deploy-to-stage
+  /product-flow:deploy
 ─────────────────────────────────────────
 ```
 

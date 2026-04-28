@@ -85,7 +85,7 @@ case "$FLAG" in
   IN_REVIEW)
     TITLE="👀 PR ready for review"
     BODY="The code has been saved and the PR is now open for the development team."
-    NEXT="When the team approves the PR, run /product-flow:deploy-to-stage."
+    NEXT="When the team approves the PR, run /product-flow:deploy."
     ;;
   *)
     exit 0

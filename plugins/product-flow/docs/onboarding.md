@@ -25,7 +25,7 @@ All work exists in one of these four places. At any given moment you can know ex
 
 - You just ran `/product-flow:start-feature` or `/product-flow:start-improvement` → **Review room** (in DRAFT — team can see and comment, but not yet asked to approve)
 - You ran `/product-flow:submit` → **Review room** (out of DRAFT — team is notified for formal code review)
-- The team approved and you ran `/product-flow:deploy-to-stage` → **Internal testing**
+- The team approved and you ran `/product-flow:deploy` → **Internal testing**
 - The team published → **The real world**
 
 ---
@@ -98,7 +98,7 @@ Can be called after `/product-flow:build` (before submitting) or after `/product
 
 ---
 
-### `/product-flow:deploy-to-stage`
+### `/product-flow:deploy`
 **When to use it:** When the team has approved the code and you want to send it to internal testing.
 
 The team will be able to see and test your feature in the testing environment before publishing it to real users. Requires the PR to be approved — if it isn't, it will let you know.
@@ -199,7 +199,7 @@ Each step shows what happens to the review room and when to comment.
         ↓
    Team reviews code and approves  ← mandatory checkpoint
         ↓
-/product-flow:deploy-to-stage → feature in internal testing → published
+/product-flow:deploy → feature in internal testing → published
 ```
 
 ### What "DRAFT" means

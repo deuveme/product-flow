@@ -149,14 +149,78 @@ If the command fails:
 
 - If the error output contains `conflict`:
 
-  ```
-  🚫 ERROR: There are conflicts when merging with main.
+  Enter conflict resolution mode:
 
-  No changes have been made.
-  Resolve the conflicts manually before continuing.
+  #### 6a. Surface the conflicts locally
+
+  ```bash
+  git fetch origin main
+  git merge origin/main
   ```
 
+  List conflicted files:
+
+  ```bash
+  git diff --name-only --diff-filter=U
+  ```
+
+  #### 6b. Resolve each conflict
+
+  For each conflicted file, read its content and identify the conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`).
+
+  **Try to auto-resolve** if the intent of both sides is unambiguous (e.g. one side added a block the other didn't touch, or one side deleted something the other didn't modify). If auto-resolved, apply the change, `git add <file>`, and continue to the next file silently.
+
+  **If the conflict is ambiguous**, do NOT guess. Instead, translate each version into plain PM language and ask:
+
+  ```
+  AskUserQuestion:
+    question: |
+      There's a conflict in <file> between this feature and recent changes in main.
+
+      **Option A — keep this feature's version:**
+      <1–2 sentences explaining in plain language what this version does and what it means for the product>
+
+      **Option B — keep main's version:**
+      <1–2 sentences explaining in plain language what this version does and what it means for the product>
+
+      Which version should we keep?
+    options:
+      - label: "Keep this feature's version"
+        description: "<one-line consequence>"
+      - label: "Keep main's version"
+        description: "<one-line consequence>"
+      - label: "I'll resolve it myself — stop here"
+        description: "Claude will abort. You resolve the conflict manually and run deploy again."
+  ```
+
+  If the user chooses "I'll resolve it myself":
+  ```bash
+  git merge --abort
+  ```
+  Show:
+  ```
+  ⏸️  Merge aborted. Resolve the conflicts in <file>, commit, push, and run /product-flow:deploy again.
+  ```
   **STOP.**
+
+  Apply the chosen version, `git add <file>`, and continue to the next conflicted file.
+
+  #### 6c. Commit the resolution and retry
+
+  Once all conflicts are resolved:
+
+  ```bash
+  git commit -m "chore: resolve merge conflicts with main"
+  git push origin <branch>
+  ```
+
+  Then retry:
+
+  ```bash
+  gh pr merge --squash --delete-branch --subject "$SQUASH_MSG"
+  ```
+
+  If it fails again for any reason other than `already been merged`: surface the raw error and **STOP**.
 
 - Any other error: surface the raw error message and **STOP**.
 
@@ -179,7 +243,7 @@ If the output is `GITIGNORED`, warn the user:
 ```
 ⚠️  docs/adr/ is listed in .gitignore — ADR files written there will not be tracked in version control.
 
-To fix it, remove or adjust the relevant .gitignore entry, then run /product-flow:deploy-to-stage again.
+To fix it, remove or adjust the relevant .gitignore entry, then run /product-flow:deploy again.
 ```
 
 **STOP.**
@@ -199,7 +263,7 @@ If the commit fails with a GPG or signing error (output contains `gpg`, `signing
 To fix it, run in your terminal:
   git config commit.gpgsign false
 
-Then run /product-flow:deploy-to-stage again.
+Then run /product-flow:deploy again.
 ```
 **STOP.**
 
@@ -235,7 +299,7 @@ If the commit fails with a GPG or signing error (output contains `gpg`, `signing
 To fix it, run in your terminal:
   git config commit.gpgsign false
 
-Then run /product-flow:deploy-to-stage again.
+Then run /product-flow:deploy again.
 ```
 **STOP.**
 

@@ -12,7 +12,7 @@
 #   4. If git pull fails with no local changes, warn and continue.
 #
 # PUBLIC SKILLS (user-invocable)
-#   start-feature · start-improvement · continue · build · submit · fix · deploy-to-stage · status · context
+#   start-feature · start-improvement · continue · build · submit · fix · deploy · status · context
 
 JQ=$(command -v jq 2>/dev/null || command -v /usr/local/bin/jq 2>/dev/null || command -v /opt/homebrew/bin/jq 2>/dev/null || command -v /usr/bin/jq 2>/dev/null)
 [ -z "$JQ" ] && { echo "product-flow: jq not found — hook skipped." >&2; exit 0; }
@@ -23,7 +23,7 @@ INPUT=$(cat)
 PROMPT=$(echo "$INPUT" | $JQ -r '.prompt // empty')
 
 # Only act when the user is invoking a public product-flow skill.
-if ! echo "$PROMPT" | grep -qE '/product-flow:(start-feature|start-improvement|continue|build|submit|fix|deploy-to-stage|status|context)(\s|$)'; then
+if ! echo "$PROMPT" | grep -qE '/product-flow:(start-feature|start-improvement|continue|build|submit|fix|deploy|status|context)(\s|$)'; then
   exit 0
 fi
 

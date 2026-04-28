@@ -152,7 +152,7 @@ This project uses a spec-driven workflow where PM commands orchestrate internal 
 | `/product-flow:continue` | Internal clarify / plan engine | Spec created |
 | `/product-flow:build` | Internal implement engine | Plan approved in PR |
 | `/product-flow:submit` | — | Code generated |
-| `/product-flow:deploy-to-stage` | — | PR approved |
+| `/product-flow:deploy` | — | PR approved |
 
 ### `status.json` as source of truth
 
@@ -176,7 +176,7 @@ Fields written by each skill:
 | `VERIFY_TASKS_DONE` | `speckit.verify-tasks` |
 | `CODE_VERIFIED` | `/product-flow:build` (after verify-tasks) |
 | `IN_REVIEW` | `/product-flow:submit` |
-| `PUBLISHED` | `/product-flow:deploy-to-stage` |
+| `PUBLISHED` | `/product-flow:deploy` |
 | `processed_answers` | `pr-comments mark-processed` — question numbers already applied (prevents re-processing) |
 | `processed_comment_ids` | `pr-comments mark-comments-processed` — IDs of general user comments already evaluated |
 

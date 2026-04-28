@@ -7,17 +7,17 @@
 #      Blocks: git branch, git checkout -b, git switch -c with non-conforming names.
 #   2. No direct commits to main/master. Feature branch commits are always allowed.
 #   3. No direct push to main/master (from main or with explicit main/master target).
-#      Use /product-flow:deploy-to-stage instead.
+#      Use /product-flow:deploy instead.
 #   4. No git merge into main/master.
-#      Use /product-flow:deploy-to-stage (gh pr merge --squash) instead.
+#      Use /product-flow:deploy (gh pr merge --squash) instead.
 #   5. gh pr merge must include --squash.
-#      Use /product-flow:deploy-to-stage, which sets --squash --delete-branch.
+#      Use /product-flow:deploy, which sets --squash --delete-branch.
 #   6. gh pr create only allowed from a product-flow branch (NNN-kebab-name).
 #      Use /product-flow:start-feature or /product-flow:start-improvement to open a branch with the correct structure.
 #
 # INTENT
 #   Every feature or improvement must start with /product-flow:start-feature (or /product-flow:start-improvement) and end with
-#   /product-flow:deploy-to-stage — raw git shortcuts that bypass the workflow
+#   /product-flow:deploy — raw git shortcuts that bypass the workflow
 #   are blocked at the agent level.
 
 JQ=$(command -v jq 2>/dev/null || command -v /usr/local/bin/jq 2>/dev/null || command -v /opt/homebrew/bin/jq 2>/dev/null || command -v /usr/bin/jq 2>/dev/null)
@@ -93,7 +93,7 @@ if echo "$cmd" | grep -qE '\bgit[[:space:]]+commit\b'; then
   branch=$(current_branch)
   if [[ "$branch" == "main" || "$branch" == "master" ]]; then
     block "Direct commits to '$branch' are not allowed.
-  Use /product-flow:deploy-to-stage to publish a feature to main."
+  Use /product-flow:deploy to publish a feature to main."
   fi
 fi
 
@@ -107,9 +107,9 @@ if echo "$cmd" | grep -qE '\bgit[[:space:]]+push\b'; then
     # Allow ref-deletion / branch-rename operations (git push origin :old new)
     # These are used by /product-flow:status when reordering branch numbers.
     if ! echo "$cmd" | grep -qE '\bgit[[:space:]]+push[[:space:]]+\S+[[:space:]]+:'; then
-      # Allow deploy-to-stage post-merge housekeeping commits only.
+      # Allow deploy post-merge housekeeping commits only.
       # Two conditions must both be true:
-      #   1. Commit message matches a known deploy-to-stage pattern.
+      #   1. Commit message matches a known deploy pattern.
       #   2. Every file in the commit is within the expected path for that pattern.
       last_msg=$(git log -1 --format=%s 2>/dev/null || echo "")
       changed_files=$(git diff HEAD~1 --name-only 2>/dev/null || echo "")
@@ -131,13 +131,13 @@ if echo "$cmd" | grep -qE '\bgit[[:space:]]+push\b'; then
 
       if ! $is_deploy_push; then
         block "Direct push from '$branch' is not allowed.
-  Use /product-flow:deploy-to-stage to publish a feature to main."
+  Use /product-flow:deploy to publish a feature to main."
       fi
     fi
   fi
   if echo "$cmd" | grep -qE '\bgit[[:space:]]+push[[:space:]]+[^[:space:]]+[[:space:]]+(main|master)\b'; then
     block "Direct push to main/master is not allowed.
-  Use /product-flow:deploy-to-stage to publish a feature to main."
+  Use /product-flow:deploy to publish a feature to main."
   fi
 fi
 
@@ -147,7 +147,7 @@ if echo "$cmd" | grep -qE '\bgit[[:space:]]+merge\b'; then
   branch=$(current_branch)
   if [[ "$branch" == "main" || "$branch" == "master" ]]; then
     block "Direct merge into '$branch' is not allowed.
-  Use /product-flow:deploy-to-stage to merge a feature (squash merge via gh pr merge)."
+  Use /product-flow:deploy to merge a feature (squash merge via gh pr merge)."
   fi
 fi
 
@@ -156,7 +156,7 @@ fi
 if echo "$cmd" | grep -qE '\bgh[[:space:]]+pr[[:space:]]+merge\b'; then
   if ! echo "$cmd" | grep -qE '\-\-squash\b'; then
     block "gh pr merge requires --squash to follow the product-flow convention.
-  Use /product-flow:deploy-to-stage, which merges with --squash --delete-branch."
+  Use /product-flow:deploy, which merges with --squash --delete-branch."
   fi
 fi
 

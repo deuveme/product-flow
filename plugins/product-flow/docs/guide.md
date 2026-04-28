@@ -31,7 +31,7 @@ plugins/product-flow/
 └── skills/
     ├── [PM Commands — user-facing]
     │   ├── start-feature, start-improvement
-    │   ├── continue, build, submit, fix, deploy-to-stage, status, context
+    │   ├── continue, build, submit, fix, deploy, status, context
     │
     └── [Internal engines]
         ├── [Orchestrators]
@@ -100,7 +100,7 @@ specs/<branch>/
 | `/product-flow:build` | `inbox-sync` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `bugmagnet` → `speckit.retro`) → `speckit.verify-tasks` → `speckit.verify` |
 | `/product-flow:submit` | `inbox-sync` → `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → optional git add/commit/push (only if local changes exist) → `gh pr ready` on first run (exits DRAFT) → proposes ADRs in PR body |
 | `/product-flow:fix` | `inbox-sync` → `pr-comments new-comments` → diagnosis (4 dimensions, iterative) → confirmed summary → save `fixes/fix-N.md` + PR comment → clear `CODE_VERIFIED`+`VERIFY_TASKS_DONE` → append fix-tasks to `tasks.md` → `speckit.implement.withTDD [IDs]` → `speckit.verify-tasks [IDs]` → `speckit.verify` → re-set `CODE_VERIFIED`+`VERIFY_TASKS_DONE` → `spec-amendments.md` (if Ambiguity/Omission) → `speckit.retro` |
-| `/product-flow:deploy-to-stage` | [ADR consolidation: ask user → generate in memory if yes] → `gh pr merge --squash --delete-branch` → [write ADRs to `docs/adr/` + commit if yes] → mark published |
+| `/product-flow:deploy` | [ADR consolidation: ask user → generate in memory if yes] → `gh pr merge --squash --delete-branch` → [write ADRs to `docs/adr/` + commit if yes] → mark published |
 
 ---
 
@@ -225,7 +225,7 @@ The PR is created as a **Draft** by `/product-flow:start-feature` or `/product-f
 
 When `/product-flow:submit` runs for the **first time**, it calls `gh pr ready` to exit Draft mode and trigger a GitHub review request notification. Subsequent `/product-flow:submit` calls only push new commits — they do not call `gh pr ready` again.
 
-The only approval gate is at `/product-flow:deploy-to-stage`, which requires the PR to be approved by the team before merging.
+The only approval gate is at `/product-flow:deploy`, which requires the PR to be approved by the team before merging.
 
 ### PR comment classification
 
@@ -376,7 +376,7 @@ Bot comments are tracked via invisible HTML markers on the first line:
 7. Updates `status.json` with `IN_REVIEW` on first run
 8. Proposes ADRs: reads `research.md` and `decisions.md`, filters decisions that would cause future inconsistency, inserts `### Proposed ADRs` inside `## For Developers` in the PR body
 
-**`deploy-to-stage` skill:**
+**`deploy` skill:**
 1. Verifies branch and PR exist
 2. Gate: `IN_REVIEW` present in `status.json`
 3. Gate: PR approved (`reviewDecision: APPROVED`)

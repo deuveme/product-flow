@@ -66,7 +66,7 @@ if echo "$NORM" | grep -qE '\b(submit|guardar|push|enviar|send for review|save)\
 fi
 
 if echo "$NORM" | grep -qE '\b(deploy|merge|publish|publicar|mergear|ship|desplegar)\b'; then
-  route "deploy-to-stage" "Keyword matched: deploy/merge/publish."
+  route "deploy" "Keyword matched: deploy/merge/publish."
 fi
 
 # ── Group B: ambiguous continuation keywords (state-dependent) ───────────────
@@ -103,7 +103,7 @@ if echo "$NORM" | grep -qE '^(seguir|continuar|siguiente|continue|next|go on|ade
 
   # State → skill mapping
   if [ -n "$IN_REVIEW" ]; then
-    SKILL="deploy-to-stage"
+    SKILL="deploy"
     REASON="State: in_review set → PR is ready to merge."
   elif [ -n "$CODE_VERIFIED" ]; then
     SKILL="submit"

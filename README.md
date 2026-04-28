@@ -41,21 +41,21 @@ Close the terminal and reopen Claude Code.
 - `/product-flow:build` — generate code (when plan is ready)
 - `/product-flow:submit` — share code for review
 - `/product-flow:fix` — fix issues found during testing or code review (TDD guaranteed)
-- `/product-flow:deploy-to-stage` — publish to staging
+- `/product-flow:deploy` — publish to staging
 - `/product-flow:status` — see where you are
 - `/product-flow:context` — see memory usage
 
 **Workflows:**
 ```
 New feature:
-/product-flow:start-feature → /product-flow:continue (repeat) → /product-flow:build → /product-flow:submit → /product-flow:deploy-to-stage
+/product-flow:start-feature → /product-flow:continue (repeat) → /product-flow:build → /product-flow:submit → /product-flow:deploy
   (DRAFT PR)                    (spec → plan, team feedback)       (code, TDD)           (exit DRAFT, review)    (approved → merge)
                                                                         ↕ issues found?
                                                                  /product-flow:fix
                                                                    (TDD fix cycle)
 
 Small improvement to something already live:
-/product-flow:start-improvement → /product-flow:continue (repeat) → /product-flow:build → /product-flow:submit → /product-flow:deploy-to-stage
+/product-flow:start-improvement → /product-flow:continue (repeat) → /product-flow:build → /product-flow:submit → /product-flow:deploy
   (DRAFT PR, lean spec+plan)        (spec → plan, team feedback)       (code, TDD)           (exit DRAFT, review)    (approved → merge)
 ```
 

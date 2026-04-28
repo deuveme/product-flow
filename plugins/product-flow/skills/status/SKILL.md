@@ -515,7 +515,7 @@ Determine the **latest flag present** in `status.json` using the order above, th
 |---|---|
 | `FEATURE_STARTED`, `DESIGN_DONE`, `SPEC_CREATED`, `SPLIT_PREPLAN_ANALIZED`, `PLAN_GENERATED`, `SPLIT_POSTPLAN_ANALIZED`, `TASKS_GENERATED`, `CHECKLIST_DONE`, `CODE_WRITTEN`, or `VERIFY_TASKS_DONE` | `***​/product-flow:continue***` |
 | `CODE_VERIFIED` | `***​/product-flow:submit***` + hint: *Found issues? Run /product-flow:fix* |
-| `IN_REVIEW` | `***​/product-flow:deploy-to-stage***` (when PR approved) + hint: *Team found issues? Run /product-flow:fix* |
+| `IN_REVIEW` | `***​/product-flow:deploy***` (when PR approved) + hint: *Team found issues? Run /product-flow:fix* |
 | `PUBLISHED` | *(no next step — feature complete)* |
 
 If `PENDING_COMMENTS` is non-empty, append a warning block after the step list:
