@@ -2,7 +2,7 @@
 description: "Explores ambiguous features through visual scenarios before the spec."
 user-invocable: false
 icon: 🎨
-model: opus
+model: sonnet
 context: fork
 effort: high
 ---

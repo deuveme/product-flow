@@ -1,7 +1,7 @@
 ---
 description: "Integrates team feedback into the technical plan."
 user-invocable: false
-model: sonnet
+model: haiku
 context: fork
 effort: medium
 ---

@@ -1,7 +1,7 @@
 ---
 description: Generates a requirements quality checklist for the feature.
 user-invocable: false
-model: sonnet
+model: haiku
 context: fork
 effort: medium
 ---

@@ -2,7 +2,7 @@
 description: Generates design artifacts: research, data model, and contracts.
 user-invocable: false
 context: fork
-model: opus
+model: sonnet
 effort: high
 handoffs:
   - label: Create Tasks

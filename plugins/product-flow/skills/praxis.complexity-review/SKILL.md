@@ -2,7 +2,7 @@
 description: "Challenges a technical proposal against 30 complexity dimensions."
 user-invocable: false
 icon: 📐
-model: opus
+model: sonnet
 context: fork
 effort: high
 ---

@@ -1,6 +1,6 @@
 ---
 description: "STEP 4 — Saves the code and leaves it ready for team review. Repeatable to iterate."
-model: sonnet
+model: haiku
 effort: low
 ---
 

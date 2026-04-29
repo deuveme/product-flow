@@ -1,6 +1,6 @@
 ---
 description: "STEP 1 — Starts a new feature. Creates the draft PR and kicks off the specification process. Use /product-flow:start-improvement for small changes to already-deployed features."
-model: sonnet
+model: haiku
 effort: low
 ---
 
