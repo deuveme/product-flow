@@ -77,7 +77,7 @@ AskUserQuestion:
 
 **If the user answers "No, skip":** continue to step 5.
 
-**If the user answers "Yes, write them":**
+**If the user answers "Yes, save them":**
 
 1. Read `specs/<branch>/research.md` and `specs/<branch>/decisions.md` (if they exist) for context.
 
@@ -217,7 +217,7 @@ If the command fails:
         description: "Claude will abort. You resolve the conflict manually and run deploy again."
   ```
 
-  If the user chooses "I'll resolve it myself":
+  If the user chooses "I'll resolve it myself — stop here":
   ```bash
   git merge --abort
   ```
@@ -250,7 +250,14 @@ If the command fails:
 
 ### 7. Write ADR files (conditional)
 
-If the user chose "Yes, write them" in step 4:
+If the user chose "Yes, save them" in step 4:
+
+Switch to main first (the feature branch was deleted from remote after the merge):
+
+```bash
+git checkout main
+git pull origin main
+```
 
 ```bash
 mkdir -p docs/adr
@@ -265,10 +272,16 @@ git check-ignore -q docs/adr && echo "GITIGNORED"
 If the output is `GITIGNORED`, warn the user:
 
 ```
-⚠️  docs/adr/ is listed in .gitignore — ADR files written there will not be tracked in version control.
+⚠️  docs/adr/ is listed in .gitignore — this is a misconfiguration. ADR files should be tracked in version control.
 
-To fix it, remove or adjust the relevant .gitignore entry, then run /product-flow:deploy again.
+To fix it:
+  1. Remove docs/adr/ (or the matching pattern) from .gitignore.
+  2. Commit that change: git add .gitignore && git commit -m "chore: unignore docs/adr" && git push origin main
+  3. Then create the ADR files listed below and push them:
+     git add docs/adr/ && git commit -m "docs: add ADRs from <branch-name>" && git push origin main
 ```
+
+Then show the full content of each ADR file that was generated in step 4.
 
 **STOP.**
 
@@ -320,10 +333,14 @@ If any runs appear, show them so the user can confirm that the pipeline triggere
 
 ### 10. Switch to main
 
+If step 7 was skipped (user chose "No, skip" or there were no ADRs), switch to main now:
+
 ```bash
 git checkout main
 git pull origin main
 ```
+
+If step 7 already ran (ADRs were written), this step is a no-op — you are already on main.
 
 ### 11. Final report
 
