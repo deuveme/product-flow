@@ -131,6 +131,30 @@ This is the single commit that will appear in `main`'s history — all iteration
 
 Set `SQUASH_MSG = "<type>(<scope>): <description>"` and proceed.
 
+### 5.5. Write PUBLISHED to status.json
+
+Do this before the merge, while still on the feature branch:
+
+```bash
+STATUS_FILE="specs/$BRANCH/status.json"
+EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
+echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"PUBLISHED": $ts}' > "$STATUS_FILE"
+git add "$STATUS_FILE"
+git commit -m "chore: record published in status.json"
+git push origin "$BRANCH"
+```
+
+If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
+```
+🚫 Commit failed — GPG signing is blocking automatic commits.
+
+To fix it, run in your terminal:
+  git config commit.gpgsign false
+
+Then run /product-flow:deploy again.
+```
+**STOP.**
+
 ### 6. Squash merge to main
 
 ```bash
@@ -281,28 +305,6 @@ Read the current PR body first (`gh pr view --json body -q '.body'`). If the out
 gh pr edit $PR_NUMBER --body "<updated-body>"
 ```
 
-Write `PUBLISHED` to `specs/$BRANCH/status.json` (use `$BRANCH` saved in step 2 — the branch name is still valid as a path even after the branch is deleted):
-
-```bash
-STATUS_FILE="specs/$BRANCH/status.json"
-EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"PUBLISHED": $ts}' > "$STATUS_FILE"
-git add "$STATUS_FILE"
-git commit -m "chore: record published in status.json"
-git push origin main
-```
-
-If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
-```
-🚫 Commit failed — GPG signing is blocking automatic commits.
-
-To fix it, run in your terminal:
-  git config commit.gpgsign false
-
-Then run /product-flow:deploy again.
-```
-**STOP.**
-
 Show:
 ```
 🌐 Published. Feature is live.
@@ -316,7 +318,14 @@ gh run list --limit 3
 
 If any runs appear, show them so the user can confirm that the pipeline triggered. If no runs appear, skip silently — the project may use a different CI/CD system.
 
-### 10. Final report
+### 10. Switch to main
+
+```bash
+git checkout main
+git pull origin main
+```
+
+### 11. Final report
 
 ```
 ✅ Feature published
@@ -324,10 +333,10 @@ If any runs appear, show them so the user can confirm that the pipeline triggere
 🚀 Live — check your deployment pipeline for progress
 
 ─────────────────────────────────────────
-This feature is complete.
+  💡 Run /product-flow:status to see what's next
 ─────────────────────────────────────────
 ```
 
-### 11. Session close
+### 12. Session close
 
 Invoke `/product-flow:context`.
