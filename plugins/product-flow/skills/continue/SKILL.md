@@ -238,6 +238,8 @@ or add comments on the PR first if changes are needed.
 ─────────────────────────────────────────
 ```
 
+**STOP.**
+
 #### → plan
 
 Before generating the plan, check for unresolved spec ambiguities:
@@ -269,6 +271,8 @@ Run /product-flow:continue to proceed to build,
 or add comments on the PR first if changes are needed.
 ─────────────────────────────────────────
 ```
+
+**STOP.**
 
 #### → consolidate-plan
 
@@ -364,6 +368,8 @@ Run /product-flow:continue to proceed to build,
 or add comments on the PR first if changes are needed.
 ─────────────────────────────────────────
 ```
+
+**STOP.**
 
 #### → ready for /build
 
