@@ -87,7 +87,7 @@ AskUserQuestion:
    ```
    Extract the highest number found and increment from there. If `docs/adr/` does not exist or is empty, start at `0001`.
 
-3. For each proposed ADR, generate a file `docs/adr/NNNN-<slug>.md` using this format:
+3. For each proposed ADR, generate a file `docs/adr/NNNN-<slug>.md` in **English** using this format:
 
    ```markdown
    # NNNN — <Title>
