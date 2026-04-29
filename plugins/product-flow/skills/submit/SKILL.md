@@ -215,7 +215,7 @@ If yes → include. If no → skip.
 For each included decision, produce a one-line entry:
 
 ```
-- [ ] **<short-title>** — <one sentence: what was decided and why it's not obvious>
+- **<short-title>** — <one sentence: what was decided and why it's not obvious>
 ```
 
 If at least one decision passes the filter, insert a `### Proposed ADRs` subsection into the PR body immediately after the `<!-- /dev-checklist -->` marker, within the existing `## For Developers` section:
@@ -226,8 +226,8 @@ If at least one decision passes the filter, insert a `### Proposed ADRs` subsect
 > Decisions from this feature that may be worth consolidating as project-level Architecture Decision Records.
 > Review and confirm before running /product-flow:deploy.
 
-- [ ] **<short-title>** — <rationale>
-- [ ] **<short-title>** — <rationale>
+- **<short-title>** — <rationale>
+- **<short-title>** — <rationale>
 ```
 
 If the section already exists (re-running submit), replace it entirely with the updated content.
