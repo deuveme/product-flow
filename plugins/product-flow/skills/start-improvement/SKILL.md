@@ -1,6 +1,6 @@
 ---
 description: "Starts a small improvement to an already-deployed feature. Lighter flow than start-feature: no split analysis, no event modeling, no checklist phase. Still creates a PR for team review."
-model: haiku
+model: sonnet
 effort: low
 ---
 

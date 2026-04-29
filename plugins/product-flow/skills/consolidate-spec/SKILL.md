@@ -1,7 +1,7 @@
 ---
 description: "Integrates team feedback into the spec."
 user-invocable: false
-model: haiku
+model: sonnet
 context: fork
 effort: medium
 ---
