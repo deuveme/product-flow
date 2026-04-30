@@ -189,11 +189,12 @@ If any signal is found, set `REDESIGN_MODE = true` and apply these rules through
    9. Simplify: remove any code not required by a failing test
    10. 🌀 Refactor: improve expressiveness without adding behavior. Reflect on domain — is there a missing concept? An object to extract?
    11. Run tests after each refactoring step
-   12. Commit: every green + refactored state = one commit
+   12. **Unhappy path check**: inspect only the implementation code added or modified in this cycle (not previous cycles). Identify any alternative paths introduced — `catch` / `except` / `rescue` blocks, `if` / `else` branches handling error or exceptional conditions, early returns, guard clauses, `throw` / `raise` statements, null checks, validation failures. For each alternative path with no covering test, re-enter the TDD cycle from step 1 with a new `[TEST]` targeting that path. Only proceed when every path introduced in this cycle has a test.
+   13. Commit: every green + refactored + fully covered state = one commit
 
    ### c. Mark task complete and update PR
 
-   After all tests for a task pass:
+   After all tests for a task pass and all unhappy paths are covered:
 
    1. Mark `[X]` in `tasks.md` for this task.
 
