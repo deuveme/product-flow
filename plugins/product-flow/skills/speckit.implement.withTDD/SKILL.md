@@ -37,6 +37,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - `contracts/` if the directory exists and is non-empty
    - `quickstart.md` if it exists
    - `tasks.md` (always included)
+   - `images/index.md` if it exists — load this first to understand what each image represents, then read the image files with role `target` or `current-state`. Use them as the authoritative visual reference when implementing UI components — do not infer the expected UI from existing code or assumptions.
 
 2. **Check checklists status** (if FEATURE_DIR/checklists/ exists):
    - Scan all checklist files in the checklists/ directory
@@ -80,9 +81,11 @@ You **MUST** consider the user input before proceeding (if not empty).
      ```
      Then proceed to step 3.
 
-2b. **Detect redesign mode**: Scan FEATURE_DIR/spec.md for visual or UX redesign signals. Keywords: "redesign", "rediseño", "new look", "new design", "visual overhaul", "UI revamp", "rework the UI", "rework the UX", "visual refresh", "new interface", "change the look", "change the UI", "new layout".
+2b. **Detect redesign mode**: Scan FEATURE_DIR/spec.md for visual or UX redesign signals. Keywords: "redesign", "rediseño", "new look", "new design", "visual overhaul", "UI revamp", "rework the UI", "rework the UX", "visual refresh", "new interface", "change the look", "change the UI", "new layout", "empty state", "estado vacío", "CTA", "call to action", "call-to-action", "reposition", "move the button", "icon", "card design", "button style", "color scheme", "typography", "spacing", "dark mode", "light mode", "theme".
 
-If any are found, set `REDESIGN_MODE = true` and apply these rules throughout implementation:
+Also set `REDESIGN_MODE = true` if `images/index.md` exists and contains at least one entry with role `target` or `current-state`.
+
+If any signal is found, set `REDESIGN_MODE = true` and apply these rules throughout implementation:
 
 - **Existing code is the baseline, not the deliverable.** If a component or function already exists, that does NOT mean the task is done — it means the current implementation must be evaluated against the target spec and modified or replaced if it doesn't match.
 - **Do not skip tasks because the functionality exists.** Each task must be evaluated against the TARGET state described in the spec, not the current state of the code.

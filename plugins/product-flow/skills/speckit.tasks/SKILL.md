@@ -56,7 +56,13 @@ You **MUST** consider the user input before proceeding (if not empty).
 3. **Load design documents**: Read from FEATURE_DIR:
    - **Required**: plan.md (tech stack, libraries, structure), spec.md (user stories with priorities)
    - **Optional**: data-model.md (entities), contracts/ (interface contracts), research.md (decisions), quickstart.md (test scenarios)
+   - **Visual assets** (if present): load `images/index.md` to understand what each image represents, then read the relevant image files. Use assets with role `target` or `current-state` to understand the exact UI changes required — do not generate tasks based on assumptions about visual structure.
    - Note: Not all projects have all documents. Generate tasks based on what's available.
+
+   If `images/index.md` contains at least one entry with role `target` or `current-state`, set `VISUAL_MODE = true`. When generating tasks in VISUAL_MODE:
+   - Frame UI tasks as **modifications toward the target**, not as new additions. Use verbs like "Update", "Replace", "Modify" instead of "Add" or "Create" for components that already exist.
+   - Each UI task description must reference **what changes** (e.g., "Update EmptyState component to show CTA button per target image") not just what the end state is (e.g., "Add CTA button").
+   - If `plan.md` contains a `## Visual Delta` section, use it to derive task descriptions — each item in "What changes" should map to one or more tasks.
 
 4. **Execute task generation workflow**:
    - Load plan.md and extract tech stack, libraries, project structure

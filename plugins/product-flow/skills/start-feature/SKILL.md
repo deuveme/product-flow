@@ -224,7 +224,7 @@ Show:
 
 **Goal: NOT to write the spec. Goal: make the thinking solid before generating anything.**
 
-If in RESUMPTION MODE: read `specs/$BRANCH_NAME/gathered-context.md` to determine which steps have already been completed. Skip any sub-step whose data is already present (not `_pending_`).
+If in RESUMPTION MODE: read `specs/$BRANCH_NAME/gathered-context.md` to determine which steps have already been completed. Skip any sub-step whose data is already present (not `_pending_`). For steps 3b (visual assets) and 3c (external documentation): these steps use `None provided.` as their initial state, not `_pending_`. Skip them only if `gathered-context.md` contains a `## Visual Assets` or `## External Documentation` section where at least one subsection has been explicitly updated — indicating the user was already asked. If all subsections still read `None provided.`, treat the step as pending and ask.
 
 #### 3a. Structured facilitation — Product Framing
 
@@ -343,6 +343,14 @@ If the user shares assets, record them as `VISUAL_ASSETS` object with:
 - `links`: list of external URLs (Figma, Storybook, design systems, etc.)
 - `descriptions`: list of text descriptions provided by the user
 
+If the user shares one or more image files or links, immediately ask a follow-up via `AskUserQuestion`:
+
+> "For each image or link you shared, tell me: (1) what screen or component it shows, and (2) what it represents — is it the current state, the target design, or a reference (style, color, layout, etc.)?"
+
+Record the answers as `VISUAL_ASSETS.index` — a list of entries with: `file_or_link`, `what_it_shows`, `screen_component`, `role`.
+
+Valid roles: `current-state` (existing UI), `target` (what to build), `reference` (style/color/layout guide), `flow-diagram` (user flow), `other`.
+
 If not, record `VISUAL_ASSETS = none`.
 
 #### 3c. Ask about external documentation
@@ -400,6 +408,17 @@ Persist assets to disk:
 - **Pasted content** (`EXTERNAL_DOCS.pasted`): write each entry to `specs/$BRANCH_NAME/docs/pasted-doc-{N}.txt`
 - **External image links** (`VISUAL_ASSETS.links`): create `specs/$BRANCH_NAME/images/sources.md` listing all links
 - **External doc links** (`EXTERNAL_DOCS.links`): create `specs/$BRANCH_NAME/docs/sources.md` listing all links
+- **Image index** (`VISUAL_ASSETS.index`): if any files or links were shared, write `specs/$BRANCH_NAME/images/index.md`:
+
+  ```markdown
+  # Visual Assets Index
+
+  | File / Link | What it shows | Screen / Component | Role |
+  |-------------|--------------|-------------------|------|
+  | <file or URL> | <description> | <screen or component> | <role> |
+  ```
+
+  Valid roles: `current-state`, `target`, `reference`, `flow-diagram`, `other`. Only create this file if there are actual assets to index.
 
 Only create `images/sources.md` and `docs/sources.md` if there are actual links to record. Skip if the respective list is empty.
 

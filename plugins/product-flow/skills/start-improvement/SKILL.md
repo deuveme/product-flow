@@ -68,7 +68,7 @@ git checkout -b "$BRANCH_NAME" || {
   echo "ERROR: Failed to create branch $BRANCH_NAME"; exit 1
 }
 FEATURE_DIR="$REPO_ROOT/specs/$BRANCH_NAME"
-mkdir -p "$FEATURE_DIR"
+mkdir -p "$FEATURE_DIR/images"
 ```
 
 Derive human-readable PR title:
@@ -107,6 +107,17 @@ _pending_
 ## Known constraints
 
 _pending_
+
+## Visual Assets
+
+### Uploaded Images
+None provided.
+
+### External Links
+None provided.
+
+### Descriptions
+None provided.
 ```
 
 #### 2e. Push branch and open Draft PR
@@ -199,7 +210,7 @@ Show:
 
 ### 3. Information gathering
 
-If in RESUMPTION MODE: read `improvement-context.md` to determine which fields are already filled. Skip any dimension whose value is not `_pending_`.
+If in RESUMPTION MODE: read `improvement-context.md` to determine which fields are already filled. Skip any dimension whose value is not `_pending_`. For Dimension 4 (Visual assets): skip it only if all three subsections (`Uploaded Images`, `External Links`, `Descriptions`) have been explicitly updated from `None provided.` — meaning the user was already asked. If all three still say `None provided.`, include Dimension 4 as pending.
 
 Ask the 3 dimensions below **one at a time** using `AskUserQuestion`. For each:
 - If clearly answered in `$ARGUMENTS`: infer the answer, update the file, write a PR comment. Do not ask.
@@ -243,6 +254,39 @@ Accept whatever comes back. "None" is a valid answer for constraints.
 
 - Answer goes to: `## Out of scope` and `## Known constraints`
 - PR comment: `type: product, status: ANSWERED`
+
+---
+
+**Dimension 4 — Visual assets**
+
+Use `AskUserQuestion` to ask:
+
+> "Do you have any screenshots, designs, Figma links, or visual references for this improvement? If so, share them now (images, links, or descriptions)."
+
+If the user shares assets:
+- **Uploaded image files**: save each file to `specs/$BRANCH_NAME/images/<descriptive-name>.<ext>` using the Write tool. Update `## Visual Assets > Uploaded Images` in `improvement-context.md` with a relative link to each file.
+- **External links** (Figma, screenshots hosted elsewhere, etc.): create `specs/$BRANCH_NAME/images/sources.md` listing all links. Update `## Visual Assets > External Links` in `improvement-context.md`.
+- **Text descriptions**: update `## Visual Assets > Descriptions` in `improvement-context.md` with the descriptions provided.
+
+If the user shares one or more image files or links, immediately ask a follow-up via `AskUserQuestion`:
+
+> "For each image or link you shared, tell me: (1) what screen or component it shows, and (2) what it represents — is it the current state, the target design, or a reference (style, color, layout, etc.)?"
+
+Use the answers to generate `specs/$BRANCH_NAME/images/index.md`:
+
+```markdown
+# Visual Assets Index
+
+| File / Link | What it shows | Screen / Component | Role |
+|-------------|--------------|-------------------|------|
+| <filename or URL> | <what the user said it shows> | <screen or component> | <current-state | target | reference | flow-diagram | other> |
+```
+
+Valid roles: `current-state` (existing UI), `target` (what to build), `reference` (style/color/layout guide), `flow-diagram` (user flow), `other`.
+
+If the user shares nothing: leave all `## Visual Assets` subsections as `None provided.` and do not create `index.md`.
+
+Do not write a PR comment for this dimension.
 
 ---
 

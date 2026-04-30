@@ -31,7 +31,24 @@ Read the spec and improvement context:
 ```bash
 cat "$SPEC_FILE"
 cat "$FEATURE_DIR/improvement-context.md" 2>/dev/null
+ls "$FEATURE_DIR/images/" 2>/dev/null
+cat "$FEATURE_DIR/images/index.md" 2>/dev/null
+cat "$FEATURE_DIR/images/sources.md" 2>/dev/null
 ```
+
+Any image files in `$FEATURE_DIR/images/` and external links in `images/sources.md` are authoritative visual references for this improvement. `images/index.md` — if present — maps each file and link to the screen/component it shows and its role (`current-state`, `target`, `reference`, etc.). Use the index to understand what each image represents before using it to identify which files to change and what the target UI state is — do not infer visual structure from the code alone.
+
+If `images/index.md` contains at least one entry with role `target` or `current-state`, set `VISUAL_MODE = true` and apply these rules when writing the plan:
+- **Existing code is the baseline, not the deliverable.** Finding that a component already exists does NOT mean nothing needs to change — it means the current implementation must be evaluated against the target image and modified if it doesn't match.
+- **The "Approach" section must describe the delta**: what exists now (current state) and what must change (target state). Do not describe the plan as if building from scratch.
+- **Add a "Visual Delta" section to `plan.md`** immediately after "Approach":
+  ```markdown
+  ## Visual Delta
+  **Current state:** [what the UI shows now, grounded in the current-state image if available]
+  **Target state:** [what it must look like after, grounded in the target image]
+  **What changes:** [explicit list of visual/structural differences to implement]
+  ```
+- Every file in "Files to change" must trace to a specific element of the visual delta.
 
 Explore the codebase to understand where the relevant code lives:
 

@@ -47,6 +47,16 @@ Execution steps:
 
    If `FEATURE_SPEC` does not exist: ERROR "spec.md not found. Run /product-flow:start-feature or /product-flow:start-improvement first." and stop.
 
+   Load visual assets if available:
+
+   ```bash
+   ls "$FEATURE_DIR/images/" 2>/dev/null
+   cat "$FEATURE_DIR/images/index.md" 2>/dev/null
+   cat "$FEATURE_DIR/images/sources.md" 2>/dev/null
+   ```
+
+   If `images/index.md` exists, use it throughout clarification: when resolving a UX or visual ambiguity, consult the index to identify which image is relevant (`target`, `current-state`, `reference`) and ground the resolution in what the image shows — do not resolve visual ambiguities from assumptions alone.
+
 1b. **Load split context (if available)**:
 
    ```bash

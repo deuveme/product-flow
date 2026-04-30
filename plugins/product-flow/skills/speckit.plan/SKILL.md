@@ -83,13 +83,14 @@ These rules are invariant — they apply regardless of whether a `constitution.m
    cat $SPECS_DIR/gathered-context.md 2>/dev/null
    ls $SPECS_DIR/images/ 2>/dev/null
    ls $SPECS_DIR/docs/ 2>/dev/null
+   cat $SPECS_DIR/images/index.md 2>/dev/null
    cat $SPECS_DIR/images/sources.md 2>/dev/null
    cat $SPECS_DIR/docs/sources.md 2>/dev/null
    ```
 
    If `gathered-context.md` exists, use it as background for the plan:
    - Product clarifications and technical decisions already made — do not revisit or re-decide them.
-   - Images in `$SPECS_DIR/images/` are the authoritative visual references for the feature (wireframes, mockups, flow diagrams).
+   - Images in `$SPECS_DIR/images/` are the authoritative visual references for the feature (wireframes, mockups, flow diagrams). `images/index.md` — if present — maps each file and link to the screen/component it shows and its role (`current-state`, `target`, `reference`, etc.). Read the index first to understand what each image represents before using it.
    - Documents in `$SPECS_DIR/docs/` are the authoritative requirements and API references — read them if relevant to the plan.
    - External links are in `images/sources.md` and `docs/sources.md`.
 
@@ -125,9 +126,11 @@ These rules are invariant — they apply regardless of whether a `constitution.m
 
    If the file exists, read it before starting Phase 0. The event model defines aggregates, commands, events, and Given/When/Then specs already agreed — use it as the authoritative source for `data-model.md` entities and `contracts/` when generating Phase 1 artifacts. Do not redefine what is already modeled there.
 
-2b. **Detect redesign mode**: Scan FEATURE_SPEC for visual or UX redesign signals. Keywords: "redesign", "rediseño", "new look", "new design", "visual overhaul", "UI revamp", "rework the UI", "rework the UX", "visual refresh", "new interface", "change the look", "change the UI", "new layout".
+2b. **Detect redesign mode**: Scan FEATURE_SPEC for visual or UX redesign signals. Keywords: "redesign", "rediseño", "new look", "new design", "visual overhaul", "UI revamp", "rework the UI", "rework the UX", "visual refresh", "new interface", "change the look", "change the UI", "new layout", "empty state", "estado vacío", "CTA", "call to action", "call-to-action", "reposition", "move the button", "icon", "card design", "button style", "color scheme", "typography", "spacing", "dark mode", "light mode", "theme".
 
-If any are found, set `REDESIGN_MODE = true` and apply these rules for the rest of this skill:
+Also set `REDESIGN_MODE = true` if `images/index.md` exists and contains at least one entry with role `target` or `current-state`.
+
+If any signal is found, set `REDESIGN_MODE = true` and apply these rules for the rest of this skill:
 
 - **Existing code is the baseline, not the deliverable.** Finding that a feature already exists does NOT mean work is done — it means the current implementation is the starting point to be replaced or modified.
 - **Phase 0 research must document two states:** current state (what exists now) and target state (what the spec describes). The gap between them is the scope of work.

@@ -104,6 +104,7 @@ Given that feature description, do this:
    cat specs/$BRANCH_NAME/gathered-context.md 2>/dev/null
    ls specs/$BRANCH_NAME/images/ 2>/dev/null
    ls specs/$BRANCH_NAME/docs/ 2>/dev/null
+   cat specs/$BRANCH_NAME/images/index.md 2>/dev/null
    cat specs/$BRANCH_NAME/images/sources.md 2>/dev/null
    cat specs/$BRANCH_NAME/docs/sources.md 2>/dev/null
    ```
@@ -112,7 +113,7 @@ Given that feature description, do this:
    - Use `GATHERED_CONTEXT` full description, visual assets, external docs, and product clarifications as primary authoritative input.
    - **Skip step 3.6b** (business terminology clarification) for any term already answered in `GATHERED_CONTEXT.product_clarifications`. Only ask about terms not covered there.
    - **Skip step 3.7** (fill gaps and confirm understanding) entirely — the description and intent were already validated during information gathering.
-   - Any uploaded image files in `specs/$BRANCH_NAME/images/` are available to read and reference directly in the spec (e.g., `![alt](images/file.png)`).
+   - Any uploaded image files in `specs/$BRANCH_NAME/images/` are available to read and reference directly in the spec (e.g., `![alt](images/file.png)`). `images/index.md` — if present — maps each file and link to the screen/component it shows and its role (`current-state`, `target`, `reference`, etc.). Read the index first to understand what each image represents.
    - Any uploaded documents in `specs/$BRANCH_NAME/docs/` are available as reference material — read their content if needed.
    - External links are listed in `images/sources.md` and `docs/sources.md`.
    - When writing the spec, treat uploaded assets and external links as authoritative design and requirements references.
@@ -138,9 +139,11 @@ Given that feature description, do this:
 
 3.5. **Detect redesign intent**:
 
-Scan the feature description for visual or UX redesign signals. Keywords include: "redesign", "rediseño", "new look", "new design", "visual overhaul", "UI revamp", "rework the UI", "rework the UX", "visual refresh", "new interface", "change the look", "change the UI", "new layout".
+Scan the feature description for visual or UX redesign signals. Keywords include: "redesign", "rediseño", "new look", "new design", "visual overhaul", "UI revamp", "rework the UI", "rework the UX", "visual refresh", "new interface", "change the look", "change the UI", "new layout", "empty state", "estado vacío", "CTA", "call to action", "call-to-action", "reposition", "move the button", "icon", "card design", "button style", "color scheme", "typography", "spacing", "dark mode", "light mode", "theme".
 
-If any are found, set `REDESIGN_MODE = true` and apply these rules for the rest of this skill:
+Also set `REDESIGN_MODE = true` if `images/index.md` exists and contains at least one entry with role `target` or `current-state` — the presence of a labeled visual reference is a definitive signal of visual change intent, regardless of the words used in the description.
+
+If any signal is found, set `REDESIGN_MODE = true` and apply these rules for the rest of this skill:
 - The **goal** is a new target visual/UX state, not new functionality.
 - The fact that functionality already exists is the **starting baseline** — it does NOT reduce scope or mean there is nothing to do.
 - Functional requirements must describe **what changes** in the user experience (interactions, layout, flows, visual outcomes) — not re-describe how the current system behaves.
@@ -331,6 +334,7 @@ Skip this step entirely if `collaborative-design.md` exists at `specs/$BRANCH_NA
       - [ ] User scenarios cover primary flows
       - [ ] Feature meets measurable outcomes defined in Success Criteria
       - [ ] No implementation details leak into specification
+      - [ ] (If images exist in `images/` or links in `images/sources.md`) Functional requirements and user scenarios are consistent with the visual references — no requirement contradicts or ignores what the references show
 
       ## Notes
 

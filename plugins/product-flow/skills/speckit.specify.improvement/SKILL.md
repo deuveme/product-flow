@@ -29,9 +29,35 @@ Read the improvement context:
 
 ```bash
 cat "$FEATURE_DIR/improvement-context.md"
+ls "$FEATURE_DIR/images/" 2>/dev/null
+cat "$FEATURE_DIR/images/index.md" 2>/dev/null
+cat "$FEATURE_DIR/images/sources.md" 2>/dev/null
 ```
 
 This is the authoritative input. Do not re-ask anything already answered there.
+
+Any image files in `$FEATURE_DIR/images/` are available to read and reference directly in the spec. `images/index.md` — if present — maps each file and link to the screen/component it shows and its role (`current-state`, `target`, `reference`, etc.). Use the index to understand what each image represents before reading it. Do not invent UI details that contradict or are absent from these references.
+
+### 1b. Detect visual improvement intent
+
+Scan `improvement-context.md` fields ("What to improve", "What should change for the user") for visual signals. Keywords: "empty state", "estado vacío", "button", "icon", "card", "layout", "spacing", "color", "typography", "CTA", "call to action", "reposition", "move", "resize", "style", "design", "look", "appearance", "dark mode", "theme", "banner", "modal", "tooltip", "badge".
+
+Also set `VISUAL_MODE = true` if `images/index.md` exists and contains at least one entry with role `target` or `current-state`.
+
+If visual keywords are detected but NO images are present (no files in `images/` and no `images/index.md`), ask the user via `AskUserQuestion` before continuing:
+
+> "This looks like a visual change, but I don't have any reference images. Do you have a screenshot of the current state or a design for the target? Adding one now will make the spec much more accurate."
+
+Options: `Share an image now` / `Continue without images`
+
+If the user shares an image, save it to `specs/$BRANCH/images/` and ask what it shows (same follow-up as Dimension 4 in start-improvement) to generate `images/index.md`. Then re-evaluate `VISUAL_MODE` triggers before continuing.
+
+If the user continues without images: proceed, but note internally that visual acceptance criteria will be based on the text description only — flag any criterion that makes a specific visual claim as `[NEEDS VISUAL CONFIRMATION]`.
+
+If any signal is found, set `VISUAL_MODE = true` and apply these additional rules when writing the spec:
+- **"What changes for the user"** must describe the visual delta explicitly: what the user sees now vs what they will see after. If a `current-state` image exists, ground the "before" description in it. If a `target` image exists, ground the "after" description in it.
+- **Acceptance criteria** must be directly grounded in the target visual reference — each criterion must be verifiable by looking at the UI. Do not invent visual details not present in the improvement context or reference images.
+- Do NOT write criteria that merely restate how the current UI behaves. Every criterion must describe a specific observable change.
 
 ### 2. Write spec.md
 
@@ -77,6 +103,7 @@ After writing `spec.md`, perform a self-check before finalizing. For each item b
 - [ ] "What changes for the user" is concrete (not vague like "improved experience")
 - [ ] "Out of scope" has at least one explicit exclusion
 - [ ] The spec fits in ~1 page (less than ~40 lines)
+- [ ] (If images exist in `$FEATURE_DIR/images/` or links in `images/sources.md`) Acceptance criteria are consistent with the visual references — no criterion contradicts or ignores what the references show
 
 **If any item fails:** fix the spec inline before continuing.
 
