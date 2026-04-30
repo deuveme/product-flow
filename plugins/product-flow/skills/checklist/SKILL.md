@@ -3,7 +3,7 @@ description: "Validates requirements quality before implementation starts."
 user-invocable: false
 model: haiku
 context: fork
-effort: medium
+effort: low
 ---
 
 ## Purpose

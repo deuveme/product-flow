@@ -1,9 +1,9 @@
 ---
 description: "Breaks the plan into tasks."
 user-invocable: false
-model: haiku
+model: sonnet
 context: fork
-effort: medium
+effort: low
 ---
 
 ## Execution

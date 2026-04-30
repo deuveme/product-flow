@@ -3,7 +3,7 @@ description: Generates a requirements quality checklist for the feature.
 user-invocable: false
 model: haiku
 context: fork
-effort: medium
+effort: low
 ---
 
 ## Checklist Purpose: "Unit Tests for English"

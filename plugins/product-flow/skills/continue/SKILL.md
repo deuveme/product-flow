@@ -1,7 +1,7 @@
 ---
 description: "STEP 2 — Advances to the next step in the workflow. Reads the current state and executes the corresponding transition. Only one state is active at a time — invalid transitions are blocked."
-model: haiku
-effort: medium
+model: sonnet
+effort: low
 ---
 
 ## Composability Rule

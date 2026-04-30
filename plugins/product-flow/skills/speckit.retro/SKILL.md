@@ -1,7 +1,7 @@
 ---
 description: "Post-phase retrospective. Reviews learnings and syncs artifacts."
 user-invocable: false
-model: sonnet
+model: haiku
 context: fork
 effort: low
 ---
