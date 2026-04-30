@@ -511,12 +511,13 @@ Non-lifecycle fields (`parent`, `processed_answers`, `processed_comment_ids`) ar
 
 Determine the **latest flag present** in `status.json` using the order above, then apply this table:
 
-| Latest flag present | Next step shown |
-|---|---|
-| `FEATURE_STARTED`, `DESIGN_DONE`, `SPEC_CREATED`, `SPLIT_PREPLAN_ANALIZED`, `PLAN_GENERATED`, `SPLIT_POSTPLAN_ANALIZED`, `TASKS_GENERATED`, `CHECKLIST_DONE`, `CODE_WRITTEN`, or `VERIFY_TASKS_DONE` | `***​/product-flow:continue***` |
-| `CODE_VERIFIED` | `***​/product-flow:submit***` + hint: *Found issues? Run /product-flow:fix* |
-| `IN_REVIEW` | `***​/product-flow:deploy***` (when PR approved) + hint: *Team found issues? Run /product-flow:fix* |
-| `PUBLISHED` | *(no next step — feature complete)* |
+| Latest flag present | Condition | Next step shown |
+|---|---|---|
+| `FEATURE_STARTED`, `DESIGN_DONE`, `SPEC_CREATED`, `SPLIT_PREPLAN_ANALIZED`, `PLAN_GENERATED`, `SPLIT_POSTPLAN_ANALIZED`, `TASKS_GENERATED`, or `CHECKLIST_DONE` | — | `***​/product-flow:continue***` |
+| `CODE_WRITTEN` or `VERIFY_TASKS_DONE` | `CODE_VERIFIED` absent | `***​/product-flow:build***` + hint: *Verification was not completed — build will verify without re-implementing* |
+| `CODE_VERIFIED` | — | `***​/product-flow:submit***` + hint: *Found issues? Run /product-flow:fix* |
+| `IN_REVIEW` | — | `***​/product-flow:deploy***` (when PR approved) + hint: *Team found issues? Run /product-flow:fix* |
+| `PUBLISHED` | — | *(no next step — feature complete)* |
 
 If `PENDING_COMMENTS` is non-empty, append a warning block after the step list:
 ```

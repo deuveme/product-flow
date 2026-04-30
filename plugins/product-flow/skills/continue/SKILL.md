@@ -23,6 +23,7 @@ effort: low
 | `TASKS_GENERATED` ✓, `CHECKLIST_DONE` ✗, `has_comments` false | `/product-flow:checklist` |
 | `CHECKLIST_DONE` ✓, `CODE_WRITTEN` ✗, `has_comments` true | `/product-flow:consolidate-plan` (clears `CHECKLIST_DONE`) |
 | `CHECKLIST_DONE` ✓, `CODE_WRITTEN` ✗, `has_comments` false | → ready for `/product-flow:build` |
+| `CODE_WRITTEN` ✓, `CODE_VERIFIED` ✗ | → re-entry for `/product-flow:build` |
 
 ### Improvement flow transitions
 
@@ -34,6 +35,7 @@ effort: low
 | `PLAN_GENERATED` ✓, `TASKS_GENERATED` ✗, `has_comments` false | `/product-flow:tasks` |
 | `TASKS_GENERATED` ✓, `CODE_WRITTEN` ✗, `has_comments` true | `/product-flow:consolidate-plan` |
 | `TASKS_GENERATED` ✓, `CODE_WRITTEN` ✗, `has_comments` false | → ready for `/product-flow:build` |
+| `CODE_WRITTEN` ✓, `CODE_VERIFIED` ✗ | → re-entry for `/product-flow:build` |
 
 If a transition requires work that has no dedicated sub-skill, stop and surface the gap — do not implement it inline.
 
@@ -68,6 +70,7 @@ FEATURE_STARTED → DESIGN_DONE → SPEC_CREATED → SPLIT_PREPLAN_ANALIZED → 
 | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | - | ✗ | `checklist` |
 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | `consolidate-plan` (clears `CHECKLIST_DONE`) |
 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ready for `/build` |
+| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | - | ready for `/build` (re-entry — `CODE_VERIFIED` not recorded) |
 
 **Improvement flow — lifecycle order of flags:**
 
@@ -86,6 +89,7 @@ IMPROVEMENT_STARTED → SPEC_CREATED → PLAN_GENERATED → TASKS_GENERATED
 | ✓ | ✓ | ✗ | - | ✗ | `tasks` |
 | ✓ | ✓ | ✓ | ✗ | ✓ | `consolidate-plan` |
 | ✓ | ✓ | ✓ | ✗ | ✗ | ready for `/build` |
+| ✓ | ✓ | ✓ | ✓ | - | ready for `/build` (re-entry — `CODE_VERIFIED` not recorded) |
 
 **Backward-compatibility note:** Branches created before the new split flags existed may have `SPLIT_DONE` (old flag) instead of `SPLIT_PREPLAN_ANALIZED`, or may have `PLAN_GENERATED` set but no `SPLIT_PREPLAN_ANALIZED` or `SPLIT_POSTPLAN_ANALIZED`. Apply these rules:
 - If `SPLIT_DONE` is present: treat it as `SPLIT_PREPLAN_ANALIZED` for routing purposes.
@@ -106,6 +110,14 @@ gh pr view --json number,state,url,body
 
 - If the branch is `main` or `master`: ERROR "There is no active feature. Use /product-flow:start-feature to start a new feature, or /product-flow:start-improvement for a small change to something already live."
 - If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start-feature or /product-flow:start-improvement?"
+
+### 1a. Sync with remote
+
+```bash
+git pull origin HEAD
+```
+
+If the pull fails (conflicts or network error): ERROR "Could not sync with remote. Resolve any conflicts and try again."
 
 ### 1c. Load gathered context
 
@@ -133,9 +145,9 @@ Extract `flow` field first — this determines which routing table to apply:
 - `"flow": "improvement"` → use the improvement routing table
 - `"flow": "feature"` OR field absent → use the feature routing table
 
-For **feature flow**, extract flags: `SPEC_CREATED`, `SPLIT_PREPLAN_ANALIZED`, `PLAN_GENERATED`, `SPLIT_POSTPLAN_ANALIZED`, `TASKS_GENERATED`, `CHECKLIST_DONE`, `CODE_WRITTEN`.
+For **feature flow**, extract flags: `SPEC_CREATED`, `SPLIT_PREPLAN_ANALIZED`, `PLAN_GENERATED`, `SPLIT_POSTPLAN_ANALIZED`, `TASKS_GENERATED`, `CHECKLIST_DONE`, `CODE_WRITTEN`, `CODE_VERIFIED`.
 
-For **improvement flow**, extract flags: `SPEC_CREATED`, `PLAN_GENERATED`, `TASKS_GENERATED`, `CODE_WRITTEN`.
+For **improvement flow**, extract flags: `SPEC_CREATED`, `PLAN_GENERATED`, `TASKS_GENERATED`, `CODE_WRITTEN`, `CODE_VERIFIED`.
 
 For `has_comments`: invoke `/product-flow:pr-comments pending` and `/product-flow:pr-comments read-answers` in parallel.
 - If `pending` returns non-empty UNANSWERED comments → `has_comments = true`.
@@ -182,6 +194,7 @@ Show the active action before doing anything:
 | `tasks` | `✂️ Plan ready. Breaking down into development tasks...` |
 | `checklist` | `✅ Tasks ready. Validating requirements...` |
 | ready for `/build` | `🚀 Everything is ready. Run /product-flow:build to start building.` |
+| ready for `/build` (re-entry) | `⚠️ Code was written but verification was not completed. Running /product-flow:build to verify.` |
 
 ### 4. Execute transition
 
@@ -366,6 +379,22 @@ If no unresolved items remain, show:
 ─────────────────────────────────────────
 Run /product-flow:continue to proceed to build,
 or add comments on the PR first if changes are needed.
+─────────────────────────────────────────
+```
+
+**STOP.**
+
+#### → ready for /build (re-entry)
+
+Show:
+
+```
+─────────────────────────────────────────
+➡️  NEXT STEP
+─────────────────────────────────────────
+Run: /product-flow:build
+  → The code was written but verification was not completed.
+    Build will run verification only — no re-implementation.
 ─────────────────────────────────────────
 ```
 

@@ -16,6 +16,14 @@ gh pr view --json number,state,url,body,isDraft
 - If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /product-flow:status."
 - If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start-feature or /product-flow:start-improvement?"
 
+### 1a. Sync with remote
+
+```bash
+git pull origin HEAD
+```
+
+If the pull fails (conflicts or network error): ERROR "Could not sync with remote. Resolve any conflicts and try again."
+
 ### 1b. Inbox
 
 Invoke `/product-flow:inbox-sync`.

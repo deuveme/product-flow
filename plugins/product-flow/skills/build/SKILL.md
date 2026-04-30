@@ -16,6 +16,14 @@ gh pr view --json number,state,url,body
 - If the branch is `main` or `master`: ERROR "There is no active feature. Use /product-flow:start-feature to start a new feature, or /product-flow:start-improvement for a small change to something already live."
 - If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start-feature or /product-flow:start-improvement?"
 
+### 1a. Sync with remote
+
+```bash
+git pull origin HEAD
+```
+
+If the pull fails (conflicts or network error): ERROR "Could not sync with remote. Resolve any conflicts and try again."
+
 ### 1b. Inbox
 
 Invoke `/product-flow:inbox-sync`.
@@ -100,7 +108,9 @@ Determine entry point using these mutually exclusive cases (check in order):
 
 1. **All done** — `CODE_VERIFIED` is set in `status.json`: skip all work and go directly to the final report.
 
-2. **Re-entry shortcut** — `CODE_WRITTEN` is set in `status.json` AND `VERIFY_TASKS_DONE` is NOT set AND `CODE_VERIFIED` is NOT set: a previous build session was interrupted after implement but before verify-tasks completed. **Skip directly to step 4b** without re-running implement.
+2. **Re-entry shortcut** — `CODE_WRITTEN` is set in `status.json` AND `VERIFY_TASKS_DONE` is NOT set AND `CODE_VERIFIED` is NOT set: the code was generated but verification was not completed (interrupted session, GPG commit failure, or multi-PC sync gap). **Skip directly to step 4b** without re-running implement.
+
+2b. **Verify-only re-entry** — `CODE_WRITTEN` is set AND `VERIFY_TASKS_DONE` is set AND `CODE_VERIFIED` is NOT set: verify-tasks ran but the final verification was not completed (e.g. GPG commit failure at step 5b). **Skip directly to step 5** without re-running implement or verify-tasks.
 
 2.5. **Partial implementation** — `CODE_WRITTEN` is NOT set in `status.json` AND uncommitted changes exist in files **outside** `specs/` (i.e., source code or test files): this is a previous interrupted implementation run.
 
