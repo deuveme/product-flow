@@ -74,7 +74,6 @@ echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"CHECKLI
 ```bash
 git add specs/
 git commit -m "docs: add requirements checklist"
-git push origin HEAD
 ```
 
 If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
@@ -87,6 +86,8 @@ To fix it, run in your terminal:
 Then run /product-flow:build again.
 ```
 **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 ### 5. Final report
 

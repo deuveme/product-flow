@@ -474,7 +474,6 @@ Conserve: `SPEC_CREATED` + `SPLIT_PREPLAN_ANALIZED`. The user runs `/product-flo
 ```bash
 git add specs/$BRANCH_NAME/
 git commit -m "feat: trim spec to reduced scope after split ($NEW_BRANCH extracted)"
-git push
 ```
 
 If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
@@ -487,6 +486,8 @@ To fix it, run in your terminal:
 Then run /product-flow:continue again.
 ```
 **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 #### 6n — Update parent PR body
 
@@ -523,8 +524,9 @@ FLAG="SPLIT_POSTPLAN_ANALIZED"
 echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" --arg flag "$FLAG" '. + {($flag): $ts}' > "$STATUS_FILE"
 git add "$STATUS_FILE"
 git commit -m "chore: record $FLAG"
-git push origin HEAD
 ```
+
+Invoke `/product-flow:safe-push`.
 
 Post a PR comment via `/product-flow:pr-comments write`:
 - `type: product`

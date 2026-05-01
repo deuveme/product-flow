@@ -165,7 +165,6 @@ Skip if no technical decisions were made.
 ```bash
 git add "$PLAN_FILE"
 git commit -m "docs: write improvement plan"
-git push origin HEAD
 ```
 
 If the commit fails with a GPG error (output contains `gpg`, `signing`, or `secret key`):
@@ -179,6 +178,8 @@ Then run /product-flow:continue again.
 ```
 **STOP.**
 
+Invoke `/product-flow:safe-push`.
+
 Write `PLAN_GENERATED` to `specs/$BRANCH/status.json`:
 
 ```bash
@@ -187,8 +188,9 @@ EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
 echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"PLAN_GENERATED": $ts}' > "$STATUS_FILE"
 git add "$STATUS_FILE"
 git commit -m "chore: record plan_generated"
-git push origin HEAD
 ```
+
+Invoke `/product-flow:safe-push`.
 
 Update the PR body — mark plan generated:
 - Mark `- [x] Plan generated` in `## Status`

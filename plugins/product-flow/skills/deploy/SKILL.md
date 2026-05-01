@@ -141,7 +141,6 @@ EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
 echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"PUBLISHED": $ts}' > "$STATUS_FILE"
 git add "$STATUS_FILE"
 git commit -m "chore: record published in status.json"
-git push origin "$BRANCH"
 ```
 
 If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
@@ -154,6 +153,8 @@ To fix it, run in your terminal:
 Then run /product-flow:deploy again.
 ```
 **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 ### 6. Squash merge to main
 

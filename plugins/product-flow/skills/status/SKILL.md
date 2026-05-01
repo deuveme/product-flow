@@ -393,8 +393,8 @@ If the numbers are out of chronological order, record a **sequence mismatch** fo
    git mv specs/<old_folder> specs/<new_folder>
    git add -A
    git commit -m "chore: rename spec folder to match branch name"
-   git push
    ```
+   Invoke `/product-flow:safe-push`.
 
 2. **Update PR title** to match branch name (if PR title differs):
    ```bash
@@ -427,7 +427,9 @@ Show a brief inline note for each fix applied:
   git mv specs/<old_folder> specs/<new_folder>
   git add -A
   git commit -m "chore: reorder branch numbers to match creation order"
-  git push
+  ```
+  Invoke `/product-flow:safe-push`.
+  ```bash
   gh pr edit <pr_number> --title "<new_branch>"
   ```
   Then show:

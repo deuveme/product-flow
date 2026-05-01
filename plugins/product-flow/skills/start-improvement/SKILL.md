@@ -187,7 +187,6 @@ EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
 echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"IMPROVEMENT_STARTED": $ts, "flow": "improvement"}' > "$STATUS_FILE"
 git add "specs/$BRANCH_NAME/"
 git commit -m "chore: initialize improvement branch and context"
-git push origin HEAD
 ```
 
 If the commit fails with a GPG error (output contains `gpg`, `signing`, or `secret key`):
@@ -200,6 +199,8 @@ To fix it, run in your terminal:
 Then run /product-flow:start-improvement again.
 ```
 **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 Show:
 ```

@@ -153,9 +153,10 @@ Use the `AskUserQuestion` tool to ask:
   echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"CODE_WRITTEN": $ts}' > "$STATUS_FILE"
   git add "$STATUS_FILE"
   git commit -m "chore: record code_written in status.json"
-  git push origin HEAD
   ```
   If this commit also fails with a GPG error: same fix as above. **STOP.**
+
+  Invoke `/product-flow:safe-push`.
 
   Add a History row `| Code written | YYYY-MM-DD HH:MM:SS | @github-user | recovered from interrupted run |` to the PR body. Skip directly to step 4b.
 
@@ -189,7 +190,6 @@ Run:
 ```bash
 git add specs/
 git commit -m "docs: recover uncommitted spec artifacts"
-git push origin HEAD
 ```
 
 If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
@@ -202,6 +202,8 @@ To fix it, run in your terminal:
 Then run /product-flow:build again.
 ```
 **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 Then re-read `specs/<branch>/status.json` and continue with the appropriate remaining step based on what fields are not yet set.
 
@@ -366,7 +368,6 @@ EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
 echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"CODE_VERIFIED": $ts}' > "$STATUS_FILE"
 git add "$STATUS_FILE"
 git commit -m "chore: record code_verified in status.json"
-git push origin HEAD
 ```
 
 If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
@@ -379,6 +380,8 @@ To fix it, run in your terminal:
 Then run /product-flow:build again.
 ```
 **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 Read the current PR body first (`gh pr view --json body -q '.body'`), then apply these changes — preserve all other sections intact:
 - Mark `- [x] Code generated` in `## Status`

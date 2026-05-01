@@ -128,7 +128,6 @@ If there are no ambiguities: output this message and proceed.
 ```bash
 git add "$SPEC_FILE"
 git commit -m "docs: write improvement spec"
-git push origin HEAD
 ```
 
 If the commit fails with a GPG error (output contains `gpg`, `signing`, or `secret key`):
@@ -142,6 +141,8 @@ Then run /product-flow:start-improvement again.
 ```
 **STOP.**
 
+Invoke `/product-flow:safe-push`.
+
 Write `SPEC_CREATED` to `specs/$BRANCH/status.json`:
 
 ```bash
@@ -150,8 +151,9 @@ EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
 echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"SPEC_CREATED": $ts}' > "$STATUS_FILE"
 git add "$STATUS_FILE"
 git commit -m "chore: record spec_created"
-git push origin HEAD
 ```
+
+Invoke `/product-flow:safe-push`.
 
 Update the PR body — mark spec created:
 - Mark `- [x] Spec created` in `## Status`

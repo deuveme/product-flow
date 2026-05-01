@@ -122,7 +122,6 @@ Then commit tasks and the updated status in a single commit:
 ```bash
 git add specs/
 git commit -m "docs: add tasks.md"
-git push origin HEAD
 ```
 
 If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
@@ -135,6 +134,8 @@ To fix it, run in your terminal:
 Then run /product-flow:build again.
 ```
 **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 ### 6. Update PR status
 

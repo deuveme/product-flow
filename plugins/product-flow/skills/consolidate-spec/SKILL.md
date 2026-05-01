@@ -156,7 +156,6 @@ echo "$EXISTING" | jq 'del(.SPLIT_PREPLAN_ANALIZED)' > "$STATUS_FILE"
 ```bash
 git add specs/
 git commit -m "docs: update spec with team feedback"
-git push origin HEAD
 ```
 
 If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
@@ -169,6 +168,8 @@ To fix it, run in your terminal:
 Then run /product-flow:continue again.
 ```
 **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 ### 7. Resolve processed comments
 

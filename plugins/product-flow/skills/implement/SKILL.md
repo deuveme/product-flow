@@ -151,7 +151,6 @@ EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
 echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"CODE_WRITTEN": $ts}' > "$STATUS_FILE"
 git add "$STATUS_FILE"
 git commit -m "chore: record code_written in status.json"
-git push origin HEAD
 ```
 
 If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
@@ -164,6 +163,8 @@ To fix it, run in your terminal:
 Then run /product-flow:build again.
 ```
 **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 Do **not** check `- [x] Code generated` in the PR body — that is set by `/product-flow:build` after verify-tasks passes.
 

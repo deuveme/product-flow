@@ -16,13 +16,88 @@ gh pr view --json number,state,url,body,isDraft
 - If the branch is `main` or `master`: ERROR "You are not on a feature branch. Run /product-flow:status."
 - If there is no PR: ERROR "There is no open PR. Did you run /product-flow:start-feature or /product-flow:start-improvement?"
 
-### 1a. Sync with remote
+### 1a. Sync with remote and main
+
+#### 1a-i. Sync with remote branch
 
 ```bash
 git pull origin HEAD
 ```
 
-If the pull fails (conflicts or network error): ERROR "Could not sync with remote. Resolve any conflicts and try again."
+If this fails: ERROR "Could not sync with remote. Check your connection and try again."
+
+#### 1a-ii. Merge main into this branch
+
+```bash
+git fetch origin main
+git merge origin/main
+```
+
+If the merge succeeds with no conflicts, continue silently.
+
+If the merge fails due to **conflicts**:
+
+**List conflicted files:**
+
+```bash
+git diff --name-only --diff-filter=U
+```
+
+For each conflicted file, read its content and identify the conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`).
+
+**Try to auto-resolve** if the intent of both sides is unambiguous (e.g. one side added a block the other didn't touch, or one side deleted something the other didn't modify). If auto-resolved, apply the change, `git add <file>`, and continue to the next file silently.
+
+**If the conflict is ambiguous**, do NOT guess. Translate each version into plain language and ask:
+
+```
+AskUserQuestion:
+  question: |
+    There's a conflict in <file> between this feature and recent changes in main.
+
+    **Option A — keep this feature's version:**
+    <1–2 sentences explaining in plain language what this version does and what it means for the product>
+
+    **Option B — keep main's version:**
+    <1–2 sentences explaining in plain language what this version does and what it means for the product>
+
+    Which version should we keep?
+  options:
+    - label: "Keep this feature's version"
+      description: "<one-line consequence>"
+    - label: "Keep main's version"
+      description: "<one-line consequence>"
+    - label: "I'll resolve it myself — stop here"
+      description: "Claude will abort the merge. You resolve the conflict manually and run submit again."
+```
+
+If the user chooses "I'll resolve it myself — stop here":
+```bash
+git merge --abort
+```
+Show:
+```
+⏸️  Merge aborted. Resolve the conflicts in <file>, commit, and run /product-flow:submit again.
+```
+**STOP.**
+
+Apply the chosen version, `git add <file>`, and continue to the next conflicted file.
+
+Once all conflicts are resolved:
+
+```bash
+git commit -m "chore: merge main into branch and resolve conflicts"
+```
+
+If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
+```
+🚫 Commit failed — GPG signing is blocking automatic commits.
+
+To fix it, run in your terminal:
+  git config commit.gpgsign false
+
+Then run /product-flow:submit again.
+```
+**STOP.**
 
 ### 1b. Inbox
 
@@ -87,9 +162,7 @@ Then run /product-flow:submit again.
 
 #### 5b. Push
 
-```bash
-git push origin HEAD
-```
+Invoke `/product-flow:safe-push`.
 
 ### 6. Update PR status (first time only)
 
@@ -104,7 +177,6 @@ EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
 echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"IN_REVIEW": $ts}' > "$STATUS_FILE"
 git add "$STATUS_FILE"
 git commit -m "chore: record in_review in status.json"
-git push origin HEAD
 ```
 
 If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
@@ -117,6 +189,8 @@ To fix it, run in your terminal:
 Then run /product-flow:submit again.
 ```
 **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 Also take the PR out of draft if it still is:
 
@@ -173,7 +247,6 @@ Commit the file:
 ```bash
 git add specs/<branch>/quickstart.md
 git commit -m "docs: add quickstart testing guide"
-git push origin HEAD
 ```
 
 If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
@@ -186,6 +259,8 @@ To fix it, run in your terminal:
 Then run /product-flow:submit again.
 ```
 **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 Then update the PR body `## How to test` section. Read the current PR body first (`gh pr view --json body -q '.body'`). If the output is empty, stop with ERROR "Could not read PR body — check GitHub access and try again." Then replace the contents of `## How to test` — preserve all other sections intact:
 

@@ -1,6 +1,6 @@
 {
   "name": "product-flow",
-  "version": "1.12.11",
+  "version": "1.12.12",
   "description": "Product Flow - PM commands for spec-driven development workflow.",
   "author": { "name": "David Valero" },
   "license": "MIT",
@@ -105,6 +105,7 @@
     "./skills/praxis.code-simplifier",
     "./skills/praxis.collaborative-design",
     "./skills/praxis.event-modeling",
-    "./skills/praxis.expand-contract"
+    "./skills/praxis.expand-contract",
+    "./skills/safe-push"
   ]
 }

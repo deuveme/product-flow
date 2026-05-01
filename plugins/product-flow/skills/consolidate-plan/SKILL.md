@@ -191,7 +191,6 @@ echo "$EXISTING" > "$STATUS_FILE"
 ```bash
 git add specs/<feature-dir>/
 git commit -m "plan: integrate team feedback"
-git push origin HEAD
 ```
 
 If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
@@ -204,6 +203,8 @@ To fix it, run in your terminal:
 Then run /product-flow:continue again.
 ```
 **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 ### 6. Resolve processed comments
 

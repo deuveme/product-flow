@@ -173,7 +173,6 @@ echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"PLAN_GE
 ```bash
 git add specs/
 git commit -m "docs: add technical plan"
-git push origin HEAD
 ```
 
 If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
@@ -186,6 +185,8 @@ To fix it, run in your terminal:
 Then run /product-flow:continue again.
 ```
 **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 ### 10. Update PR status
 

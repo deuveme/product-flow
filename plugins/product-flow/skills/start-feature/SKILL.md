@@ -210,8 +210,9 @@ Commit and push the initial files:
 ```bash
 git add "specs/$BRANCH_NAME/"
 git commit -m "chore: initialize feature branch and gathered context"
-git push origin HEAD
 ```
+
+Invoke `/product-flow:safe-push`.
 
 Show:
 ```
@@ -496,8 +497,9 @@ Commit the final gathered-context.md and any persisted assets:
 ```bash
 git add "specs/$BRANCH_NAME/"
 git commit -m "chore: persist gathered context and assets"
-git push origin HEAD
 ```
+
+Invoke `/product-flow:safe-push`.
 
 ---
 
@@ -755,8 +757,9 @@ Commit:
 ```bash
 git add "specs/$BRANCH_NAME/gathered-context.md"
 git commit -m "chore: trim gathered context to feature A scope after epic split"
-git push origin HEAD
 ```
+
+Invoke `/product-flow:safe-push`.
 
 Also update the current PR body History table — add a row:
 
@@ -882,12 +885,6 @@ EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
 echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"SPEC_CREATED": $ts}' > "$STATUS_FILE"
 git add "specs/$BRANCH/"
 git commit -m "chore: record spec_created and persist gathered context"
-git push origin HEAD
-```
-
-Show:
-```
-📄 Spec created. Share the PR with the team for review. Run /product-flow:continue when ready.
 ```
 
 If the commit fails with a GPG or signing error (output contains `gpg`, `signing`, or `secret key`):
@@ -900,6 +897,13 @@ To fix it, run in your terminal:
 Then run /product-flow:start-feature again.
 ```
 **STOP.**
+
+Invoke `/product-flow:safe-push`.
+
+Show:
+```
+📄 Spec created. Share the PR with the team for review. Run /product-flow:continue when ready.
+```
 
 ---
 

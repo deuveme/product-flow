@@ -119,7 +119,7 @@ Handle the response:
            '. + {"VERIFY_TASKS_DONE": $ts1, "CODE_VERIFIED": $ts2}' > "$STATUS_FILE"
          ```
        - If verify **fails**: show the issues and ask the user whether to fix them (start a new fix) or proceed without restoring CODE_VERIFIED.
-  4. Commit: `git add -A && git commit -m "chore: discard fix-N" && git push origin HEAD`.
+  4. Commit: `git add -A && git commit -m "chore: discard fix-N"`. GPG error? Same fix. **STOP.** Then invoke `/product-flow:safe-push`.
   5. **Loop back to step 2.**
 - **"new"** → proceed to step 3 in **new fix mode**.
 
@@ -319,10 +319,11 @@ Commit:
 ```bash
 git add "specs/$BRANCH/fixes/fix-N.md"
 git commit -m "docs: add fix-N diagnosis record"
-git push origin HEAD
 ```
 
 GPG error? Run `git config commit.gpgsign false` and re-run `/product-flow:fix`. **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 ---
 
@@ -341,10 +342,11 @@ EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
 echo "$EXISTING" | jq 'del(.CODE_VERIFIED) | del(.VERIFY_TASKS_DONE)' > "$STATUS_FILE"
 git add "$STATUS_FILE"
 git commit -m "chore: clear verification flags for fix-N"
-git push origin HEAD
 ```
 
 GPG error? Same fix. **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 Append fix-tasks to `specs/<branch>/tasks.md`:
 
@@ -366,10 +368,11 @@ Commit:
 ```bash
 git add "specs/$BRANCH/tasks.md"
 git commit -m "docs: append fix-tasks for fix-N"
-git push origin HEAD
 ```
 
 GPG error? Same fix. **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 Show:
 ```
@@ -438,10 +441,11 @@ echo "$EXISTING" | jq \
   '. + {"VERIFY_TASKS_DONE": $ts1, "CODE_VERIFIED": $ts2}' > "$STATUS_FILE"
 git add "$STATUS_FILE"
 git commit -m "chore: re-record verify_tasks_done and code_verified after fix-N"
-git push origin HEAD
 ```
 
 GPG error? Same fix. **STOP.**
+
+Invoke `/product-flow:safe-push`.
 
 Update `specs/<branch>/fixes/fix-N.md` — fill in the Result section:
 
@@ -455,8 +459,9 @@ Commit:
 ```bash
 git add "specs/$BRANCH/fixes/fix-N.md"
 git commit -m "docs: record fix-N result"
-git push origin HEAD
 ```
+
+Invoke `/product-flow:safe-push`.
 
 ---
 
@@ -480,7 +485,7 @@ Append to `specs/<branch>/spec-amendments.md` (create if needed):
 **Type:** [Ambiguity / Omission]
 ```
 
-M = global amendment count + 1. Commit: `git add "specs/$BRANCH/spec-amendments.md" && git commit -m "docs: append spec amendment M from fix-N" && git push origin HEAD`
+M = global amendment count + 1. Commit: `git add "specs/$BRANCH/spec-amendments.md" && git commit -m "docs: append spec amendment M from fix-N"`. GPG error? Same fix. **STOP.** Then invoke `/product-flow:safe-push`.
 
 **Gap retrospective:**
 

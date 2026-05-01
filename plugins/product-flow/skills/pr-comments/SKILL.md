@@ -170,10 +170,11 @@ gh api repos/{owner}/{repo}/issues/comments/{comment_id} \
 BRANCH=$(git branch --show-current)
 git add "specs/$BRANCH/decisions.md"
 git commit -m "chore: mark question(s) as answered in decisions.md"
-git push origin HEAD
 ```
 
 If the commit fails with a GPG or signing error: show the standard GPG fix message and **STOP**.
+
+Invoke `/product-flow:safe-push`.
 
 4. Output: number of comments resolved.
 
@@ -292,10 +293,11 @@ echo "$EXISTING" | jq --argjson nums '[<N1>, <N2>, ...]' \
 DECISIONS_FILE="specs/$BRANCH/decisions.md"
 git add "$STATUS_FILE" "$DECISIONS_FILE"
 git commit -m "chore: mark answers as processed"
-git push origin HEAD
 ```
 
 If the commit fails with a GPG or signing error: show the standard GPG fix message and **STOP**.
+
+Invoke `/product-flow:safe-push`.
 
 5. Output: `✅ Marked <N> answer(s) as applied on the PR.`
 
@@ -383,9 +385,10 @@ echo "$EXISTING" | jq --argjson ids '["<id1>", "<id2>", ...]' \
   '.processed_comment_ids = ((.processed_comment_ids // []) + $ids | unique)' > "$STATUS_FILE"
 git add "$STATUS_FILE"
 git commit -m "chore: mark user comments as processed"
-git push origin HEAD
 ```
 
 If the commit fails with a GPG or signing error: show the standard GPG fix message and **STOP**.
+
+Invoke `/product-flow:safe-push`.
 
 4. Output: `✅ Marked <N> comment(s) as processed.`

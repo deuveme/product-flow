@@ -305,8 +305,9 @@ EXISTING=$(cat "$STATUS_FILE")
 echo "$EXISTING" | jq 'del(.TASKS_GENERATED)' > "$STATUS_FILE"
 git add "$STATUS_FILE"
 git commit -m "chore: remove stale TASKS_GENERATED flag"
-git push origin HEAD
 ```
+
+Invoke `/product-flow:safe-push`.
 
 Then re-evaluate state from step 2 with the corrected `status.json`.
 
