@@ -27,7 +27,7 @@ plugins/product-flow/
 │   ├── state-notifier.sh     ← shows PM-friendly message on every status.json state transition (PostToolUse on Bash)
 │   ├── permission-request.sh ← auto-approves safe read/write operations (PermissionRequest)
 │   ├── security-guard.sh     ← blocks writes/deletes outside the repository (PreToolUse)
-│   └── workflow-guard.sh     ← enforces product-flow git discipline: branch naming, no direct commits/pushes/merges to main, no PRs outside NNN-kebab-name branches, squash-only merges (PreToolUse)
+│   └── workflow-guard.sh     ← enforces product-flow git discipline: branch naming, no direct commits/pushes/merges to main, no PRs outside YYYYMMDD-HHMM-kebab-name branches, squash-only merges (PreToolUse)
 └── skills/
     ├── [PM Commands — user-facing]
     │   ├── start-feature, start-improvement
@@ -95,7 +95,7 @@ specs/<branch>/
 | Command | Internal call chain |
 |---|---|
 | `/product-flow:start-feature` | create branch + Draft PR → facilitated product framing (4 dimensions) + visual assets + docs → quality gate → [epic scope check: split into N branches if epic signals detected] → [`praxis.collaborative-design` if vague] → `speckit.specify` → `speckit.retro` |
-| `/product-flow:start-improvement` | create branch (`NNN-improvement-<slug>`) + Draft PR → 3-question context gathering → scope analysis (escalate to start-feature if too big) → `speckit.specify.improvement` |
+| `/product-flow:start-improvement` | create branch (`YYYYMMDD-HHMM-improvement-<slug>`) + Draft PR → 3-question context gathering → scope analysis (escalate to start-feature if too big) → `speckit.specify.improvement` |
 | `/product-flow:continue` | `inbox-sync` → flag-based routing: `consolidate-spec` + `speckit.split` pre-plan (if SPLIT_PREPLAN_ANALIZED absent) / `plan` (if PLAN_GENERATED absent) / `speckit.split` post-plan (if SPLIT_POSTPLAN_ANALIZED absent) / `consolidate-plan` (if comments) / `tasks` (if TASKS_GENERATED absent) / `checklist` (if CHECKLIST_DONE absent) — dispatched by reading `status.json` flags |
 | `/product-flow:build` | `inbox-sync` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `bugmagnet` → `speckit.retro`) → `speckit.verify-tasks` → `speckit.verify` |
 | `/product-flow:submit` | `inbox-sync` → `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → optional git add/commit/push (only if local changes exist) → `gh pr ready` on first run (exits DRAFT) → proposes ADRs in PR body |
