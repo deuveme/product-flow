@@ -3,7 +3,7 @@
 # PreToolUse hook — enforces product-flow workflow structure for git/gh operations.
 #
 # RULES
-#   1. Branch names must follow NNN-kebab-name (e.g. 001-user-auth)
+#   1. Branch names must follow YYYYMMDD-HHMM-kebab-name (e.g. 20260502-1430-user-auth)
 #      Blocks: git branch, git checkout -b, git switch -c with non-conforming names.
 #   2. No direct commits to main/master. Feature branch commits are always allowed.
 #   3. No direct push to main/master (from main or with explicit main/master target).
@@ -12,7 +12,7 @@
 #      Use /product-flow:deploy (gh pr merge --squash) instead.
 #   5. gh pr merge must include --squash.
 #      Use /product-flow:deploy, which sets --squash --delete-branch.
-#   6. gh pr create only allowed from a product-flow branch (NNN-kebab-name).
+#   6. gh pr create only allowed from a product-flow branch (YYYYMMDD-HHMM-kebab-name).
 #      Use /product-flow:start-feature or /product-flow:start-improvement to open a branch with the correct structure.
 #
 # INTENT
@@ -33,8 +33,8 @@ TOOL_NAME=$(echo "$INPUT" | $JQ -r '.tool_name // empty')
 cmd=$(echo "$INPUT" | $JQ -r '.tool_input.command // empty')
 [[ -z "$cmd" ]] && exit 0
 
-# product-flow branch convention: NNN-kebab-name  (e.g. 001-user-auth)
-BRANCH_PATTERN='^[0-9]{3}-[a-z][a-z0-9-]+$'
+# product-flow branch convention: YYYYMMDD-HHMM-kebab-name  (e.g. 20260502-1430-user-auth)
+BRANCH_PATTERN='^[0-9]{8}-[0-9]{4}-[a-z][a-z0-9-]+$'
 
 block() {
   printf '[WORKFLOW GUARD] %s\n' "$1" >&2
@@ -45,13 +45,13 @@ current_branch() {
   git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown"
 }
 
-# ── Rule 1: Branch names must follow NNN-kebab-name ──────────────────────────
+# ── Rule 1: Branch names must follow YYYYMMDD-HHMM-kebab-name ────────────────
 
 check_branch_name() {
   local name="$1"
   [[ -z "$name" ]] && return 0
   if ! echo "$name" | grep -qE "$BRANCH_PATTERN"; then
-    block "Branch '$name' does not follow the product-flow naming convention (NNN-kebab-name, e.g. 001-user-auth or 001-improvement-some-fix).
+    block "Branch '$name' does not follow the product-flow naming convention (YYYYMMDD-HHMM-kebab-name, e.g. 20260502-1430-user-auth or 20260502-1430-improvement-some-fix).
   Use /product-flow:start-feature or /product-flow:start-improvement to create a properly named branch."
   fi
 }
@@ -165,7 +165,7 @@ fi
 if echo "$cmd" | grep -qE '\bgh[[:space:]]+pr[[:space:]]+create\b'; then
   branch=$(current_branch)
   if ! echo "$branch" | grep -qE "$BRANCH_PATTERN"; then
-    block "Pull requests can only be created from a product-flow branch (NNN-kebab-name, e.g. 001-user-auth or 001-improvement-some-fix).
+    block "Pull requests can only be created from a product-flow branch (YYYYMMDD-HHMM-kebab-name, e.g. 20260502-1430-user-auth or 20260502-1430-improvement-some-fix).
   Use /product-flow:start-feature or /product-flow:start-improvement to begin a branch with the correct workflow structure."
   fi
 fi
