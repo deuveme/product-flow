@@ -1,6 +1,6 @@
 {
   "name": "product-flow",
-  "version": "1.12.12",
+  "version": "1.12.13",
   "description": "Product Flow - PM commands for spec-driven development workflow.",
   "author": { "name": "David Valero" },
   "license": "MIT",
@@ -19,6 +19,14 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/git-sync.sh"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/language-enforcer.sh"
           }
         ]
       }
