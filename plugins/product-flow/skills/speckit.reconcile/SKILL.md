@@ -200,11 +200,11 @@ Output the final report:
 # Sync Impact Report
 
 ## Changed Files
-| File (absolute path) | Change Summary |
-|----------------------|----------------|
-| /path/to/spec.md  | Updated acceptance criteria AC-04, added edge case scenario |
-| /path/to/plan.md  | Added route /settings, updated API contract |
-| /path/to/tasks.md | Added N remediation tasks |
+| File (repo-relative path) | Change Summary |
+|---------------------------|----------------|
+| specs/123-feature/spec.md  | Updated acceptance criteria AC-04, added edge case scenario |
+| specs/123-feature/plan.md  | Added route /settings, updated API contract |
+| specs/123-feature/tasks.md | Added N remediation tasks |
 
 ## New Remediation Tasks
 - **T045**: Add sidebar link in `src/components/Sidebar.tsx`

@@ -197,7 +197,7 @@ No coverage gaps detected — all heuristics satisfied.
 - Follow exactly the same test conventions as the surrounding test suite
 - If no test files exist yet for a module, create the file following project conventions
 - Do not invent scenarios not grounded in the spec or data-model — every case must trace back to a real entity, field, endpoint, or acceptance criterion
-- Use absolute paths when reading files
+- Use repo-relative paths in all generated content
 
 ---
 

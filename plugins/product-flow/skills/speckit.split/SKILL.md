@@ -569,4 +569,4 @@ Next steps:
 - Never commit to the parent branch until the child branch is fully set up and pushed (steps 6b–6h complete first).
 - When post-plan split is executed, always clear PLAN_GENERATED and delete plan artifacts on the parent — a plan for the full scope is invalid for the trimmed scope.
 - `split-analysis.md` is updated after every debate exchange, not just at the end.
-- Use absolute paths when reading or writing files.
+- Use repo-relative paths in all generated content.

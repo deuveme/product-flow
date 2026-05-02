@@ -226,5 +226,5 @@ If any signal is found, set `REDESIGN_MODE = true` and apply these rules for the
 
 ## Key rules
 
-- Use absolute paths
+- Use repo-relative paths in all generated content
 - ERROR on gate failures or unresolved clarifications
