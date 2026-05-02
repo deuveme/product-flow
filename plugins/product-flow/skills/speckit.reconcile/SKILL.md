@@ -202,9 +202,9 @@ Output the final report:
 ## Changed Files
 | File (repo-relative path) | Change Summary |
 |---------------------------|----------------|
-| specs/123-feature/spec.md  | Updated acceptance criteria AC-04, added edge case scenario |
-| specs/123-feature/plan.md  | Added route /settings, updated API contract |
-| specs/123-feature/tasks.md | Added N remediation tasks |
+| specs/20260502-1430-feature/spec.md  | Updated acceptance criteria AC-04, added edge case scenario |
+| specs/20260502-1430-feature/plan.md  | Added route /settings, updated API contract |
+| specs/20260502-1430-feature/tasks.md | Added N remediation tasks |
 
 ## New Remediation Tasks
 - **T045**: Add sidebar link in `src/components/Sidebar.tsx`

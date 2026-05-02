@@ -534,15 +534,15 @@ Full section example:
 ─────────────────────────────────────────
   **OTHER FEATURES IN PROGRESS:**
 
-  [1]  **001: Workflow mvp**
+  [1]  **20260502-1430: Workflow mvp**
        ✅ Spec  🟡 Plan  ⚫ Tasks  ⚫ Code  ⚫ Review  ⚫ Done
        🔗 https://github.com/…/pull/6
 
-  [2]  **003: New payments flow**
+  [2]  **20260503-0900: New payments flow**
        ✅ Spec  ⚫ Plan  ⚫ Tasks  ⚫ Code  ⚫ Review  ⚫ Done
        *⚠️  no PR yet*
 
-  [3]  **004: Experimental branch**
+  [3]  **20260503-1145: Experimental branch**
        (not started)
 ```
 
