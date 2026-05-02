@@ -339,50 +339,32 @@ For each feature branch with a SPEC, verify that a folder `specs/<branch_name>/`
 ls specs/ 2>/dev/null
 ```
 
-If `specs/<branch_name>/` does not exist but there is exactly one other folder in `specs/` that shares the same non-numeric suffix (e.g., branch is `003-user-auth` and folder is `specs/001-user-auth/`), record a **name mismatch**.
+If `specs/<branch_name>/` does not exist but there is exactly one other folder in `specs/` that shares the same slug suffix (e.g., branch is `20260502-1430-user-auth` and folder is `specs/20260501-0900-user-auth/`), record a **name mismatch**.
 
 If the PR title exists and differs from `<branch_name>`, also record a **PR title mismatch**.
 
-#### Check 2 — No duplicate numbers
+#### Check 2 — No duplicate timestamps
 
-Extract the numeric prefix (zero-padded or not) from every feature branch name that follows the `NNN-<short-name>` pattern:
+Extract the timestamp prefix from every feature branch that follows the `YYYYMMDD-HHMM-<short-name>` pattern:
 
 ```bash
-git branch --format="%(refname:short)" | grep -v "^main$" | grep -v "^master$" | grep -E '^[0-9]+'
+git branch --format="%(refname:short)" | grep -v "^main$" | grep -v "^master$" | grep -E '^[0-9]{8}-[0-9]{4}-'
 ```
 
-If two or more branches share the same numeric prefix, record a **duplicate number error**. This is a blocking error — stop and surface it immediately:
+If two or more branches share the same `YYYYMMDD-HHMM` prefix, record a **duplicate timestamp error**. This is a blocking error — stop and surface it immediately:
 
 ```
-🚨 DUPLICATE BRANCH NUMBERS DETECTED
+🚨 DUPLICATE BRANCH TIMESTAMPS DETECTED
 
-  These branches share the same number and cannot coexist:
+  These branches share the same timestamp and cannot coexist:
     • <branch_a>
     • <branch_b>
 
-  Each feature must have a unique number.
+  Each feature must have a unique timestamp prefix.
   Rename one of them manually before continuing.
 ```
 
 Do not proceed with the rest of the status until the user resolves this.
-
-#### Check 3 — Numbers are chronological (001 = oldest)
-
-First, do a fast pre-check: extract all numeric prefixes from numbered branches and verify they are already in ascending order by name. If they are in order, **skip this check entirely** — no git log needed.
-
-```bash
-git branch --format="%(refname:short)" | grep -v "^main$" | grep -v "^master$" | grep -E '^[0-9]+' | sort -V
-```
-
-Only if the numeric prefixes are **not** in simple ascending order, run the per-branch date check to confirm:
-
-```bash
-git log --reverse --format="%ct" origin/<branch_name> ^origin/main 2>/dev/null | head -1
-```
-
-Use `%ct` (Unix epoch seconds) for comparison — this avoids timezone ambiguity. Sort all numbered branches by this timestamp (ascending). The branch with the oldest first commit must have the lowest number.
-
-If the numbers are out of chronological order, record a **sequence mismatch** for each affected branch (e.g., `002-user-auth` was created before `001-checkout`).
 
 #### Surface and fix issues
 
@@ -407,36 +389,6 @@ Show a brief inline note for each fix applied:
   🔧 Updated PR title → "<branch_name>"
 ```
 
-**Sequence mismatches** require user confirmation. Use the `AskUserQuestion` tool to ask:
-
-```
-⚠️  SEQUENCE MISMATCH
-
-  Branch numbers are not in chronological order:
-    • "002-user-auth" was created before "001-checkout" — numbers should be swapped
-
-  Reorder branch numbers to match creation order? (yes / no)
-```
-
-- **If "no"**: continue with the rest of status (display state as-is, with the mismatch flagged inline).
-- **If "yes"**: for each affected branch, rename local + remote branch, spec folder, and PR title:
-  ```bash
-  git branch -m <old_branch> <new_branch>
-  git push origin :<old_branch> <new_branch>
-  git push -u origin <new_branch>
-  git mv specs/<old_folder> specs/<new_folder>
-  git add -A
-  git commit -m "chore: reorder branch numbers to match creation order"
-  ```
-  Invoke `/product-flow:safe-push`.
-  ```bash
-  gh pr edit <pr_number> --title "<new_branch>"
-  ```
-  Then show:
-  ```
-  ✅ Branch numbers reordered.
-  ```
-
 Continue with step 3 using the corrected names.
 
 ### 3. Interpret and display
@@ -445,8 +397,8 @@ Continue with step 3 using the corrected names.
 
 Convert branch names to human-readable feature names:
 - Strip common prefixes: `feature/`, `feat/`, `fix/`, `pm/`, `chore/`
-- If the branch starts with a numeric prefix (`NNN-`), replace the **first** hyphen with `: ` and keep the number — then replace remaining hyphens/underscores with spaces and capitalize the first word after the colon
-  - Example: `001-workflow-mvp` → `001: Workflow mvp`
+- If the branch matches `^[0-9]{8}-[0-9]{4}-`, use the first two dash-separated segments as the prefix and the rest as the slug — then replace hyphens/underscores in the slug with spaces and capitalize the first word:
+  - Example: `20260502-1430-workflow-mvp` → `20260502-1430: Workflow mvp`
 - Otherwise, replace all hyphens and underscores with spaces and capitalize the first word
   - Example: `feature/add-login-button` → `Add login button`
 

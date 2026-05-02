@@ -52,7 +52,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 CURRENT_BRANCH="${SPECIFY_FEATURE:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
 ```
 
-If `CURRENT_BRANCH` does not match `^[0-9]{3}-`: ERROR "Not on a feature branch. Run /product-flow:start-feature or /product-flow:start-improvement first." and stop.
+If `CURRENT_BRANCH` does not match `^[0-9]{8}-[0-9]{4}-`: ERROR "Not on a feature branch. Run /product-flow:start-feature or /product-flow:start-improvement first." and stop.
 
 Derive paths (all absolute):
 - `FEATURE_DIR` = `$REPO_ROOT/specs/$CURRENT_BRANCH`

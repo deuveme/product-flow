@@ -45,7 +45,7 @@ These rules are invariant — they apply regardless of whether a `constitution.m
    CURRENT_BRANCH="${SPECIFY_FEATURE:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
    ```
 
-   If `CURRENT_BRANCH` does not match `^[0-9]{3}-`: ERROR "Not on a feature branch. Run /product-flow:start-feature or /product-flow:start-improvement first." **STOP.**
+   If `CURRENT_BRANCH` does not match `^[0-9]{8}-[0-9]{4}-`: ERROR "Not on a feature branch. Run /product-flow:start-feature or /product-flow:start-improvement first." **STOP.**
 
    Derive paths:
    - `FEATURE_DIR` = `$REPO_ROOT/specs/$CURRENT_BRANCH`

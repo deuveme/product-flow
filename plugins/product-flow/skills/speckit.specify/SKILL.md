@@ -56,31 +56,21 @@ Given that feature description, do this:
 
 2. **Check for existing branches before creating new one**:
 
-   **FIRST**: Run `git branch --show-current`. If the current branch already matches the feature branch pattern `^[0-9]+-[a-z]` (e.g., `001-user-auth`, `042-fix-payments`):
+   **FIRST**: Run `git branch --show-current`. If the current branch already matches the feature branch pattern `^[0-9]{8}-[0-9]{4}-[a-z]` (e.g., `20260502-1430-user-auth`, `20260503-0900-fix-payments`):
    - Set `BRANCH_NAME` = current branch name
    - Set `SPEC_FILE` = `specs/$BRANCH_NAME/spec.md`
-   - **Skip steps 2a–2d entirely** and go directly to step 3.
+   - **Skip steps 2a–2c entirely** and go directly to step 3.
 
    Otherwise, continue with branch creation:
 
-   a. First, fetch all remote branches to ensure we have the latest information:
+   a. Generate branch identifier:
 
       ```bash
-      git fetch --all --prune
+      BRANCH_NUMBER=$(date -u +%Y%m%d-%H%M)
+      BRANCH_NAME="$BRANCH_NUMBER-$SHORT_NAME"
       ```
 
-   b. Find the highest feature number across all sources:
-      - Remote branches: `git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-'`
-      - Local branches: `git branch | grep -E '^[* ]*[0-9]+-'`
-      - Specs directories: Check for directories matching `specs/[0-9]+-`
-
-   c. Determine the next available number:
-      - Extract all numbers from all three sources
-      - Find the highest number N
-      - Use N+1 for the new branch number, zero-padded to 3 digits: `printf "%03d" $((N+1))`
-      - If no existing branches/directories found, use `001`
-
-   d. Create the branch and feature directory:
+   b. Create the branch and feature directory:
 
       ```bash
       REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
@@ -93,9 +83,7 @@ Given that feature description, do this:
       ```
 
    **IMPORTANT**:
-   - Check all three sources (remote branches, local branches, specs directories) to find the highest number
-   - Only match branches/directories with the exact short-name pattern
-   - Branch names always use a zero-padded 3-digit number: `001-user-auth`, `042-fix-payments`
+   - Branch names always use a timestamp-based identifier: `20260502-1430-user-auth`, `20260503-0900-fix-payments`
    - You must only ever create the branch once per feature
 
 3. **Load gathered context (if available)**:

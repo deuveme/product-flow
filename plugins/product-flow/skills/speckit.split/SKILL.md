@@ -273,13 +273,11 @@ If the PM says **no**: ask which requirements need to move (follow-up `AskUserQu
 #### 6b — Determine new branch identity
 
 - Derive SHORT_NAME: 2–4 words, kebab-case, action-noun format (e.g. `notifications-engine`, `audit-log`)
-- Run `git fetch --all --prune`
-- Find highest feature number across:
-  - Remote branches: `git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-'`
-  - Local branches: `git branch | grep -E '^[* ]*[0-9]+-'`
-  - Specs directories: `ls specs/ 2>/dev/null | grep -E '^[0-9]+-'`
-- BRANCH_NUMBER = highest N + 1, zero-padded: `printf "%03d" $((N+1))`. If nothing found: `001`.
-- NEW_BRANCH = `BRANCH_NUMBER-SHORT_NAME`
+- Generate branch identifier:
+  ```bash
+  BRANCH_NUMBER=$(date -u +%Y%m%d-%H%M)
+  ```
+- NEW_BRANCH = `$BRANCH_NUMBER-SHORT_NAME`
 - PR_TITLE:
   ```bash
   SLUG_WORDS="${SHORT_NAME//-/ }"

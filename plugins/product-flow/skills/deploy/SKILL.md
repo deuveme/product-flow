@@ -125,9 +125,9 @@ This is the single commit that will appear in `main`'s history — all iteration
 - Otherwise → `feat`
 
 **Derive scope and description** from `BRANCH_NAME`:
-- Strip the number prefix: `001-user-auth` → slug = `user-auth`
+- Strip the timestamp prefix (`YYYYMMDD-HHMM-`): `20260502-1430-user-auth` → slug = `user-auth`
 - Use slug as scope: `user-auth`
-- Derive description from PR title (strip the number prefix and lowercase): `001: User auth` → `user auth`
+- Derive description from PR title (strip the timestamp prefix and lowercase): `20260502-1430: User auth` → `user auth`
 
 Set `SQUASH_MSG = "<type>(<scope>): <description>"` and proceed.
 

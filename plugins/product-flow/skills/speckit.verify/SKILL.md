@@ -30,9 +30,9 @@ REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 CURRENT_BRANCH="${SPECIFY_FEATURE:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
 ```
 
-If `CURRENT_BRANCH` does not match `^[0-9]{3}-`:
+If `CURRENT_BRANCH` does not match `^[0-9]{8}-[0-9]{4}-`:
 - Stop immediately and output:
-  > ⚠️ No active feature detected. Verification requires a feature branch (format: `NNN-...`).
+  > ⚠️ No active feature detected. Verification requires a feature branch (format: `YYYYMMDD-HHMM-...`).
   > Run `/product-flow:status` to see available features.
 - Do not proceed further.
 
