@@ -11,7 +11,7 @@
       "name": "product-flow",
       "source": "./plugins/product-flow",
       "description": "Spec-driven development kit with SpecKit workflow, Praxis engineering skills, and PM-friendly commands for structured feature development.",
-      "version": "1.12.14",
+      "version": "1.12.15",
       "author": {
         "name": "David Valero"
       },

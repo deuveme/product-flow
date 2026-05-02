@@ -25,7 +25,7 @@ git branch --show-current
 ```
 
 - If there are uncommitted changes: ERROR "There are unsaved changes. Save or discard them before starting a new feature."
-- If the current branch matches `^[0-9]{3}-`: **RESUMPTION MODE** — the user is returning to an interrupted session. Set `BRANCH_NAME` from the current branch name, derive `SPEC_PATH = specs/$BRANCH_NAME/spec.md`, and skip to step 3 (Information gathering). The skill will read `gathered-context.md` to determine which steps have already been completed.
+- If the current branch matches `^[0-9]{8}-[0-9]{4}-`: **RESUMPTION MODE** — the user is returning to an interrupted session. Set `BRANCH_NAME` from the current branch name, derive `SPEC_PATH = specs/$BRANCH_NAME/spec.md`, and skip to step 3 (Information gathering). The skill will read `gathered-context.md` to determine which steps have already been completed.
 - If the current branch is not `main` or `master` (and not a feature branch):
   Run:
   ```bash
@@ -46,21 +46,15 @@ From `$ARGUMENTS`, generate a concise short name (2–4 words, kebab-case, actio
 Examples: `user-auth`, `fix-payment-timeout`, `analytics-dashboard`.
 Preserve technical terms (OAuth2, API, JWT, etc.).
 
-#### 2b. Find next branch number
+#### 2b. Generate branch identifier
 
 ```bash
-git fetch --all --prune
-git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-'
-git branch | grep -E '^[* ]*[0-9]+-'
-ls specs/ 2>/dev/null | grep -E '^[0-9]+-'
+BRANCH_NUMBER=$(date -u +%Y%m%d-%H%M)
 ```
 
-Extract all numbers found across the three sources. If none, use `1`. Otherwise use highest + 1.
-Zero-pad the number to 3 digits: `printf "%03d" $N`.
-
 Set:
-- `BRANCH_NUMBER = <NNN>`
-- `BRANCH_NAME = <NNN>-<short-name>` (e.g., `001-user-auth`)
+- `BRANCH_NUMBER = <YYYYMMDD-HHMM>` (e.g., `20260502-1430`)
+- `BRANCH_NAME = <BRANCH_NUMBER>-<short-name>` (e.g., `20260502-1430-user-auth`)
 - `SPEC_PATH = specs/$BRANCH_NAME/spec.md`
 
 #### 2c. Create the branch and initialize spec directory
@@ -78,12 +72,11 @@ SPEC_FILE="$FEATURE_DIR/spec.md"
 
 Derive the human-readable PR title from `BRANCH_NAME`:
 ```
-BRANCH_NUMBER=${BRANCH_NAME%%-*}
-BRANCH_SLUG=${BRANCH_NAME#*-}
+BRANCH_SLUG=${BRANCH_NAME#${BRANCH_NUMBER}-}
 BRANCH_SLUG_SPACES=${BRANCH_SLUG//-/ }
 PR_TITLE="$BRANCH_NUMBER: <capitalize first letter of BRANCH_SLUG_SPACES>"
 ```
-Example: `001-user-auth` → `001: User auth`. Capitalize only the first letter of the slug; leave all other words as-is.
+Example: `20260502-1430-user-auth` → `20260502-1430: User auth`. Capitalize only the first letter of the slug; leave all other words as-is.
 
 #### 2d. Initialize gathered-context.md
 
@@ -629,16 +622,13 @@ Accept confirmation before executing.
 
 For each new sub-feature (Feature B, C…):
 
-**Find next branch number:**
+**Generate branch identifier:**
 
 ```bash
-git fetch --all --prune
-git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-'
-git branch | grep -E '^[* ]*[0-9]+-'
-ls specs/ 2>/dev/null | grep -E '^[0-9]+-'
+NEW_BRANCH_NUMBER=$(date -u +%Y%m%d-%H%M)
 ```
 
-Compute next number: highest N + 1, zero-padded to 3 digits. Set `NEW_BRANCH = NNN-<short-name>`.
+Set `NEW_BRANCH = $NEW_BRANCH_NUMBER-<short-name>`.
 
 **Create branch from main:**
 
@@ -678,8 +668,8 @@ git push -u origin HEAD
 **Open Draft PR:**
 
 ```bash
-NEW_SLUG_WORDS="${NEW_BRANCH#*-}"
-NEW_PR_TITLE="${NEW_BRANCH%%\-*}: ${NEW_SLUG_WORDS^}"
+NEW_SLUG_WORDS="${NEW_BRANCH#${NEW_BRANCH_NUMBER}-}"
+NEW_PR_TITLE="${NEW_BRANCH_NUMBER}: ${NEW_SLUG_WORDS^}"
 
 gh pr create \
   --title "$NEW_PR_TITLE" \

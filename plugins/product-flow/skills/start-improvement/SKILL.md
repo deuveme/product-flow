@@ -25,7 +25,7 @@ git branch --show-current
 ```
 
 - If there are uncommitted changes: ERROR "There are unsaved changes. Save or discard them before starting a new improvement."
-- If the current branch matches `^[0-9]{3}-`: **RESUMPTION MODE** — the user is returning to an interrupted session. Set `BRANCH_NAME` from the current branch name and skip to step 3 (Information gathering). Read `improvement-context.md` to determine which steps are already done.
+- If the current branch matches `^[0-9]{8}-[0-9]{4}-`: **RESUMPTION MODE** — the user is returning to an interrupted session. Set `BRANCH_NAME` from the current branch name and skip to step 3 (Information gathering). Read `improvement-context.md` to determine which steps are already done.
 - If the current branch is not `main` or `master` (and not a feature branch):
   ```bash
   git checkout main
@@ -43,21 +43,15 @@ From `$ARGUMENTS`, generate a concise short name (2–4 words, kebab-case, actio
 Examples: `empty-state-copy`, `fix-error-message`, `button-redesign`.
 Preserve technical terms (OAuth2, API, JWT, etc.).
 
-#### 2b. Find next branch number
+#### 2b. Generate branch identifier
 
 ```bash
-git fetch --all --prune
-git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-'
-git branch | grep -E '^[* ]*[0-9]+-'
-ls specs/ 2>/dev/null | grep -E '^[0-9]+-'
+BRANCH_NUMBER=$(date -u +%Y%m%d-%H%M)
 ```
 
-Extract all numbers found across the three sources. If none, use `1`. Otherwise use highest + 1.
-Zero-pad the number to 3 digits: `printf "%03d" $N`.
-
 Set:
-- `BRANCH_NUMBER = <NNN>`
-- `BRANCH_NAME = <NNN>-improvement-<short-name>` (e.g., `008-improvement-empty-state-copy`)
+- `BRANCH_NUMBER = <YYYYMMDD-HHMM>` (e.g., `20260502-1430`)
+- `BRANCH_NAME = <BRANCH_NUMBER>-improvement-<short-name>` (e.g., `20260502-1430-improvement-empty-state-copy`)
 - `SPEC_PATH = specs/$BRANCH_NAME/spec.md`
 
 #### 2c. Create branch and initialize directory
@@ -73,11 +67,11 @@ mkdir -p "$FEATURE_DIR/images"
 
 Derive human-readable PR title:
 ```
-BRANCH_SLUG=${BRANCH_NAME#*-}
+BRANCH_SLUG=${BRANCH_NAME#${BRANCH_NUMBER}-}
 BRANCH_SLUG_SPACES=${BRANCH_SLUG//-/ }
 PR_TITLE="$BRANCH_NUMBER: <capitalize first letter of BRANCH_SLUG_SPACES>"
 ```
-Example: `008-improvement-empty-state-copy` → `008: Improvement empty state copy`.
+Example: `20260502-1430-improvement-empty-state-copy` → `20260502-1430: Improvement empty state copy`.
 
 #### 2d. Initialize improvement-context.md
 
