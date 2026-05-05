@@ -48,8 +48,10 @@ Preserve technical terms (OAuth2, API, JWT, etc.).
 
 #### 2b. Generate branch identifier
 
+Run this Bash command and set `BRANCH_NUMBER` to its exact output:
+
 ```bash
-BRANCH_NUMBER=$(date -u +%Y%m%d-%H%M)
+date -u +%Y%m%d-%H%M
 ```
 
 Set:
@@ -137,6 +139,12 @@ git push -u origin HEAD
 
 #### 2f. Open Draft PR
 
+Run this Bash command and set `PR_DATE` to its exact output:
+
+```bash
+date -u +"%Y-%m-%d %H:%M:%S"
+```
+
 ```bash
 gh pr create \
   --title "$PR_TITLE" \
@@ -168,7 +176,7 @@ Spec: $SPEC_PATH
 
 | Status | Date Time | GitHub User | Note |
 |--------|-----------|-------------|------|
-| PR created | $(date -u +%Y-%m-%d\ %H:%M:%S) | @$(gh api user --jq '.login') | Feature started |
+| PR created | $PR_DATE | @$(gh api user --jq '.login') | Feature started |
 
 ## Notes
 
@@ -195,7 +203,8 @@ Save the returned PR URL as `PR_URL` and PR number as `PR_NUMBER`.
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"FEATURE_STARTED": $ts, "flow": "feature"}' > "$STATUS_FILE"
+NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+echo "$EXISTING" | jq --arg ts "$NOW" '. + {"FEATURE_STARTED": $ts, "flow": "feature"}' > "$STATUS_FILE"
 ```
 
 Commit and push the initial files:
@@ -510,7 +519,8 @@ If the file exists, load it as `collaborative-design.md` and skip the rest of th
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"DESIGN_DONE": $ts}' > "$STATUS_FILE"
+NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+echo "$EXISTING" | jq --arg ts "$NOW" '. + {"DESIGN_DONE": $ts}' > "$STATUS_FILE"
 ```
 
 Otherwise, assess the feature description using `GATHERED_CONTEXT.full_description`. Also check `GATHERED_CONTEXT.visual_assets` — if the user provided designs or Figma links, factor them into the assessment:
@@ -522,7 +532,8 @@ Otherwise, assess the feature description using `GATHERED_CONTEXT.full_descripti
   BRANCH=$(git branch --show-current)
   STATUS_FILE="specs/$BRANCH/status.json"
   EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-  echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"DESIGN_DONE": $ts}' > "$STATUS_FILE"
+  NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  echo "$EXISTING" | jq --arg ts "$NOW" '. + {"DESIGN_DONE": $ts}' > "$STATUS_FILE"
   ```
 
 - **Run this step** if the description is vague, very short (< 15 words), or lacks a clear user action or expected outcome.
@@ -538,7 +549,8 @@ If it produces an ERROR: propagate and stop.
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"DESIGN_DONE": $ts}' > "$STATUS_FILE"
+NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+echo "$EXISTING" | jq --arg ts "$NOW" '. + {"DESIGN_DONE": $ts}' > "$STATUS_FILE"
 ```
 
 Show:
@@ -624,8 +636,10 @@ For each new sub-feature (Feature B, C…):
 
 **Generate branch identifier:**
 
+Run this Bash command and set `NEW_BRANCH_NUMBER` to its exact output:
+
 ```bash
-NEW_BRANCH_NUMBER=$(date -u +%Y%m%d-%H%M)
+date -u +%Y%m%d-%H%M
 ```
 
 Set `NEW_BRANCH = $NEW_BRANCH_NUMBER-<short-name>`.
@@ -654,7 +668,8 @@ mkdir -p "$NEW_FEATURE_DIR/docs"
 **Write `status.json`:**
 
 ```bash
-echo "{}" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"FEATURE_STARTED": $ts, "flow": "feature"}' > "$NEW_FEATURE_DIR/status.json"
+NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+echo "{}" | jq --arg ts "$NOW" '. + {"FEATURE_STARTED": $ts, "flow": "feature"}' > "$NEW_FEATURE_DIR/status.json"
 ```
 
 **Commit and push:**
@@ -666,6 +681,12 @@ git push -u origin HEAD
 ```
 
 **Open Draft PR:**
+
+Run this Bash command and set `NEW_PR_DATE` to its exact output:
+
+```bash
+date -u +"%Y-%m-%d %H:%M:%S"
+```
 
 ```bash
 NEW_SLUG_WORDS="${NEW_BRANCH#${NEW_BRANCH_NUMBER}-}"
@@ -701,7 +722,7 @@ Spec: specs/$NEW_BRANCH/spec.md
 
 | Status | Date Time | GitHub User | Note |
 |--------|-----------|-------------|------|
-| PR created | $(date -u +%Y-%m-%d\ %H:%M:%S) | @$(gh api user --jq '.login') | Extracted from $BRANCH_NAME during epic split |
+| PR created | $NEW_PR_DATE | @$(gh api user --jq '.login') | Extracted from $BRANCH_NAME during epic split |
 
 ## Notes
 
@@ -829,6 +850,12 @@ Read the current PR body to extract the existing checklist block (between `<!-- 
 
 Count the number of user stories in `$SPEC_PATH` (lines matching `## User Story` or similar) to populate `<N> user stories`.
 
+Run this Bash command and set `SPEC_DATE` to its exact output:
+
+```bash
+date -u +"%Y-%m-%d %H:%M:%S"
+```
+
 ```bash
 gh pr edit $PR_NUMBER --body "$(cat <<EOF
 ## Feature
@@ -846,8 +873,8 @@ Spec: $SPEC_PATH
 
 | Status | Date Time | GitHub User | Note |
 |--------|-----------|-------------|------|
-| PR created | $(date -u +%Y-%m-%d\ %H:%M:%S) | @$(gh api user --jq '.login') | Feature started |
-| Spec created | $(date -u +%Y-%m-%d\ %H:%M:%S) | @$(gh api user --jq '.login') | Spec written |
+| PR created | $PR_DATE | @$(gh api user --jq '.login') | Feature started |
+| Spec created | $SPEC_DATE | @$(gh api user --jq '.login') | Spec written |
 
 ## Notes
 
@@ -872,7 +899,8 @@ EOF
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"SPEC_CREATED": $ts}' > "$STATUS_FILE"
+NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+echo "$EXISTING" | jq --arg ts "$NOW" '. + {"SPEC_CREATED": $ts}' > "$STATUS_FILE"
 git add "specs/$BRANCH/"
 git commit -m "chore: record spec_created and persist gathered context"
 ```

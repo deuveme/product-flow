@@ -45,8 +45,10 @@ Preserve technical terms (OAuth2, API, JWT, etc.).
 
 #### 2b. Generate branch identifier
 
+Run this Bash command and set `BRANCH_NUMBER` to its exact output:
+
 ```bash
-BRANCH_NUMBER=$(date -u +%Y%m%d-%H%M)
+date -u +%Y%m%d-%H%M
 ```
 
 Set:
@@ -120,6 +122,12 @@ None provided.
 git push -u origin HEAD
 ```
 
+Run this Bash command and set `PR_DATE` to its exact output:
+
+```bash
+date -u +"%Y-%m-%d %H:%M:%S"
+```
+
 ```bash
 gh pr create \
   --title "$PR_TITLE" \
@@ -151,7 +159,7 @@ Spec: $SPEC_PATH
 
 | Status | Date Time | GitHub User | Note |
 |--------|-----------|-------------|------|
-| PR created | $(date -u +%Y-%m-%d\ %H:%M:%S) | @$(gh api user --jq '.login') | Improvement started |
+| PR created | $PR_DATE | @$(gh api user --jq '.login') | Improvement started |
 
 ## Notes
 
@@ -178,7 +186,8 @@ Save the returned PR URL as `PR_URL` and PR number as `PR_NUMBER`.
 BRANCH=$(git branch --show-current)
 STATUS_FILE="specs/$BRANCH/status.json"
 EXISTING=$(cat "$STATUS_FILE" 2>/dev/null || echo "{}")
-echo "$EXISTING" | jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '. + {"IMPROVEMENT_STARTED": $ts, "flow": "improvement"}' > "$STATUS_FILE"
+NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+echo "$EXISTING" | jq --arg ts "$NOW" '. + {"IMPROVEMENT_STARTED": $ts, "flow": "improvement"}' > "$STATUS_FILE"
 git add "specs/$BRANCH_NAME/"
 git commit -m "chore: initialize improvement branch and context"
 ```
