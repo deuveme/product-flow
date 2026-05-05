@@ -33,7 +33,7 @@ The agent must **stop and escalate** — never decide unilaterally — on:
 
 - Adding a new dependency or library
 - Changing the plugin manifest (`plugin.json`)
-- Modifying any hook (`git-sync.sh`, `intent-router.sh`, `state-notifier.sh`, `permission-request.sh`, `security-guard.sh`, `workflow-guard.sh`)
+- Modifying any hook (`git-sync.sh`, `intent-router.sh`, `language-enforcer.sh`, `state-notifier.sh`, `permission-request.sh`, `security-guard.sh`, `workflow-guard.sh`)
 - Adding or removing skills from the plugin
 - Changing the command structure that affects the PM workflow
 - Any change that affects more than one skill/module simultaneously

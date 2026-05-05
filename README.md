@@ -68,6 +68,7 @@ Small improvement to something already live:
 | [`docs/onboarding.md`](plugins/product-flow/docs/onboarding.md) | PMs & designers | How to use the commands, full workflow, FAQs |
 | [`docs/guide.md`](plugins/product-flow/docs/guide.md) | Dev team | Architecture, setup, how to modify skills |
 | [`docs/constitution.md`](plugins/product-flow/docs/constitution.md) | Tech lead & AI | Project governance, standards, scope discipline |
+| [`docs/DEPENDENCIES.md`](plugins/product-flow/docs/DEPENDENCIES.md) | Dev team | Skill dependency graph, precondition table, known limitations |
 
 ---
 

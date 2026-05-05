@@ -78,7 +78,7 @@ You can run it as many times as needed. The review room stays in **DRAFT** throu
 ### `/product-flow:build`
 **When to use it:** When `/product-flow:continue` tells you the plan is ready and you want Claude to write the code.
 
-Claude generates all the feature code. The review room is still in **DRAFT** while this runs. Requires the plan to be approved — if it isn't, it will let you know.
+Claude generates all the feature code. The review room is still in **DRAFT** while this runs. Requires the requirements checklist to have passed — if it hasn't, run `/product-flow:continue` first.
 
 ---
 
@@ -287,10 +287,10 @@ Write whatever you know, in your own words. You don't need to find the right lev
 The only rule: describe **what you want to achieve and for whom**, not how to build it. The rest is handled for you.
 
 **I want to refine the spec before sharing it with the team. How?**
-Run `/product-flow:speckit.clarify` after `/product-flow:start-feature`. Claude will scan the spec, identify the most important ambiguities, and ask you up to 5 targeted questions to sharpen it. The spec is updated in place. You can then share the PR with the team as usual.
+Share the PR with the team and run `/product-flow:continue` once. Claude will scan the spec, identify the most important ambiguities, and ask you targeted questions to sharpen it before generating the technical plan. The spec is updated in place. You can then share the updated PR with the team as usual.
 
 **The spec is covering too many things. Can I split it into two features?**
-Yes. After `/product-flow:start-feature` writes the first spec, run `/product-flow:speckit.split`. Claude will analyze the spec, detect whether it covers independent deliverables or different user journeys, and propose a clean split. If you confirm, it trims the current spec and opens a new review room for the extracted feature — ready to continue from where the split happened.
+Yes. Claude automatically analyzes scope when you run `/product-flow:continue`. It will detect whether the spec covers independent deliverables or different user journeys, and propose a clean split. If you confirm, it trims the current spec and opens a new review room for the extracted feature — ready to continue from where the split happened. You can also leave a comment in the PR describing the concern before running `/product-flow:continue`.
 
 **Can I work on two features at the same time?**
 Yes, but it's better to finish one before starting another. If you need to do it, notify the development team first.

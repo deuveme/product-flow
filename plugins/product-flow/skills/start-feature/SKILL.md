@@ -979,12 +979,6 @@ When they approve or comment, run:
 
 All downstream skills can access persisted assets and context created in this phase:
 
-**📚 Read the Skill Data Access Guide**: `docs/skill-data-access.md` in the plugin docs — it explains:
-- How to access gathered context (`gathered-context.md`)
-- Where to find images and PDFs (`images/` and `docs/` folders)
-- How to reference external links (`sources.md`)
-- Code examples for accessing assets in bash/scripts
-
 **Quick reference:**
 ```bash
 BRANCH=$(git branch --show-current)

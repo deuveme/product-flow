@@ -24,6 +24,7 @@ plugins/product-flow/
 ├── hooks/
 │   ├── git-sync.sh           ← syncs repo with origin before any public skill (UserPromptSubmit)
 │   ├── intent-router.sh      ← maps short ambiguous phrases to the correct skill via status.json (UserPromptSubmit)
+│   ├── language-enforcer.sh  ← enforces English-only output for all Claude responses (UserPromptSubmit)
 │   ├── state-notifier.sh     ← shows PM-friendly message on every status.json state transition (PostToolUse on Bash)
 │   ├── permission-request.sh ← auto-approves safe read/write operations (PermissionRequest)
 │   ├── security-guard.sh     ← blocks writes/deletes outside the repository (PreToolUse)
@@ -94,13 +95,13 @@ specs/<branch>/
 
 | Command | Internal call chain |
 |---|---|
-| `/product-flow:start-feature` | create branch + Draft PR → facilitated product framing (4 dimensions) + visual assets + docs → quality gate → [epic scope check: split into N branches if epic signals detected] → [`praxis.collaborative-design` if vague] → `speckit.specify` → `speckit.retro` |
-| `/product-flow:start-improvement` | create branch (`YYYYMMDD-HHMM-improvement-<slug>`) + Draft PR → 3-question context gathering → scope analysis (escalate to start-feature if too big) → `speckit.specify.improvement` |
+| `/product-flow:start-feature` | create branch + Draft PR → facilitated product framing (4 dimensions) + visual assets + docs → [`praxis.collaborative-design` if vague or redesign intent detected] → quality gate → [epic scope check: split into N branches if epic signals detected] → `speckit.specify` → `speckit.retro` |
+| `/product-flow:start-improvement` | create branch (`YYYYMMDD-HHMM-improvement-<slug>`) + Draft PR → 4-dimension context gathering (what to improve, what changes for user, out of scope + constraints, visual assets) → scope analysis (escalate to start-feature if too big) → `speckit.specify.improvement` |
 | `/product-flow:continue` | `inbox-sync` → flag-based routing: `consolidate-spec` + `speckit.split` pre-plan (if SPLIT_PREPLAN_ANALIZED absent) / `plan` (if PLAN_GENERATED absent) / `speckit.split` post-plan (if SPLIT_POSTPLAN_ANALIZED absent) / `consolidate-plan` (if comments) / `tasks` (if TASKS_GENERATED absent) / `checklist` (if CHECKLIST_DONE absent) — dispatched by reading `status.json` flags |
 | `/product-flow:build` | `inbox-sync` → `implement` (→ `praxis.bdd-with-approvals` *(TS/JS only)* → `speckit.implement.withTDD` *(includes `praxis.code-simplifier` per task)* → `praxis.test-desiderata` → `bugmagnet` → `speckit.retro`) → `speckit.verify-tasks` → `speckit.verify` |
-| `/product-flow:submit` | `inbox-sync` → `speckit.verify` (gate: CRITICAL blocks, HIGH/MEDIUM/LOW asks, passes silently) → optional git add/commit/push (only if local changes exist) → `gh pr ready` on first run (exits DRAFT) → proposes ADRs in PR body |
-| `/product-flow:fix` | `inbox-sync` → `pr-comments new-comments` → diagnosis (4 dimensions, iterative) → confirmed summary → save `fixes/fix-N.md` + PR comment → clear `CODE_VERIFIED`+`VERIFY_TASKS_DONE` → append fix-tasks to `tasks.md` → `speckit.implement.withTDD [IDs]` → `speckit.verify-tasks [IDs]` → `speckit.verify` → re-set `CODE_VERIFIED`+`VERIFY_TASKS_DONE` → `spec-amendments.md` (if Ambiguity/Omission) → `speckit.retro` |
-| `/product-flow:deploy` | [ADR consolidation: ask user → generate in memory if yes] → `gh pr merge --squash --delete-branch` → [write ADRs to `docs/adr/` + commit if yes] → mark published |
+| `/product-flow:submit` | merge `origin/main` into branch (resolves conflicts interactively) → `inbox-sync` → gate: `CODE_VERIFIED` in `status.json` → optional git add/commit/push (only if local changes exist) → `gh pr ready` on first run (exits DRAFT) → generate `quickstart.md` + populate `## How to test` in PR → proposes ADRs in PR body |
+| `/product-flow:fix` | check for pending interrupted fixes (resume / discard / new) → [new fix:] `inbox-sync` → `pr-comments new-comments` → diagnosis (4 dimensions, iterative) → confirmed summary → save `fixes/fix-N.md` + PR comment → clear `CODE_VERIFIED`+`VERIFY_TASKS_DONE` → append fix-tasks to `tasks.md` → `speckit.implement.withTDD [IDs]` → `speckit.verify-tasks [IDs]` → `speckit.verify` → re-set `CODE_VERIFIED`+`VERIFY_TASKS_DONE` → `spec-amendments.md` (if Ambiguity/Omission) → `speckit.retro` → loop back to pending check until all issues resolved |
+| `/product-flow:deploy` | [ADR consolidation: ask user → generate in memory if yes] → prepare squash commit message (Conventional Commits, inferred from spec) → write `PUBLISHED` to `status.json` (before merge) → `gh pr merge --squash --delete-branch` → [write ADRs to `docs/adr/` + commit if yes] → mark published → check CI/CD |
 
 ---
 
@@ -368,23 +369,27 @@ Bot comments are tracked via invisible HTML markers on the first line:
 
 **`submit` skill:**
 1. Verifies branch and PR exist
-2. Runs `/product-flow:inbox-sync` — processes pending answers and new user comments
-3. Runs `speckit.verify` — CRITICAL blocks; HIGH/MEDIUM/LOW asks the user
-4. If there are local changes: shows summary (`git diff --stat`), commits and pushes
-5. If there are no local changes: skips commit/push and continues to review transition
-6. Takes PR out of draft on first run (`gh pr ready`)
-7. Updates `status.json` with `IN_REVIEW` on first run
-8. Proposes ADRs: reads `research.md` and `decisions.md`, filters decisions that would cause future inconsistency, inserts `### Proposed ADRs` inside `## For Developers` in the PR body
+2. Merges `origin/main` into the branch — resolves conflicts interactively if any
+3. Runs `/product-flow:inbox-sync` — processes pending answers and new user comments
+4. Gate: `CODE_VERIFIED` present in `status.json` — if missing, instructs to run `/product-flow:build` first
+5. If there are local changes: shows summary (`git diff --stat`), commits and pushes
+6. If there are no local changes: skips commit/push and continues to review transition
+7. Takes PR out of draft on first run (`gh pr ready`)
+8. Updates `status.json` with `IN_REVIEW` on first run
+9. Generates `quickstart.md` — acceptance scenarios for PM + technical steps for devs — and populates `## How to test` in the PR body
+10. Proposes ADRs: reads `research.md` and `decisions.md`, filters decisions that would cause future inconsistency, inserts `### Proposed ADRs` inside `## For Developers` in the PR body
 
 **`deploy` skill:**
 1. Verifies branch and PR exist
 2. Gate: `IN_REVIEW` present in `status.json`
 3. Gate: PR approved (`reviewDecision: APPROVED`)
 4. ADR consolidation (conditional): if unchecked ADRs exist in `### Proposed ADRs`, asks the user — if yes, reads `research.md` and generates ADR file contents in memory
-5. Squash merge to main, branch deleted (`gh pr merge --squash --delete-branch`)
-6. Writes ADR files to `docs/adr/NNNN-<slug>.md` and commits to main (only if user confirmed in step 4)
-7. Marks `- [x] Published` in the PR body and adds history row
-8. Checks CI/CD pipeline status
+5. Prepares squash commit message in Conventional Commits format — type inferred from `spec.md` and branch slug (`feat`, `fix`, `refactor`, `docs`)
+6. Writes `PUBLISHED` to `status.json` and commits **before the merge** — prevents state loss if the branch is deleted by the merge
+7. Squash merge to main, branch deleted (`gh pr merge --squash --delete-branch`)
+8. Writes ADR files to `docs/adr/NNNN-<slug>.md` and commits to main (only if user confirmed in step 4)
+9. Marks `- [x] Published` in the PR body and adds history row
+10. Checks CI/CD pipeline status
 
 ### Automatic quality gates
 
@@ -393,7 +398,7 @@ orchestrators decide when to run them:
 
 | Skill | Triggered by | Behaviour |
 |---|---|---|
-| `speckit.verify` | `/product-flow:submit` (always) | Validates implementation against spec, plan, tasks, constitution. CRITICAL findings block submit; HIGH/MEDIUM/LOW ask the user; clean pass is silent |
+| `speckit.verify` | `/product-flow:build` (always, after verify-tasks) | Validates implementation against spec, plan, tasks, constitution. CRITICAL findings are resolved (technical: autonomously; product: asks user); HIGH/MEDIUM/LOW same resolution; clean pass is silent |
 | `speckit.verify-tasks` | `/product-flow:build` (mandatory) | Runs automatically after implement. Detects phantom completions — tasks marked done with no real implementation — before the verification gate |
 | `speckit.reconcile` | `speckit.verify` (user opt-in on CRITICAL) | When verify finds CRITICAL drift, the user is offered two options: fix manually (A) or reconcile (B). Only invoked if the user chooses B and provides a gap description |
 

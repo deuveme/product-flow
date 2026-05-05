@@ -62,6 +62,37 @@ Writes a single bot comment to the PR with the correct marker, user instruction,
 
 #### Execution
 
+0. Acquire the comment lock:
+
+```bash
+BRANCH=$(git branch --show-current)
+LOCK_DIR="specs/$BRANCH/.comment-lock"
+
+LOCK_ACQUIRED=false
+for i in $(seq 1 10); do
+  if mkdir "$LOCK_DIR" 2>/dev/null; then
+    LOCK_ACQUIRED=true
+    break
+  fi
+  # Check if lock is stale (> 30 seconds) and forcibly clear it
+  LOCK_TIME=$(stat -f %m "$LOCK_DIR" 2>/dev/null || stat -c %Y "$LOCK_DIR" 2>/dev/null || echo 0)
+  NOW=$(date +%s)
+  AGE=$((NOW - LOCK_TIME))
+  if [ "$AGE" -gt 30 ]; then
+    rmdir "$LOCK_DIR" 2>/dev/null || true
+  else
+    sleep 3
+  fi
+done
+
+if [ "$LOCK_ACQUIRED" = false ]; then
+  echo "ERROR: Could not acquire comment lock after 30 seconds. Another session may be writing to this PR. Try again in a moment."
+  exit 1
+fi
+```
+
+If lock acquisition fails: propagate the error and **STOP**. Do not proceed.
+
 1. Determine the next question number `<N>`:
 
 ```bash
@@ -70,8 +101,6 @@ gh pr view --json comments \
 ```
 
 Add 1 to the result (use 1 if the command returns 0 or fails).
-
-> **Known limitation**: if two separate Claude sessions write comments to the same PR simultaneously, both may compute the same next `<N>` and produce duplicate question IDs. To prevent this, avoid running multiple sessions against the same PR at the same time.
 
 2. Build the user instruction line based on `status`:
    - `ANSWERED`: `> 💬 To change this decision, add a new comment: \`Question <N>. Answer: [letter or answer]\``
@@ -86,6 +115,14 @@ gh pr comment --body "<!-- id:q<N> type:<type> status:<status> -->
 <body>
 
 <user instruction line>"
+```
+
+If posting fails: release the lock (`rmdir "$LOCK_DIR" 2>/dev/null || true`) and propagate the error. **STOP.**
+
+Release the lock immediately after the comment is posted — before writing to `decisions.md`:
+
+```bash
+rmdir "$LOCK_DIR" 2>/dev/null || true
 ```
 
 4. Append to `specs/<branch>/decisions.md` (create with header `# Decisions Log\n\n` if it does not exist):

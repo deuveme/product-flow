@@ -43,7 +43,6 @@ continue
 
 build
   ├─ inbox-sync                        (internal inbox orchestration)
-  ├─ pr-comments pending               (pre-implement gate: resolve UNANSWERED before code)
   ├─ implement           (if code not yet generated)
   ├─ speckit.verify-tasks              (mandatory after implement; re-entry shortcut if code already written)
   ├─ speckit.verify                    (verification gate after verify-tasks)
@@ -174,10 +173,6 @@ inbox-sync
 
 ### Boot-time skill path validation (issue #24)
 `plugin.json` lists skill paths as relative strings (`./skills/<name>`). There is no validation at plugin load time that these directories actually exist. If a skill directory is accidentally deleted or renamed, the skill will silently become unavailable. **Mitigation**: run `/product-flow:status` after any manual changes to the plugin directory to surface missing skills early.
-
-### Concurrent PR comment IDs (issue #21)
-The `pr-comments write` operation determines the next question number by querying the current max `id:q<N>` value in the PR and adding 1. If two Claude sessions write comments to the same PR concurrently, both may compute the same number and create duplicate question IDs. **Mitigation**: avoid running multiple sessions against the same PR simultaneously.
-
 ---
 
 ## Upstream Sources
