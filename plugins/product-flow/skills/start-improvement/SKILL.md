@@ -43,29 +43,24 @@ From `$ARGUMENTS`, generate a concise short name (2–4 words, kebab-case, actio
 Examples: `empty-state-copy`, `fix-error-message`, `button-redesign`.
 Preserve technical terms (OAuth2, API, JWT, etc.).
 
-#### 2b. Generate branch identifier
+#### 2b. Create branch and initialize directory
 
-Run this Bash command and set `BRANCH_NUMBER` to its exact output:
-
-```bash
-date -u +%Y%m%d-%H%M
-```
-
-Set:
-- `BRANCH_NUMBER = <YYYYMMDD-HHMM>` (e.g., `20260502-1430`)
-- `BRANCH_NAME = <BRANCH_NUMBER>-improvement-<short-name>` (e.g., `20260502-1430-improvement-empty-state-copy`)
-- `SPEC_PATH = specs/$BRANCH_NAME/spec.md`
-
-#### 2c. Create branch and initialize directory
+Substitute the short name from step 2a for `<short-name>`, then run as a single Bash command:
 
 ```bash
+SHORT_NAME="<short-name>"
+BRANCH_NUMBER=$(date -u +%Y%m%d-%H%M)
+BRANCH_NAME="${BRANCH_NUMBER}-improvement-${SHORT_NAME}"
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 git checkout -b "$BRANCH_NAME" || {
   echo "ERROR: Failed to create branch $BRANCH_NAME"; exit 1
 }
 FEATURE_DIR="$REPO_ROOT/specs/$BRANCH_NAME"
 mkdir -p "$FEATURE_DIR/images"
+echo "BRANCH_NAME=$BRANCH_NAME"
 ```
+
+Read `BRANCH_NAME` and `BRANCH_NUMBER` from the command output. Set `SPEC_PATH = specs/$BRANCH_NAME/spec.md`.
 
 Derive human-readable PR title:
 ```

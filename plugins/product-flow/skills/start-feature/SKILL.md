@@ -46,22 +46,14 @@ From `$ARGUMENTS`, generate a concise short name (2–4 words, kebab-case, actio
 Examples: `user-auth`, `fix-payment-timeout`, `analytics-dashboard`.
 Preserve technical terms (OAuth2, API, JWT, etc.).
 
-#### 2b. Generate branch identifier
+#### 2b. Create branch and initialize spec directory
 
-Run this Bash command and set `BRANCH_NUMBER` to its exact output:
-
-```bash
-date -u +%Y%m%d-%H%M
-```
-
-Set:
-- `BRANCH_NUMBER = <YYYYMMDD-HHMM>` (e.g., `20260502-1430`)
-- `BRANCH_NAME = <BRANCH_NUMBER>-<short-name>` (e.g., `20260502-1430-user-auth`)
-- `SPEC_PATH = specs/$BRANCH_NAME/spec.md`
-
-#### 2c. Create the branch and initialize spec directory
+Substitute the short name from step 2a for `<short-name>`, then run as a single Bash command:
 
 ```bash
+SHORT_NAME="<short-name>"
+BRANCH_NUMBER=$(date -u +%Y%m%d-%H%M)
+BRANCH_NAME="${BRANCH_NUMBER}-${SHORT_NAME}"
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 git checkout -b "$BRANCH_NAME" || {
   echo "ERROR: Failed to create branch $BRANCH_NAME"; exit 1
@@ -70,7 +62,10 @@ FEATURE_DIR="$REPO_ROOT/specs/$BRANCH_NAME"
 mkdir -p "$FEATURE_DIR/images"
 mkdir -p "$FEATURE_DIR/docs"
 SPEC_FILE="$FEATURE_DIR/spec.md"
+echo "BRANCH_NAME=$BRANCH_NAME"
 ```
+
+Read `BRANCH_NAME` and `BRANCH_NUMBER` from the command output. Set `SPEC_PATH = specs/$BRANCH_NAME/spec.md`.
 
 Derive the human-readable PR title from `BRANCH_NAME`:
 ```
@@ -634,27 +629,25 @@ Accept confirmation before executing.
 
 For each new sub-feature (Feature B, C…):
 
-**Generate branch identifier:**
-
-Run this Bash command and set `NEW_BRANCH_NUMBER` to its exact output:
-
-```bash
-date -u +%Y%m%d-%H%M
-```
-
-Set `NEW_BRANCH = $NEW_BRANCH_NUMBER-<short-name>`.
-
 **Create branch from main:**
+
+Substitute the short name for `<short-name>`, then run as a single Bash command:
 
 ```bash
 git checkout main
 git pull
-git checkout -b "$NEW_BRANCH"
+NEW_SHORT_NAME="<short-name>"
+NEW_BRANCH_NUMBER=$(date -u +%Y%m%d-%H%M)
+NEW_BRANCH="${NEW_BRANCH_NUMBER}-${NEW_SHORT_NAME}"
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 NEW_FEATURE_DIR="$REPO_ROOT/specs/$NEW_BRANCH"
 mkdir -p "$NEW_FEATURE_DIR/images"
 mkdir -p "$NEW_FEATURE_DIR/docs"
+git checkout -b "$NEW_BRANCH"
+echo "NEW_BRANCH=$NEW_BRANCH"
 ```
+
+Read `NEW_BRANCH` and `NEW_BRANCH_NUMBER` from the command output.
 
 **Write `gathered-context.md` for the new branch** — populate it with:
 - The sub-feature's trimmed scope (outcome, actor+scenario, out of scope, constraints)
