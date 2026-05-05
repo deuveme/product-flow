@@ -171,7 +171,7 @@ Do **not** check `- [x] Code generated` in the PR body — that is set by `/prod
 Read the current PR body first (`gh pr view --json body -q '.body'`). If the output is empty, stop with ERROR "Could not read PR body — check GitHub access and try again." Then add only this row to `## History` — preserve all other sections intact:
 
 ```
-| Code written | YYYY-MM-DD | speckit.implement.withTDD + praxis.test-desiderata completed |
+| Code written | YYYY-MM-DD HH:MM:SS | @github-user | speckit.implement.withTDD + praxis.test-desiderata completed |
 ```
 
 ```bash

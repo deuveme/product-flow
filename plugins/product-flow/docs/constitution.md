@@ -182,6 +182,14 @@ Fields written by each skill:
 
 **Fields are write-once.** Once a timestamp is recorded it must not be overwritten or removed. Always use `jq '. + {"field": $ts}'` to merge new fields — never replace the whole file. Skills that write to status.json must check for prior existence of a field if the step might run more than once (e.g. re-runs of submit should not overwrite `IN_REVIEW`).
 
+**Authorized exceptions to write-once** — the following three skills may delete flags using `jq del()` for specific, documented reasons. No other skill may delete status.json fields:
+
+| Skill | Flags deleted | Reason |
+|---|---|---|
+| `consolidate-plan` | `CHECKLIST_DONE`, `SPLIT_POSTPLAN_ANALIZED` | Plan changed — requirements must be re-validated and split analysis must re-run |
+| `fix` | `CODE_VERIFIED`, `VERIFY_TASKS_DONE` | Fix cycle reinitializes the verification state before re-running it |
+| `continue` | `TASKS_GENERATED` | Stale-flag recovery when `tasks.md` was manually deleted |
+
 **Idempotency.** Every workflow command must be safe to re-run. Concrete rules:
 - Gate checks must rely on status.json fields, never on file existence alone (files can appear out of order).
 - Writing to status.json: merge, don't replace.

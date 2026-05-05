@@ -203,7 +203,7 @@ Show the active action before doing anything:
 Invoke `/product-flow:consolidate-spec`.
 Wait for it to finish. If ERROR: propagate and stop.
 
-Then **within this same invocation**, re-evaluate the routing table from step 2 — `consolidate-spec` cleared `SPLIT_PREPLAN_ANALIZED`, so the next action is `speckit.split`. Proceed immediately to `→ speckit.split (pre-plan)` below.
+Then **within this same invocation**, re-evaluate the routing table from step 2 — `SPLIT_PREPLAN_ANALIZED` is still absent, so the next action is `speckit.split`. Proceed immediately to `→ speckit.split (pre-plan)` below.
 
 #### → speckit.split (pre-plan)
 

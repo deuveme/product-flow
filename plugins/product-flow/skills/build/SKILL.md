@@ -385,7 +385,7 @@ Invoke `/product-flow:safe-push`.
 
 Read the current PR body first (`gh pr view --json body -q '.body'`), then apply these changes — preserve all other sections intact:
 - Mark `- [x] Code generated` in `## Status`
-- Add row to `## History`: `| Code generated | YYYY-MM-DD | verify-tasks and verify passed |`
+- Add row to `## History`: `| Code generated | YYYY-MM-DD HH:MM:SS | @github-user | verify-tasks and verify passed |`
 - Replace the `- [ ] **Implementation** — pending` line inside `<!-- dev-checklist -->` with `- [x] **Implementation** — complete`
 
 ```bash

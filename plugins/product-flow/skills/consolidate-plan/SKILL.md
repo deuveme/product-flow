@@ -165,9 +165,9 @@ If an inconsistency cannot be resolved without PM input, stop and surface it as 
 
 ### 5. Commit and push
 
-If `CHECKLIST_DONE` is present in `status.json`, clear it — the plan changed and requirements must be re-validated before building:
+If `CHECKLIST_DONE` is present in `status.json`, clear it — the plan changed and requirements must be re-validated before building.
 
-If `SPLIT_POSTPLAN_ANALIZED` is present and the plan changes are substantial (more than 2 artifacts updated, or a scope or data model change), also clear it — the post-plan split analysis was based on the previous plan and must re-run:
+If `SPLIT_POSTPLAN_ANALIZED` is present, determine whether the changes applied in step 3 are substantial. Set `SUBSTANTIAL_CHANGES="true"` if any of the following is true: more than 2 artifacts were updated (counting `research.md`, `data-model.md`, and any files under `contracts/` individually), or `data-model.md` was modified, or any `contracts/` file was modified. Otherwise set `SUBSTANTIAL_CHANGES="false"`. If substantial, clear `SPLIT_POSTPLAN_ANALIZED` — the post-plan split analysis was based on the previous plan and must re-run:
 
 ```bash
 BRANCH=$(git branch --show-current)
@@ -180,7 +180,7 @@ if echo "$EXISTING" | jq -e '.CHECKLIST_DONE' > /dev/null 2>&1; then
 fi
 
 # Clear SPLIT_POSTPLAN_ANALIZED if present and changes are substantial
-# (substantial = more than 2 artifacts updated, or scope/data model change)
+# (substantial = data-model.md or contracts/ touched, or more than 2 artifacts updated)
 if echo "$EXISTING" | jq -e '.SPLIT_POSTPLAN_ANALIZED' > /dev/null 2>&1 && [ "$SUBSTANTIAL_CHANGES" = "true" ]; then
   EXISTING=$(echo "$EXISTING" | jq 'del(.SPLIT_POSTPLAN_ANALIZED)')
 fi
@@ -217,7 +217,7 @@ Invoke `/product-flow:pr-comments resolve` passing the IDs of all bot comments t
 Read the current PR body first (`gh pr view --json body -q '.body'`), then add only this row to the `## History` table — preserve all other sections intact:
 
 ```
-| Plan revised | YYYY-MM-DD | Feedback integrated via consolidate-plan |
+| Plan revised | YYYY-MM-DD HH:MM:SS | @github-user | Feedback integrated via consolidate-plan |
 ```
 
 ```bash
